@@ -35,7 +35,7 @@ export function Home({ wide, titleSize, meetups, create, open }: {
           <View style={{ flex: 1, gap: 5 }}>
             <Label size={19} weight="title">{meetup.name}</Label>
             <Label size={13} color={palette.muted}>{meetup.date || 'Date to be decided'} · {meetup.participants.length} {meetup.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
-            {!!meetup.venue && <Label size={13} weight="bold">{venues.find(venue => venue.id === meetup.venue)?.name}</Label>}
+            {!!meetup.venue && <Label size={13} weight="bold">{[...venues, ...meetup.customVenues ?? []].find(venue => venue.id === meetup.venue)?.name}</Label>}
           </View>
           <Chip selected>{meetup.status}</Chip><Icon name="chevron-right" color={palette.muted} />
         </Panel>

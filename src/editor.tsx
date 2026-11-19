@@ -1,6 +1,8 @@
+import { parsePoint } from './geo';
+import { PlaceInput } from './place-input';
 import { useState } from 'react';
 import { Modal, ScrollView, View } from 'react-native';
-import { Meetup, modes, origins, Participant } from './planner';
+import { Meetup, modes, Participant } from './planner';
 import { Button, Chip, Field, Label, layout, Panel } from './ui';
 import { palette } from './theme';
 
@@ -9,7 +11,8 @@ export function Editor({ kind, meetup, participant, close, save }: {
 }) {
   const [name, setName] = useState(participant?.name ?? '');
   const [date, setDate] = useState('');
-  const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? origins[0]);
+  const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? '');
+  const [coordinates, setCoordinates] = useState(participant?.point?.join(', ') ?? '');
   const [mode, setMode] = useState<Participant['mode']>(participant?.mode ?? modes[0]);
   const [budget, setBudget] = useState(participant?.budget?.toString() ?? '');
   const [duration, setDuration] = useState(participant?.maxMinutes?.toString() ?? '');
@@ -20,15 +23,23 @@ export function Editor({ kind, meetup, participant, close, save }: {
       if (date.trim() && !Number.isFinite(Date.parse(date.trim()))) return setError('Use a date and time such as 2026-12-05 15:00.');
       return save({ name: name.trim(), date: date.trim(), participants: [], status: 'Planning', votes: {}, ratings: {} });
     }
+    const point = parsePoint(coordinates);
+    if (coordinates.trim() && !point) return setError('Enter valid latitude and longitude separated by a comma.');
+    if (!origin.trim() && !point) return setError('Enter a starting place, use your location, or choose a map pin.');
     const limits = [budget, duration].map(value => value.trim() ? Number(value) : undefined);
     if (limits.some(value => value !== undefined && (!Number.isFinite(value) || value < 0)) || limits[1] === 0) {
       return setError('Enter a nonnegative fare and a positive travel time, or leave the fields blank.');
     }
     const friend = {
-      id: participant?.id ?? String(Date.now()), name: name.trim(), origin, mode, budget: limits[0], maxMinutes: limits[1],
+      id: participant?.id ?? String(Date.now()), name: name.trim(), origin: origin.trim() || 'Pinned location', point, mode, budget: limits[0], maxMinutes: limits[1],
     };
     const manualFares = { ...meetup.manualFares };
-    if (participant && (participant.mode !== mode || participant.origin !== origin)) {
+    const manualMinutes = { ...meetup.manualMinutes };
+    if (participant && (participant.mode !== mode || participant.origin !== friend.origin || participant.point?.join() !== point?.join())) {
+      for (const venueId of Object.keys(manualMinutes)) {
+        manualMinutes[venueId] = { ...manualMinutes[venueId] };
+        delete manualMinutes[venueId][participant.id];
+      }
       for (const venueId of Object.keys(manualFares)) {
         const fares = { ...manualFares[venueId] };
         delete fares[participant.id];
@@ -37,7 +48,7 @@ export function Editor({ kind, meetup, participant, close, save }: {
     }
     const participants = participant ? meetup.participants.map(item => item.id === participant.id ? friend : item) :
       [...meetup.participants, friend];
-    save({ ...meetup, participants, manualFares });
+    save({ ...meetup, participants, manualFares, manualMinutes });
   }
   return <Modal transparent animationType="none" visible onRequestClose={close}>
     <View style={{ flex: 1, backgroundColor: '#291D3277', justifyContent: 'center', padding: 18 }}>
@@ -46,8 +57,7 @@ export function Editor({ kind, meetup, participant, close, save }: {
           <Label size={27} weight="title">{kind === 'new' ? 'Plan a meetup' : participant ? 'Edit friend' : 'Add a friend'}</Label>
           <Field label={kind === 'new' ? 'Meetup name' : 'Name'} value={name} onChange={setName} />
           {kind === 'new' ? <Field label="Date and time (optional)" placeholder="YYYY-MM-DD HH:MM" value={date} onChange={setDate} /> : <>
-            <Label weight="bold">Starting city</Label>
-            <View style={layout.wrap}>{origins.map(item => <Chip key={item} onPress={() => setOrigin(item)} selected={item === origin}>{item}</Chip>)}</View>
+            <PlaceInput name={origin} setName={setOrigin} coordinates={coordinates} setCoordinates={setCoordinates} />
             <Label weight="bold">Transportation</Label>
             <View style={layout.wrap}>{modes.map(item => <Chip key={item} onPress={() => setMode(item)} selected={item === mode}>{item}</Chip>)}</View>
             <Field label="Maximum fare in ₱ (optional)" numeric value={budget} onChange={setBudget} />

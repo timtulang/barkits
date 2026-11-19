@@ -1,3 +1,5 @@
+import { TripPlanning } from './trip-planning';
+import PlaceMap from './place-map';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 import { Kits } from './kits';
@@ -21,11 +23,12 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
   const [caption, setCaption] = useState(meetup.recap ?? '');
   const [confirmVenue, setConfirmVenue] = useState('');
   const [linkError, setLinkError] = useState('');
-  const venue = venues.find(item => item.id === meetup.venue);
+  const [mapOpen, setMapOpen] = useState(false);
+  const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
   const canRate = meetup.status === 'Completed';
   const ratings = ratingSummary(meetup.ratings);
-  const candidates = recommend(meetup.participants, ranking, meetup.manualFares);
+  const candidates = recommend(meetup.participants, ranking, meetup.manualFares, meetup.customVenues, meetup.manualMinutes);
   function rate(value: number | null) {
     if (!currentVoter) return;
     const next = { ...meetup.ratings };
@@ -34,7 +37,7 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
     save({ ...meetup, ratings: next });
   }
   async function openDirections() {
-    if (!venue) return;
+    if (!venue?.point) return;
     try {
       await Linking.openURL(`https://www.openstreetmap.org/?mlat=${venue.point[0]}&mlon=${venue.point[1]}#map=17/${venue.point.join('/')}`);
       setLinkError('');
@@ -54,27 +57,14 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>
         <Label size={28} weight="title">Compare meetup spots</Label>
-        <Label color={palette.muted}>Demo routes and fares. Values are illustrative and include no live traffic.</Label>
+        <Label color={palette.muted}>Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
         <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
-        {!!currentVoter && <><Label weight="bold">Vote as</Label><View style={layout.wrap}>
+        {!!currentVoter && <><Label weight="bold">Plan and vote as</Label><View style={layout.wrap}>
           {meetup.participants.map(friend => <Chip key={friend.id} selected={currentVoter.id === friend.id} onPress={() => setVoter(friend.id)}>{friend.name}</Chip>)}
         </View></>}
       </View>
-      {currentVoter?.mode === 'Motorcycle taxi' && <Panel>
-        <Label weight="title" size={19}>Enter a fare for {currentVoter.name}</Label>
-        <Label color={palette.muted}>Add a fare you checked yourself. Barkits labels it as user-entered.</Label>
-        <View style={layout.stack}>{venues.map(item => <FareField
-          key={`${item.id}:${currentVoter.id}`} label={item.name}
-          saved={meetup.manualFares?.[item.id]?.[currentVoter.id]}
-          onSave={value => {
-            const fares = { ...meetup.manualFares?.[item.id] };
-            if (value === undefined) delete fares[currentVoter.id];
-            else fares[currentVoter.id] = value;
-            save({ ...meetup, manualFares: { ...meetup.manualFares, [item.id]: fares } });
-          }}
-        />)}</View>
-      </Panel>}
-      {!!meetup.participants.length && !candidates.length && <Panel><Label>No demo routes meet these limits or provide the data required for this ranking.</Label></Panel>}
+      <TripPlanning meetup={meetup} save={save} participant={currentVoter} />
+      {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label></Panel>}
       {candidates.map(({ venue: item, journeys, time, spread, cost }, index) => {
         const votes = Object.values(meetup.votes).filter(id => id === item.id).length;
         const voted = !!currentVoter && meetup.votes[currentVoter.id] === item.id;
@@ -83,8 +73,8 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
             <View style={{ flexShrink: 1 }}><Label size={20} weight="title">{item.name}</Label><Label size={13} color={palette.muted}>{item.area}</Label></View></View>
             {index === 0 && <Chip selected>Top match</Chip>}</View>
           {index === 0 && <Label color={palette.muted}>{rankingDescriptions[ranking]}</Label>}
-          <Label>{time} min total · {spread} min difference · {cost === null ? 'Total fare unavailable' : `₱${cost} total${journeys.some(journey => journey.manual) ? ' · includes user-entered fares' : ''}`}</Label>
-          {expanded === item.id && journeys.map(({ participant, minutes, fare, manual }) => <Label key={participant.id}>{participant.name} · {participant.mode} · {minutes} min · {fare === null ? 'Fare unavailable' : `₱${fare} ${manual ? 'user-entered fare' : 'demo fare'}`}</Label>)}
+          <Label>{journeys.every(trip => trip.timeEntered) ? 'User-entered time' : journeys.some(trip => trip.timeEntered) ? 'Demo and user-entered times' : 'Demo time'} · {time} min total · {spread} min difference · {cost === null ? 'Total fare unavailable' : `₱${cost} total${journeys.some(journey => journey.manual) ? ' · includes user-entered fares' : ''}`}</Label>
+          {expanded === item.id && journeys.map(({ participant, minutes, fare, manual, timeEntered }) => <Label key={participant.id}>{participant.name} · {participant.mode} · {minutes} min ({timeEntered ? 'user-entered' : 'demo'}) · {fare === null ? 'Fare unavailable' : `₱${fare} ${manual ? 'user-entered fare' : 'demo fare'}`}</Label>)}
           <View style={layout.wrap}>
             <Button secondary onPress={() => setExpanded(expanded === item.id ? '' : item.id)}>{expanded === item.id ? 'Hide trips' : 'View trips'}</Button>
             <Button secondary onPress={() => currentVoter && save({ ...meetup, votes: { ...meetup.votes, [currentVoter.id]: item.id } })}>{voted ? 'Voted' : 'Vote'} · {votes}</Button>
@@ -99,9 +89,10 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
     </>}
     {!!venue && <Panel><Label size={23} weight="title">Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>
-        <Button secondary onPress={openDirections} icon="external-link">Open venue map</Button>
+        {venue.point && <><Button secondary onPress={() => setMapOpen(!mapOpen)} icon="map">{mapOpen ? 'Hide venue map' : 'View venue map'}</Button>
+          <Button secondary onPress={openDirections} icon="external-link">Open in OpenStreetMap</Button></>}
         {meetup.status === 'Decided' && <Button onPress={() => save({ ...meetup, status: 'Completed' })} icon="check">Mark completed</Button>}
-      </View>{!!linkError && <Label>{linkError}</Label>}
+      </View>{mapOpen && venue.point && <PlaceMap point={venue.point} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />}{!!linkError && <Label>{linkError}</Label>}
     </Panel>}
     {meetup.status === 'Archived' && <Panel>
       <Label size={24} weight="title">Meetup memories</Label>
@@ -125,15 +116,4 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
       <Button secondary onPress={() => save({ ...meetup, status: 'Archived' })}>Archive meetup</Button>
     </Panel>}
   </>;
-}
-
-function FareField({ label, saved, onSave }: { label: string; saved?: number; onSave: (value?: number) => void }) {
-  const [text, setText] = useState(saved?.toString() ?? '');
-  const value = text.trim() ? Number(text) : undefined;
-  const invalid = value !== undefined && (!Number.isFinite(value) || value < 0);
-  return <View style={layout.stack}>
-    <Field label={`${label} fare (₱)`} value={text} onChange={setText} />
-    {invalid && <Label>Enter a nonnegative fare.</Label>}
-    <Button secondary disabled={invalid || value === saved} onPress={() => onSave(value)}>{value === undefined ? 'Clear fare' : 'Save fare'}</Button>
-  </View>;
 }
