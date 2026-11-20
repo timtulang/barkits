@@ -1,5 +1,5 @@
 import { activityCategory, Category, discover, LocatedFriend } from './discovery';
-import { catalog } from './venue-catalog';
+import { catalog, resolveLandmark } from './venue-catalog';
 import { resolveLocality } from './place-search';
 import { NearbyPlaces, retainPlace } from './nearby-places';
 import { VenueDecision } from './venue-decision';
@@ -28,8 +28,10 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
   const [tripTarget, setTripTarget] = useState<string>();
   const category = filter && filter.activity === meetup.activity ? filter.category : activityCategory(meetup.activity);
   const located = useMemo(() => meetup.participants.flatMap((friend): LocatedFriend[] => {
-    const point = friend.point ?? resolveLocality(friend.origin);
-    return point ? [{ ...friend, point, approximate: !friend.point }] : [];
+    if (friend.point) return [{ ...friend, point: friend.point, approximate: false }];
+    const city = resolveLocality(friend.origin);
+    const point = city ?? resolveLandmark(friend.origin);
+    return point ? [{ ...friend, point, approximate: Boolean(city) }] : [];
   }), [meetup.participants]);
   const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
     discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
