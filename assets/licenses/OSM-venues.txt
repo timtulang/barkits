@@ -1,6 +1,7 @@
 Philippine venue catalog © OpenStreetMap contributors.
 https://www.openstreetmap.org/copyright
-The derived database assets/data/ph-venues.json is available under the Open
+The derived databases assets/data/ph-venues.json and assets/data/ph-landmarks.json
+are available under the Open
 Database License 1.0: https://opendatacommons.org/licenses/odbl/1-0/
 Source: Humanitarian OpenStreetMap Team Philippines points-of-interest
 GeoPackage (archive dated 2026-11-16), available from

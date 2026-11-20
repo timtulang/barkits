@@ -1,3 +1,4 @@
+import { indexPlace, matchPlaces } from './search-matches.ts';
 import { activityCategory, discover, type VenueRow } from './discovery.ts';
 import type { Point } from './geo.ts';
 import { parsePoint, directDistance } from './geo.ts';
@@ -69,4 +70,21 @@ test('automatic discovery considers every real pin, venue category and transit p
   assert.equal(discover([friend, other], activityCategory('Group lunch'), rows)[0].venue.id, 'd');
   assert.deepEqual(discover([{ ...friend, point: [10, 123] }], 'All', rows), []);
   assert.deepEqual(discover([], 'All', rows), []);
+});
+
+test('place search handles reordered words, branch addresses, aliases and accents', () => {
+  const entry = (id: string, name: string, area: string, address: string) => indexPlace({
+    id, name, area, address, kind: 'Café', point: [14.5, 121],
+  });
+  const index = [
+    entry('1', 'Café Luna', 'Makati', 'Ayala Avenue'),
+    entry('2', 'Café Luna', 'Cebu City', 'Lahug'),
+    entry('3', 'SM Mall of Asia', 'Pasay', 'Seaside Boulevard'),
+  ];
+  assert.deepEqual(matchPlaces(index, 'MAKATI cafe aya').results.map(place => place.id), ['1']);
+  assert.deepEqual(matchPlaces(index, 'MOA, Pasay').results.map(place => place.id), ['3']);
+  assert.equal(matchPlaces(index, 'Luna', 1).total, 2);
+  assert.equal(matchPlaces(index, 'Luna', 1).results.length, 1);
+  assert.equal(matchPlaces(index, 'R').total, 0);
+  assert.equal(matchPlaces(index, 'Cebu Makati').total, 0);
 });

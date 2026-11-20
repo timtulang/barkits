@@ -10,7 +10,9 @@ function key(text: string) {
   return text.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-const byName = osm.map(row => ({ row, name: key(row[1]), full: key(row[1] + ', ' + row[2]) }));
+const extraLandmarks: VenueRow[] = require('../assets/data/ph-landmarks.json');
+export const searchableLandmarks = [...catalog, ...extraLandmarks];
+const byName = [...osm, ...extraLandmarks].map(row => ({ row, name: key(row[1]), full: key(row[1] + ', ' + row[2]) }));
 export function resolveLandmark(label: string) {
   const query = key(label);
   if (!query) return;

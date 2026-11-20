@@ -1,4 +1,4 @@
-import { catalog } from './venue-catalog';
+import { searchableLandmarks } from './venue-catalog';
 import { localities } from './place-search';
 import { indexPlace, matchPlaces, type IndexedPlace } from './search-matches';
 
@@ -11,7 +11,7 @@ export function findPlaces(query: string, limit: number) {
       id: 'locality-' + place.name + '-' + place.point.join(), name: place.name, area: place.province,
       kind: 'Locality', address: '', point: place.point,
     }));
-    for (const [id, name, area, kind, lat, lng, , address] of catalog) {
+    for (const [id, name, area, kind, lat, lng, , address] of searchableLandmarks) {
       directory.push(indexPlace({ id, name, area, kind, address: address ?? '', point: [lat, lng] }));
     }
   }
