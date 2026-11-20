@@ -1,13 +1,16 @@
+import { searchPlaces } from './place-search';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { parsePoint } from './geo';
 import PlaceMap from './place-map';
 import { detectPoint } from './services/device-location';
-import { Button, Field, Label, layout } from './ui';
+import { Button, Chip, Field, Label, layout } from './ui';
 
 export function PlaceInput({ name, setName, coordinates, setCoordinates, destination = false }: {
   name: string; setName: (value: string) => void; coordinates: string; setCoordinates: (value: string) => void; destination?: boolean;
 }) {
+  const [searching, setSearching] = useState(false);
+  const matches = searching ? searchPlaces(name) : [];
   const [showMap, setShowMap] = useState(false);
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState('');
@@ -36,7 +39,13 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
     }
   }
   return <View style={layout.stack}>
-    <Field label={destination ? 'Meeting place' : 'Starting place'} placeholder="Landmark, address, or city" value={name} onChange={setName} />
+    <Field label={destination ? 'Meeting place' : 'Starting place'} placeholder="Landmark, address, or city" value={name} onChange={text => { setName(text); setSearching(true); }} />
+    {matches.length > 0 && <><Label size={13}>Philippine places · GeoNames locality centers</Label>
+      <View style={layout.wrap}>{matches.map(place => <Chip key={place.point.join()} onPress={() => {
+        setName(place.name + ', ' + place.province);
+        edit(place.point.join(', '));
+        setSearching(false);
+      }}>{place.name} · {place.province}</Chip>)}</View></>}
     <Field label="Coordinates (optional)" placeholder="Latitude, longitude" value={coordinates} onChange={edit} />
     <View style={layout.wrap}>
       {!destination && <Button secondary icon="crosshair" disabled={locating} onPress={detect}>{locating ? 'Finding location…' : 'Use my location'}</Button>}

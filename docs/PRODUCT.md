@@ -2,9 +2,9 @@
 
 ## Phase 1 workflow
 
-Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create additional meetups and add friends with a starting city, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
+Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create additional meetups and add friends with any starting place, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
 
-The Expo prototype uses device storage, with simulated participant identities. Invitations, group synchronization, location permissions, exact origin search, map pins, media and live provider data require later work. Keep personal addresses out of the prototype.
+The Expo prototype uses device storage, with simulated participant identities. Invitations, group synchronization, street address geocoding, media and live provider data require later work. Keep personal addresses out of the prototype.
 
 ## How ranking works
 
@@ -12,7 +12,7 @@ Exclude any candidate exceeding a participant's time or budget. A missing fare c
 
 ## Mapping and routing
 
-The prototype makes zero automated map or routing requests. It includes a user-initiated handoff to the OpenStreetMap venue map. OpenStreetMap data under ODbL can support a future maintained venue catalog. A deployment must comply with attribution and the chosen tile provider's usage policy. OSRM or Valhalla deployment still needs compute, storage and current data. Public demo servers are unsuitable for a production dependency. No validated Metro Manila journey planner or GTFS source is wired. Grab, Angkas, JoyRide and Move It pricing stays unavailable until authorized, zero-cost access is verified. Participants can enter a known motorcycle-taxi fare per venue. Barkits labels these values as user-entered and includes them in budget checks.
+Participants can type a label anywhere, enter coordinates, select a Philippine locality center from a bundled GeoNames index, use foreground device location, or drop a map pin. Only explicit map actions load OpenStreetMap tiles. Pin coordinates and names stay in device storage; the tile host receives requests for the viewed area. The group map distinguishes origins and meeting places. Custom venue suggestions support voting and finalization. Enter trip minutes and optional fares per participant and venue for reproducible rankings outside demo coverage. Straight-line distance is calculated locally when both pins exist. A changed origin, pin, or mode clears that participant’s previously entered trip figures. OSRM or Valhalla deployment still needs compute, storage and current data. Public demo servers are unsuitable for a production dependency. No validated Metro Manila journey planner or GTFS source is wired. Grab, Angkas, JoyRide and Move It pricing stays unavailable until authorized, zero-cost access is verified. Participants can enter a known motorcycle-taxi fare per venue. Barkits labels these values as user-entered and includes them in budget checks.
 
 ## Data and permissions
 

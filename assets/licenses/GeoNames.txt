@@ -1,0 +1,10 @@
+Barkits includes a derived Philippine locality index from GeoNames.
+Source: https://download.geonames.org/export/dump/PH.zip
+Attribution: GeoNames, https://www.geonames.org/
+License: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+
+The index contains Philippine administrative seats and other populated places
+with a listed population of at least 15,000. Barkits selected fields, joined
+province names where available, and sorted the result. Coordinates represent
+locality centers. Coverage and population counts depend on the source.

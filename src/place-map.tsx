@@ -6,11 +6,15 @@ import type * as Leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Point } from './geo';
 
-type Props = { point?: Point; onPick?: (point: Point) => Promise<void>; dom?: DOMProps };
+export type MapPin = { point: Point; label: string; kind: 'origin' | 'venue' };
 
-export default function PlaceMap({ point, onPick }: Props) {
+type Props = { pins?: MapPin[]; point?: Point; onPick?: (point: Point) => Promise<void>; dom?: DOMProps };
+
+export default function PlaceMap({ point, onPick, pins }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Leaflet.Map | null>(null);
+  const [ready, setReady] = useState(false);
+  const leaflet = useRef<typeof Leaflet | null>(null);
   const marker = useRef<Leaflet.CircleMarker | null>(null);
   const latest = useRef({ point, onPick });
   latest.current = { point, onPick };
@@ -18,11 +22,14 @@ export default function PlaceMap({ point, onPick }: Props) {
   useEffect(() => {
     let mounted = true;
     let observer: ResizeObserver | undefined;
-    import('leaflet').then(L => {
+    Promise.resolve().then(() => {
+      const L: typeof Leaflet = require('leaflet');
+      leaflet.current = L;
       if (!mounted || !container.current) return;
       const initial = latest.current.point;
       const view = L.map(container.current, { scrollWheelZoom: false }).setView(initial ?? [14.5995, 120.9842], initial ? 15 : 10);
       map.current = view;
+      setReady(true);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>',
@@ -38,6 +45,27 @@ export default function PlaceMap({ point, onPick }: Props) {
     }).catch(() => { if (mounted) setError('Map unavailable. You can still enter coordinates.'); });
     return () => { mounted = false; observer?.disconnect(); map.current?.remove(); map.current = null; marker.current = null; };
   }, []);
+  const serializedPins = JSON.stringify(pins ?? []);
+  useEffect(() => {
+    const L = leaflet.current;
+    const view = map.current;
+    if (!ready || !L || !view) return;
+    const points: MapPin[] = JSON.parse(serializedPins);
+    if (!points.length) return;
+    const layer = L.layerGroup().addTo(view);
+    for (const pin of points) {
+      const el = document.createElement('span');
+      el.textContent = pin.label;
+      const icon = L.divIcon({
+        className: '',
+        html: pin.kind === 'origin' ? '<span class="origin-pin"></span>' : '<span class="venue-pin"></span>',
+        iconSize: [16, 16], iconAnchor: [8, 8],
+      });
+      L.marker(pin.point, { icon, title: pin.label, alt: pin.label }).bindPopup(el).addTo(layer);
+    }
+    view.fitBounds(L.latLngBounds(points.map(pin => pin.point)), { padding: [24, 24], maxZoom: 15 });
+    return () => { layer.remove(); };
+  }, [ready, serializedPins]);
   const lat = point?.[0];
   const lng = point?.[1];
   useEffect(() => {
@@ -47,6 +75,7 @@ export default function PlaceMap({ point, onPick }: Props) {
     map.current.panTo([lat, lng], { animate: false });
   }, [lat, lng]);
   return <div style={{ width: '100%' }}>
+    <style>{'.origin-pin,.venue-pin{display:block;width:14px;height:14px;border:2px solid #291d32;background:#f78f78;border-radius:50%}.venue-pin{background:#ad7bc0;border-radius:2px}'}</style>
     <div ref={container} aria-label="Location map" style={{ height: 240, width: '100%', borderRadius: 12 }} />
     {error && <div role="status" style={{ font: '14px sans-serif' }}>{error}</div>}
   </div>;

@@ -1,9 +1,11 @@
+import { VenueDecision } from './venue-decision';
+import { PlanningMap } from './planning-map';
 import { TripPlanning } from './trip-planning';
 import PlaceMap from './place-map';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 import { Kits } from './kits';
-import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, venues } from './planner';
+import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, demoJourney, venues } from './planner';
 import { palette } from './theme';
 import { Button, Chip, Field, Icon, Label, layout, Panel } from './ui';
 
@@ -21,7 +23,6 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
   const [expanded, setExpanded] = useState('');
   const [voter, setVoter] = useState('');
   const [caption, setCaption] = useState(meetup.recap ?? '');
-  const [confirmVenue, setConfirmVenue] = useState('');
   const [linkError, setLinkError] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
   const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
@@ -29,6 +30,9 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
   const canRate = meetup.status === 'Completed';
   const ratings = ratingSummary(meetup.ratings);
   const candidates = recommend(meetup.participants, ranking, meetup.manualFares, meetup.customVenues, meetup.manualMinutes);
+  const hasLimits = meetup.participants.some(friend => friend.budget !== undefined || friend.maxMinutes !== undefined);
+  const unranked = hasLimits ? [] : (meetup.customVenues ?? []).filter(spot =>
+    meetup.participants.some(friend => meetup.manualMinutes?.[spot.id]?.[friend.id] === undefined && !demoJourney(spot, friend)));
   function rate(value: number | null) {
     if (!currentVoter) return;
     const next = { ...meetup.ratings };
@@ -63,11 +67,10 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
           {meetup.participants.map(friend => <Chip key={friend.id} selected={currentVoter.id === friend.id} onPress={() => setVoter(friend.id)}>{friend.name}</Chip>)}
         </View></>}
       </View>
+      <PlanningMap meetup={meetup} />
       <TripPlanning meetup={meetup} save={save} participant={currentVoter} />
       {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label></Panel>}
       {candidates.map(({ venue: item, journeys, time, spread, cost }, index) => {
-        const votes = Object.values(meetup.votes).filter(id => id === item.id).length;
-        const voted = !!currentVoter && meetup.votes[currentVoter.id] === item.id;
         return <Panel key={item.id}>
           <View style={layout.between}><View style={layout.row}><View style={{ backgroundColor: palette[item.color], padding: 10, borderRadius: 12 }}><Icon name={item.icon} /></View>
             <View style={{ flexShrink: 1 }}><Label size={20} weight="title">{item.name}</Label><Label size={13} color={palette.muted}>{item.area}</Label></View></View>
@@ -77,15 +80,15 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
           {expanded === item.id && journeys.map(({ participant, minutes, fare, manual, timeEntered }) => <Label key={participant.id}>{participant.name} · {participant.mode} · {minutes} min ({timeEntered ? 'user-entered' : 'demo'}) · {fare === null ? 'Fare unavailable' : `₱${fare} ${manual ? 'user-entered fare' : 'demo fare'}`}</Label>)}
           <View style={layout.wrap}>
             <Button secondary onPress={() => setExpanded(expanded === item.id ? '' : item.id)}>{expanded === item.id ? 'Hide trips' : 'View trips'}</Button>
-            <Button secondary onPress={() => currentVoter && save({ ...meetup, votes: { ...meetup.votes, [currentVoter.id]: item.id } })}>{voted ? 'Voted' : 'Vote'} · {votes}</Button>
-            <Button onPress={() => setConfirmVenue(item.id)}>Choose this spot</Button>
           </View>
-          {confirmVenue === item.id && <><Label weight="bold">Finalize {item.name} for this meetup?</Label><View style={layout.wrap}>
-            <Button onPress={() => save({ ...meetup, venue: item.id, status: 'Decided' })}>Finalize location</Button>
-            <Button secondary onPress={() => setConfirmVenue('')}>Cancel</Button>
-          </View></>}
+          {currentVoter && <VenueDecision meetup={meetup} venue={item} voter={currentVoter} save={save} />}
         </Panel>;
       })}
+      {currentVoter && unranked.map(spot => <Panel key={spot.id}>
+        <Label size={20} weight="title">{spot.name}</Label>
+        <Label>Group suggestion · Unranked. Some friends still need travel times.</Label>
+        <VenueDecision meetup={meetup} venue={spot} voter={currentVoter} save={save} />
+      </Panel>)}
     </>}
     {!!venue && <Panel><Label size={23} weight="title">Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>

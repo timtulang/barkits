@@ -1,6 +1,7 @@
+import { parsePoint, directDistance } from './geo.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { example, recommend, ratingSummary } from './planner.ts';
+import { example, recommend, ratingSummary, venues } from './planner.ts';
 
 test('ranks Metro Manila candidates deterministically for four friends', () => {
   assert.equal(recommend(example.participants, 'Balanced')[0].venue.id, 'cub');
@@ -24,4 +25,28 @@ test('unknown motorcycle fares are never treated as verified or affordable', () 
 test('skipped ratings do not enter the average', () => {
   assert.equal(ratingSummary({}), null);
   assert.deepEqual(ratingSummary({ one: 4, three: 5, five: 5 }), { count: 3, average: 14 / 3 });
+});
+
+test('custom places require trip evidence for every friend and respect spending limits', () => {
+  const friend = { ...example.participants[0], origin: 'Cebu IT Park', budget: 80 };
+  const venue = { ...venues[0], id: 'cebu', name: 'Cebu café' };
+  assert.deepEqual(recommend([friend], 'Balanced'), []);
+  const minutes = { cebu: { [friend.id]: 25 } };
+  assert.deepEqual(recommend([friend], 'Balanced', {}, [venue], minutes), []);
+  assert.deepEqual(recommend([friend], 'Balanced', { cebu: { [friend.id]: 81 } }, [venue], minutes), []);
+  const rows = recommend([friend], 'Cheapest', { cebu: { [friend.id]: 80 } }, [venue], minutes);
+  assert.deepEqual(rows.map(row => [row.venue.id, row.time, row.cost]), [['cebu', 25, 80]]);
+  assert.equal(rows[0].journeys[0].timeEntered, true);
+  assert.deepEqual(recommend([friend, example.participants[1]], 'Balanced', {}, [venue], minutes), []);
+});
+
+test('a specific pin never inherits the demo route for a city with the same label', () => {
+  assert.deepEqual(recommend([{ ...example.participants[0], point: [10, 123] }], 'Fastest'), []);
+});
+
+test('coordinates support global locations and reject incomplete or out-of-range pairs', () => {
+  assert.deepEqual(parsePoint(' -33.86, 151.21 '), [-33.86, 151.21]);
+  assert.deepEqual(parsePoint('0,0'), [0, 0]);
+  for (const input of ['', '1,', ',0', '91,0', '1,-181', '0x01,4']) assert.equal(parsePoint(input), undefined);
+  assert.ok(Math.abs(directDistance([0, 0], [0, 1]) - 111.195) < 0.01);
 });
