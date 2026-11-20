@@ -62,9 +62,11 @@ export function recommend(participants: Participant[], ranking: Ranking, manualF
 }
 export type Meetup = {
   name: string;
+  activity?: string;
+  description?: string;
   date: string;
   participants: Participant[];
-  status: 'Planning' | 'Decided' | 'Completed' | 'Archived';
+  status: 'Draft' | 'Planning' | 'Decided' | 'Completed' | 'Archived';
   votes: Record<string, string>;
   manualFares?: ManualFares;
   manualMinutes?: ManualFares;

@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Editor } from '../src/editor';
+import { MeetupEditor } from '../src/meetup-editor';
+import { ParticipantEditor } from '../src/editor';
 import { Home } from '../src/home';
 import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
@@ -16,7 +17,7 @@ export default function Index() {
   const wide = width >= 860;
   const [meetups, setMeetups] = useState<Meetup[]>([example]);
   const [index, setIndex] = useState<number | null>(null);
-  const [editor, setEditor] = useState<'new' | 'participant' | null>(null);
+  const [editor, setEditor] = useState<'new' | 'details' | 'participant' | null>(null);
   const [editedFriend, setEditedFriend] = useState<Participant>();
   const [ready, setReady] = useState(false);
   const [storageError, setStorageError] = useState('');
@@ -67,14 +68,17 @@ export default function Index() {
     </View></View>
     <ScrollView key={index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
-      {ready && (selected ? <MeetupScreen key={index} meetup={selected} save={save} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => setIndex(null)} /> :
+      {ready && (selected ? <MeetupScreen key={index} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => setIndex(null)} /> :
         <Home wide={wide} titleSize={width >= 1050 ? 55 : wide ? 43 : 36} meetups={meetups} create={() => setEditor('new')} open={setIndex} />)}
       <View style={styles.footer}>
         <View style={layout.row}><Icon name="map-pin" size={14} color={palette.plum} /><Label size={13} weight="bold" color={palette.plum}>Barkits</Label></View>
         <Label size={13} color={palette.muted}>Made for the barkada.</Label>
       </View>
     </ScrollView>
-    {editor && <Editor key={editor} kind={editor} meetup={selected ?? example} participant={editedFriend} close={() => { setEditedFriend(undefined); setEditor(null); }} save={saveEditor} />}
+    {(editor === 'new' || editor === 'details') && <MeetupEditor key={editor} meetup={editor === 'details' && selected ? selected : undefined}
+      close={() => setEditor(null)} save={saveEditor} />}
+    {editor === 'participant' && selected && <ParticipantEditor meetup={selected} participant={editedFriend}
+      close={() => { setEditedFriend(undefined); setEditor(null); }} save={saveEditor} />}
   </SafeAreaView>;
 }
 

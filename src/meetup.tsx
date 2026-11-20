@@ -16,8 +16,8 @@ const rankingDescriptions: Record<Ranking, string> = {
   Cheapest: 'Prioritizes the lowest combined fare when all fares are available.',
 };
 
-export function MeetupScreen({ meetup, save, editFriend, back }: {
-  meetup: Meetup; save: (meetup: Meetup) => void; editFriend: (friend?: Participant) => void; back: () => void;
+export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
+  meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
   const [ranking, setRanking] = useState<Ranking>('Balanced');
   const [expanded, setExpanded] = useState('');
@@ -27,6 +27,7 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
   const [mapOpen, setMapOpen] = useState(false);
   const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
+  const canEdit = meetup.status === 'Planning' || meetup.status === 'Draft';
   const canRate = meetup.status === 'Completed';
   const ratings = ratingSummary(meetup.ratings);
   const candidates = recommend(meetup.participants, ranking, meetup.manualFares, meetup.customVenues, meetup.manualMinutes);
@@ -52,11 +53,18 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
   return <>
     <Button secondary onPress={back} icon="arrow-left">Back to meetups</Button>
     <View style={{ gap: 6 }}><View style={layout.wrap}><Label size={40} weight="title">{meetup.name}</Label><Chip selected>{meetup.status}</Chip></View>
-      <Label color={palette.muted}>{meetup.date || 'Date to be decided'} · Local demo</Label></View>
+      <Label color={palette.muted}>{meetup.date || 'Date to be decided'} · Saved on this device</Label>
+      {!!meetup.activity && <Label weight="bold">Activity · {meetup.activity}</Label>}
+      {!!meetup.description && <Label>{meetup.description}</Label>}
+    </View>
+    {canEdit && <View style={layout.wrap}>
+      <Button secondary icon="edit-2" onPress={editDetails}>Edit meetup details</Button>
+      {meetup.status === 'Draft' && <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Start planning</Button>}
+    </View>}
     <Panel>
-      <View style={layout.between}><Label size={23} weight="title">Your barkada</Label>{meetup.status === 'Planning' && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
+      <View style={layout.between}><Label size={23} weight="title">Your barkada</Label>{canEdit && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
       {meetup.participants.length === 0 && <View style={layout.row}><Kits style={{ width: 85, height: 58, borderRadius: 10 }} /><Label color={palette.muted}>Add friends to compare meetup spots.</Label></View>}
-      {meetup.participants.map(friend => <View key={friend.id} style={layout.between}><View style={{ flex: 1 }}><Label><Label weight="bold">{friend.name}</Label> · {friend.origin} · {friend.mode}{friend.budget === undefined ? '' : ` · ₱${friend.budget} limit`}{friend.maxMinutes === undefined ? '' : ` · ${friend.maxMinutes} min limit`}</Label></View>{meetup.status === 'Planning' && <Chip onPress={() => editFriend(friend)}>Edit {friend.name}</Chip>}</View>)}
+      {meetup.participants.map(friend => <View key={friend.id} style={layout.between}><View style={{ flex: 1 }}><Label><Label weight="bold">{friend.name}</Label> · {friend.origin} · {friend.mode}{friend.budget === undefined ? '' : ` · ₱${friend.budget} limit`}{friend.maxMinutes === undefined ? '' : ` · ${friend.maxMinutes} min limit`}</Label></View>{canEdit && <Chip onPress={() => editFriend(friend)}>Edit {friend.name}</Chip>}</View>)}
     </Panel>
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>

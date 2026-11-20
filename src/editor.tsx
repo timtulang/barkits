@@ -1,16 +1,16 @@
+import { EditorDialog } from './editor-dialog';
 import { parsePoint } from './geo';
 import { PlaceInput } from './place-input';
 import { useState } from 'react';
-import { Modal, ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { Meetup, modes, Participant } from './planner';
-import { Button, Chip, Field, Label, layout, Panel } from './ui';
+import { Button, Chip, Field, Label, layout } from './ui';
 import { palette } from './theme';
 
-export function Editor({ kind, meetup, participant, close, save }: {
-  kind: 'new' | 'participant'; meetup: Meetup; participant?: Participant; close: () => void; save: (meetup: Meetup) => void;
+export function ParticipantEditor({ meetup, participant, close, save }: {
+  meetup: Meetup; participant?: Participant; close: () => void; save: (meetup: Meetup) => void;
 }) {
   const [name, setName] = useState(participant?.name ?? '');
-  const [date, setDate] = useState('');
   const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? '');
   const [coordinates, setCoordinates] = useState(participant?.point?.join(', ') ?? '');
   const [mode, setMode] = useState<Participant['mode']>(participant?.mode ?? modes[0]);
@@ -19,10 +19,6 @@ export function Editor({ kind, meetup, participant, close, save }: {
   const [error, setError] = useState('');
   function submit() {
     if (!name.trim()) return setError('Enter a name to continue.');
-    if (kind === 'new') {
-      if (date.trim() && !Number.isFinite(Date.parse(date.trim()))) return setError('Use a date and time such as 2026-12-05 15:00.');
-      return save({ name: name.trim(), date: date.trim(), participants: [], status: 'Planning', votes: {}, ratings: {} });
-    }
     const point = parsePoint(coordinates);
     if (coordinates.trim() && !point) return setError('Enter valid latitude and longitude separated by a comma.');
     if (!origin.trim() && !point) return setError('Enter a starting place, use your location, or choose a map pin.');
@@ -50,23 +46,14 @@ export function Editor({ kind, meetup, participant, close, save }: {
       [...meetup.participants, friend];
     save({ ...meetup, participants, manualFares, manualMinutes });
   }
-  return <Modal transparent animationType="none" visible onRequestClose={close}>
-    <View style={{ flex: 1, backgroundColor: '#291D3277', justifyContent: 'center', padding: 18 }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-        <Panel style={{ width: '100%', maxWidth: 490, alignSelf: 'center' }}>
-          <Label size={27} weight="title">{kind === 'new' ? 'Plan a meetup' : participant ? 'Edit friend' : 'Add a friend'}</Label>
-          <Field label={kind === 'new' ? 'Meetup name' : 'Name'} value={name} onChange={setName} />
-          {kind === 'new' ? <Field label="Date and time (optional)" placeholder="YYYY-MM-DD HH:MM" value={date} onChange={setDate} /> : <>
-            <PlaceInput name={origin} setName={setOrigin} coordinates={coordinates} setCoordinates={setCoordinates} />
-            <Label weight="bold">Transportation</Label>
-            <View style={layout.wrap}>{modes.map(item => <Chip key={item} onPress={() => setMode(item)} selected={item === mode}>{item}</Chip>)}</View>
-            <Field label="Maximum fare in ₱ (optional)" numeric value={budget} onChange={setBudget} />
-            <Field label="Maximum minutes (optional)" numeric value={duration} onChange={setDuration} />
-          </>}
-          {!!error && <Label color={palette.plum}>{error}</Label>}
-          <View style={layout.wrap}><Button onPress={submit}>Save</Button><Button secondary onPress={close}>Cancel</Button></View>
-        </Panel>
-      </ScrollView>
-    </View>
-  </Modal>;
+  return <EditorDialog title={participant ? 'Edit friend' : 'Add a friend'} close={close}>
+    <Field label="Name" value={name} onChange={setName} />
+    <PlaceInput name={origin} setName={setOrigin} coordinates={coordinates} setCoordinates={setCoordinates} />
+    <Label weight="bold">Transportation</Label>
+    <View style={layout.wrap}>{modes.map(item => <Chip key={item} onPress={() => setMode(item)} selected={item === mode}>{item}</Chip>)}</View>
+    <Field label="Maximum fare in ₱ (optional)" numeric value={budget} onChange={setBudget} />
+    <Field label="Maximum minutes (optional)" numeric value={duration} onChange={setDuration} />
+    {!!error && <Label color={palette.plum}>{error}</Label>}
+    <View style={layout.wrap}><Button onPress={submit}>Save</Button><Button secondary onPress={close}>Cancel</Button></View>
+  </EditorDialog>;
 }

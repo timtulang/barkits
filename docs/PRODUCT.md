@@ -2,7 +2,7 @@
 
 ## Phase 1 workflow
 
-Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create additional meetups and add friends with any starting place, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
+Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create a meetup with a name and optional activity, description, and target date and time. Save it as a draft to revisit on this device, or start planning immediately. Drafts can hold participant starting points and budgets. Starting planning opens comparisons and voting. Add friends with any starting place, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
 
 The Expo prototype uses device storage, with simulated participant identities. Invitations, group synchronization, street address geocoding, media and live provider data require later work. Keep personal addresses out of the prototype.
 
@@ -29,3 +29,14 @@ The initial Supabase migration separates meetups, membership, invites, private o
 | rorkai/App-Store-Connect-CLI | MIT Go CLI. Reserve for release preparation. App Store Connect operations need applicable credentials, permissions and enrollment. |
 
 All five upstream repositories were reachable over Git and had their documentation and licenses inspected. No hosted services or release accounts were provisioned.
+
+## Original brief coverage
+
+| Workflow | Available in the current branch | Remaining work |
+|---|---|---|
+| Meetup lifecycle | Create and edit a local draft, start planning, decide, complete and archive. | Persist transitions with authenticated ownership in the shared database. |
+| Invitations and membership | One device can simulate multiple participants. A versioned schema defines membership and invitations. | Sign-in, secure invitation creation and redemption, and cross-device synchronization. |
+| Origins and destinations | Device location, manual input, offline locality search, map pins, custom venues and a group map. | Street-level geocoding and automatic candidate discovery with verified coverage. |
+| Travel and ranking | Four ranking modes, per-person limits, fixture trips, user-entered times and fares, and group voting. | Supported real routes and mode coverage, accessibility and transfer details, walking legs, arrival times, traffic availability and routing cache. |
+| Completion and memories | Local completion, editable recap caption and optional ratings with a count and average. SQL policies have been exercised locally. | Authenticated group publication, consent controls and optional media storage. |
+| Verification and release | Browser scenarios, local schema checks, zero-cost audit, and platform exports. | Multi-device acceptance tests, native-device verification and release preflight. |
