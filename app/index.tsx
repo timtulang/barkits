@@ -66,7 +66,7 @@ export default function Index() {
       </View>}
       <View><Button secondary disabled={!ready} icon={width < 350 ? undefined : "plus"} onPress={() => setEditor('new')}>New meetup</Button></View>
     </View></View>
-    <ScrollView key={index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
+    <ScrollView keyboardShouldPersistTaps="handled" key={index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
       {ready && (selected ? <MeetupScreen key={index} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => setIndex(null)} /> :
         <Home wide={wide} titleSize={width >= 1050 ? 55 : wide ? 43 : 36} meetups={meetups} create={() => setEditor('new')} open={setIndex} />)}

@@ -1,14 +1,9 @@
 import { Linking, View } from 'react-native';
 import type { LocatedFriend, Category, discover } from './discovery';
 import { categories } from './discovery';
-import { Meetup, Participant, Venue, venues } from './planner';
+import { Meetup, Participant, Venue, retainPlace } from './planner';
 import { Button, Chip, Label, layout, Panel } from './ui';
 import { VenueDecision } from './venue-decision';
-
-export function retainPlace(meetup: Meetup, venue: Venue): Meetup {
-  if ([...venues, ...meetup.customVenues ?? []].some(place => place.id === venue.id)) return meetup;
-  return { ...meetup, customVenues: [...meetup.customVenues ?? [], venue] };
-}
 
 type Props = {
   meetup: Meetup; voter?: Participant; friends: LocatedFriend[]; suggestions: ReturnType<typeof discover>;

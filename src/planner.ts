@@ -90,3 +90,8 @@ export function ratingSummary(ratings: Meetup['ratings']) {
   const values = Object.values(ratings);
   return values.length ? { count: values.length, average: values.reduce((sum, value) => sum + value, 0) / values.length } : null;
 }
+
+export function retainPlace(meetup: Meetup, venue: Venue): Meetup {
+  if ([...venues, ...meetup.customVenues ?? []].some(place => place.id === venue.id)) return meetup;
+  return { ...meetup, customVenues: [...meetup.customVenues ?? [], venue] };
+}

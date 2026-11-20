@@ -1,7 +1,7 @@
 import { activityCategory, Category, discover, LocatedFriend } from './discovery';
 import { catalog, resolveLandmark } from './venue-catalog';
 import { resolveLocality } from './place-search';
-import { NearbyPlaces, retainPlace } from './nearby-places';
+import { NearbyPlaces } from './nearby-places';
 import { VenueDecision } from './venue-decision';
 import { PlanningMap } from './planning-map';
 import { TripPlanning } from './trip-planning';
@@ -9,7 +9,7 @@ import PlaceMap from './place-map';
 import { useMemo, useState } from 'react';
 import { Linking, View } from 'react-native';
 import { Kits } from './kits';
-import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, demoJourney, venues } from './planner';
+import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, demoJourney, venues, retainPlace } from './planner';
 import { palette } from './theme';
 import { Button, Chip, Field, Icon, Label, layout, Panel } from './ui';
 
@@ -93,11 +93,11 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
           {meetup.participants.map(friend => <Chip key={friend.id} selected={currentVoter.id === friend.id} onPress={() => setVoter(friend.id)}>{friend.name}</Chip>)}
         </View></>}
       </View>
+      <TripPlanning onAdd={id => { setTab('trips'); setTripTarget(id); }} key={tab + (tripTarget ?? '')} initialVenue={tab === 'trips' ? tripTarget : undefined} meetup={meetup} save={save} participant={currentVoter} />
       {tab === 'nearby' && <NearbyPlaces meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
         category={category} select={category => setFilter({ activity: meetup.activity, category })} edit={editFriend} save={save}
         compare={spot => { save(retainPlace(meetup, spot)); setTripTarget(spot.id); setTab('trips'); }} />}
       <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />
-      <TripPlanning onAdd={id => { setTab('trips'); setTripTarget(id); }} key={tab + (tripTarget ?? '')} initialVenue={tab === 'trips' ? tripTarget : undefined} meetup={meetup} save={save} participant={currentVoter} />
       {tab === 'trips' && <>
         <Label>Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
         <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>

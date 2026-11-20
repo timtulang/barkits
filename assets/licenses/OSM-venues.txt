@@ -7,4 +7,4 @@ GeoPackage (archive dated 2026-11-16), available from
 https://data.humdata.org/dataset/hotosm_phl_points_of_interest
 Rebuild with scripts/build-venue-catalog.py using the extracted GeoPackage.
 Rows contain the OSM feature ID, name, locality, normalized category,
-bounding-box center coordinates and a nearby mapped bus-terminal flag.
+bounding-box center coordinates, a nearby mapped bus-terminal flag, and available street or barangay.

@@ -1,18 +1,15 @@
-import { searchLandmarks } from './venue-catalog';
-import { searchPlaces } from './place-search';
+import { PlaceSearchField } from './place-search-field';
+import type { PlaceResult } from './search-matches';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { parsePoint } from './geo';
 import PlaceMap from './place-map';
 import { detectPoint } from './services/device-location';
-import { Button, Chip, Field, Label, layout } from './ui';
+import { Button, Field, Label, layout } from './ui';
 
-export function PlaceInput({ name, setName, coordinates, setCoordinates, destination = false }: {
-  name: string; setName: (value: string) => void; coordinates: string; setCoordinates: (value: string) => void; destination?: boolean;
+export function PlaceInput({ name, setName, coordinates, setCoordinates, destination = false, onSelection }: {
+  name: string; setName: (value: string) => void; coordinates: string; setCoordinates: (value: string) => void; destination?: boolean; onSelection?: (place?: PlaceResult) => void;
 }) {
-  const [searching, setSearching] = useState(false);
-  const matches = searching ? searchPlaces(name) : [];
-  const landmarks = searching ? searchLandmarks(name) : [];
   const [showMap, setShowMap] = useState(false);
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState('');
@@ -21,6 +18,7 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
   useEffect(() => () => { serial.current++; }, []);
   function edit(value: string) {
     serial.current++;
+    onSelection?.();
     setLocating(false);
     setMessage('');
     pinHasLabel.current = Boolean(name.trim() && value.trim());
@@ -33,6 +31,7 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
     try {
       const point = await detectPoint();
       if (request === serial.current) {
+        onSelection?.();
         pinHasLabel.current = Boolean(name.trim());
         setCoordinates(point.map(value => value.toFixed(5)).join(', '));
         setMessage('Location found. Check the coordinates before saving.');
@@ -44,23 +43,15 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
     }
   }
   return <View style={layout.stack}>
-    <Field label={destination ? 'Meeting place' : 'Starting place'} placeholder="Landmark, address, or city" value={name} onChange={text => {
+    <PlaceSearchField label={destination ? 'Meeting place' : 'Starting place'} value={name} change={text => {
       if (pinHasLabel.current || locating) edit('');
       setName(text);
-      setSearching(true);
+    }} select={place => {
+      edit(place.point.join(', '));
+      pinHasLabel.current = true;
+      setName([place.name, place.address, place.area].filter(Boolean).join(', '));
+      onSelection?.(place);
     }} />
-    {matches.length > 0 && <><Label size={13}>Philippine places · GeoNames locality centers</Label>
-      <View style={layout.wrap}>{matches.map(place => <Chip key={place.point.join()} onPress={() => {
-        setName(place.name + ', ' + place.province);
-        edit(place.point.join(', '));
-        setSearching(false);
-      }}>{place.name} · {place.province}</Chip>)}</View></>}
-    {landmarks.length > 0 && <><Label size={13}>Mapped landmarks · © OpenStreetMap contributors</Label>
-      <View style={layout.wrap}>{landmarks.map(([id, title, city, , lat, lng]) => <Chip key={id} onPress={() => {
-        setName([title, city].filter(Boolean).join(', '));
-        edit([lat, lng].join(', '));
-        setSearching(false);
-      }}>{title} · {city || 'Philippines'}</Chip>)}</View></>}
     <Field label="Coordinates (optional)" placeholder="Latitude, longitude" value={coordinates} onChange={edit} />
     <View style={layout.wrap}>
       {!destination && <Button secondary icon="crosshair" disabled={locating} onPress={detect}>{locating ? 'Finding location…' : 'Use my location'}</Button>}

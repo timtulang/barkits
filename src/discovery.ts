@@ -1,7 +1,7 @@
 import { directDistance, type Point } from './geo.ts';
 import type { Participant, Venue } from './planner';
 
-export type VenueRow = [string, string, string, string, number, number, number];
+export type VenueRow = [string, string, string, string, number, number, number, string?];
 export type LocatedFriend = Pick<Participant, 'name' | 'mode' | 'id'> & { point: Point; approximate: boolean };
 export const categories = ['All', 'Café', 'Restaurant', 'Mall', 'Museum', 'Park'] as const;
 export type Category = typeof categories[number];

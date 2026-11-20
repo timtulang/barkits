@@ -1,13 +1,15 @@
+import type { PlaceResult } from './search-matches';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { directDistance, parsePoint } from './geo';
 import { PlaceInput } from './place-input';
-import { demoJourney, Meetup, Participant, Venue, venues } from './planner';
+import { demoJourney, Meetup, Participant, Venue, venues, retainPlace } from './planner';
 import { Button, Chip, Field, Label, layout, Panel } from './ui';
 
 export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }: { onAdd: (id: string) => void; initialVenue?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant }) {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(Boolean(initialVenue));
+  const [match, setMatch] = useState<PlaceResult>();
   const [place, setPlace] = useState('');
   const [coordinates, setCoordinates] = useState('');
   const [error, setError] = useState('');
@@ -18,16 +20,20 @@ export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }:
     const point = parsePoint(coordinates);
     if (!place.trim()) return setError('Enter a name for the meeting place.');
     if (coordinates.trim() && !point) return setError('Enter valid latitude and longitude.');
-    const spot: Venue = { id: 'place-' + Date.now(), name: place.trim(), area: 'Group suggestion', icon: 'sun', color: 'mint', category: 'Custom', point };
-    save({ ...meetup, customVenues: [...meetup.customVenues ?? [], spot] });
+    const spot: Venue = match ? {
+      id: match.id, name: match.name, area: [match.address, match.area].filter(Boolean).join(', '),
+      category: match.kind, point: match.point, icon: match.kind === 'Café' ? 'coffee' : match.kind === 'Mall' ? 'shopping-bag' : 'sun', color: 'mint',
+    } : { id: 'place-' + Date.now(), name: place.trim(), area: 'Group suggestion', icon: 'sun', color: 'mint', category: 'Custom', point };
+    save(retainPlace(meetup, spot));
+    setMatch(undefined);
     setSelected(spot.id); setPlace(''); setCoordinates(''); setAdding(false); setError(''); setEditing(true); onAdd(spot.id);
   }
   return <Panel>
     <View style={layout.wrap}>
-      <Button secondary icon="map-pin" onPress={() => setAdding(!adding)}>{adding ? 'Cancel new place' : 'Suggest a meeting place'}</Button>
+      <Button secondary icon="search" onPress={() => setAdding(!adding)}>{adding ? 'Close place search' : 'Search meeting places'}</Button>
       {participant && <Button secondary icon="edit-2" onPress={() => setEditing(!editing)}>{editing ? 'Hide trip inputs' : 'Enter trip details'}</Button>}
     </View>
-    {adding && <><PlaceInput destination name={place} setName={setPlace} coordinates={coordinates} setCoordinates={setCoordinates} />
+    {adding && <><PlaceInput destination onSelection={setMatch} name={place} setName={setPlace} coordinates={coordinates} setCoordinates={setCoordinates} />
       {!!error && <Label>{error}</Label>}<Button onPress={add}>Add meeting place</Button></>}
     {editing && participant && <>
       <Label weight="bold">Trip for {participant.name}</Label>

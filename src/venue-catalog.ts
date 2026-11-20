@@ -11,17 +11,6 @@ function key(text: string) {
 }
 
 const byName = osm.map(row => ({ row, name: key(row[1]), full: key(row[1] + ', ' + row[2]) }));
-export function searchLandmarks(query: string) {
-  const prefix = key(query);
-  if (prefix.length < 3) return [];
-  const results: VenueRow[] = [];
-  for (const place of byName) {
-    if (place.full.startsWith(prefix)) results.push(place.row);
-    if (results.length === 4) break;
-  }
-  return results;
-}
-
 export function resolveLandmark(label: string) {
   const query = key(label);
   if (!query) return;
