@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AccountDialog } from '../src/account-dialog';
 import { MeetupEditor } from '../src/meetup-editor';
 import { ParticipantEditor } from '../src/editor';
 import { Home } from '../src/home';
@@ -9,10 +11,17 @@ import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
 import { palette, radius } from '../src/theme';
 import { Button, Chip, Icon, Label, layout } from '../src/ui';
-
-const storageKey = 'barkits.meetups.v1';
+import { useAccount } from '../src/use-account';
 
 export default function Index() {
+  const { ready, user } = useAccount();
+  if (!ready) return <SafeAreaView style={styles.safe}><Label>Loading account…</Label></SafeAreaView>;
+  return <Workspace key={user?.id ?? 'guest'} user={user} />;
+}
+
+function Workspace({ user }: { user: User | null }) {
+  const storageKey = user ? 'barkits.meetups.v1.' + user.id : 'barkits.meetups.v1';
+  const [accountOpen, setAccountOpen] = useState(false);
   const { width } = useWindowDimensions();
   const wide = width >= 860;
   const [meetups, setMeetups] = useState<Meetup[]>([example]);
@@ -31,13 +40,13 @@ export default function Index() {
       if (active) setStorageError('Couldn’t load saved meetups. Reload to try again.');
     });
     return () => { active = false; };
-  }, []);
+  }, [storageKey]);
   useEffect(() => {
     if (!ready) return;
     AsyncStorage.setItem(storageKey, JSON.stringify(meetups))
       .then(() => setStorageError(''))
       .catch(() => setStorageError('Couldn’t save your changes on this device.'));
-  }, [meetups, ready]);
+  }, [meetups, ready, storageKey]);
 
   function save(meetup: Meetup) {
     setMeetups(current => current.map((item, itemIndex) => itemIndex === index ? meetup : item));
@@ -64,7 +73,14 @@ export default function Index() {
         <Chip icon="home" selected={!selected} onPress={() => setIndex(null)}>Home</Chip>
         <Chip icon="calendar" selected={!!selected} onPress={() => setIndex(0)}>Demo meetup</Chip>
       </View>}
-      <View><Button secondary disabled={!ready} icon={width < 350 ? undefined : "plus"} onPress={() => setEditor('new')}>New meetup</Button></View>
+      <View style={layout.row}>
+        <Pressable accessibilityRole="button" accessibilityLabel={user ? 'Your account' : 'Sign in'} onPress={() => setAccountOpen(true)}
+          style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
+          <Icon name="user" />{wide && <Label weight="bold">{user ? 'Account' : 'Sign in'}</Label>}
+        </Pressable>
+        <Button secondary disabled={!ready} accessibilityLabel="New meetup" icon={width < 400 ? undefined : 'plus'}
+          onPress={() => setEditor('new')}>{width < 400 ? 'New' : 'New meetup'}</Button>
+      </View>
     </View></View>
     <ScrollView keyboardShouldPersistTaps="handled" key={index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
@@ -75,6 +91,7 @@ export default function Index() {
         <Label size={13} color={palette.muted}>Made for the barkada.</Label>
       </View>
     </ScrollView>
+    {accountOpen && <AccountDialog user={user} close={() => setAccountOpen(false)} />}
     {(editor === 'new' || editor === 'details') && <MeetupEditor key={editor} meetup={editor === 'details' && selected ? selected : undefined}
       close={() => setEditor(null)} save={saveEditor} />}
     {editor === 'participant' && selected && <ParticipantEditor meetup={selected} participant={editedFriend}

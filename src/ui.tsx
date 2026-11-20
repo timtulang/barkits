@@ -12,10 +12,10 @@ export function Label({ children, size = 15, weight = 'regular', color = palette
 }) {
   return <Text accessibilityRole={heading ? 'header' : undefined} style={{ fontFamily: font[weight], color, fontSize: size, lineHeight: Math.ceil(size * 1.22) }}>{children}</Text>;
 }
-export function Button({ children, icon, onPress, secondary = false, disabled = false }: {
-  children: ReactNode; icon?: IconName; onPress: () => void; secondary?: boolean; disabled?: boolean;
+export function Button({ children, icon, onPress, secondary = false, disabled = false, accessibilityLabel }: {
+  children: ReactNode; icon?: IconName; onPress: () => void; secondary?: boolean; disabled?: boolean; accessibilityLabel?: string;
 }) {
-  return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={({ pressed }) => [
+  return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} disabled={disabled} onPress={onPress} style={({ pressed }) => [
     styles.button, secondary && styles.secondary, pressed && { opacity: 0.85 }, disabled && { opacity: 0.45 },
   ]}>
     {icon && <Icon name={icon} size={17} color={secondary ? palette.ink : palette.white} />}
@@ -34,13 +34,14 @@ export function Chip({ children, selected, onPress, icon }: {
 export function Panel({ children, style }: { children: ReactNode; style?: ViewStyle }) {
   return <View style={[styles.panel, style]}>{children}</View>;
 }
-export function Field({ label, value, onChange, placeholder, numeric }: {
-  label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean;
+export function Field({ label, value, onChange, placeholder, numeric, inputMode, autoComplete }: {
+  label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean; inputMode?: 'numeric' | 'email'; autoComplete?: 'email' | 'one-time-code';
 }) {
   return <View style={{ gap: spacing.xs }}>
     <Label size={14} weight="bold">{label}</Label>
     <TextInput accessibilityLabel={label} value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={palette.muted}
-      inputMode={numeric ? 'numeric' : 'text'} style={styles.input} />
+      inputMode={inputMode ?? (numeric ? 'numeric' : 'text')} autoComplete={autoComplete}
+      autoCapitalize={autoComplete ? 'none' : undefined} autoCorrect={autoComplete ? false : undefined} style={styles.input} />
   </View>;
 }
 export const layout = StyleSheet.create({

@@ -4,7 +4,7 @@
 
 Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create a meetup with a name and optional activity, description, and target date and time. Save it as a draft to revisit on this device, or start planning immediately. Drafts can hold participant starting points and budgets. Starting planning opens comparisons and voting. Add friends with any starting place, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
 
-The Expo prototype uses device storage, with simulated participant identities. Invitations, group synchronization, street address geocoding, media and live provider data require later work. Keep personal addresses out of the prototype.
+The Expo prototype supports guest planning and optional verified email accounts. Each account has its own meetup list on the device. Friends added to a roster are still simulated participants. Invitations, group synchronization, street address geocoding, media and live provider data require later work. Keep personal addresses out of the prototype.
 
 ## Automatic place discovery
 
@@ -21,6 +21,8 @@ Exclude any candidate exceeding a participant's time or budget. A missing fare c
 Participants can type a label anywhere, enter coordinates, select a Philippine locality center from a bundled GeoNames index, use foreground device location, or drop a map pin. Only explicit map actions load OpenStreetMap tiles. Pin coordinates and names stay in device storage; the tile host receives requests for the viewed area. The group map distinguishes origins and meeting places. Custom venue suggestions support voting and finalization. Enter trip minutes and optional fares per participant and venue for reproducible rankings outside demo coverage. Straight-line distance is calculated locally when both pins exist. A changed origin, pin, or mode clears that participant’s previously entered trip figures. OSRM or Valhalla deployment still needs compute, storage and current data. Public demo servers are unsuitable for a production dependency. No validated Metro Manila journey planner or GTFS source is wired. Grab, Angkas, JoyRide and Move It pricing stays unavailable until authorized, zero-cost access is verified. Participants can enter a known motorcycle-taxi fare per venue. Barkits labels these values as user-entered and includes them in budget checks.
 
 ## Data and permissions
+
+Account sign-in uses Supabase email codes for both registration and returning participants. Supabase stores the auth session in browser storage on web. Native builds use Expo SecureStore. Signing out ends the session on this device. Guest meetups keep their original storage key, so existing drafts reappear when a participant returns to guest planning. Signing in on another device does not transfer meetup data.
 
 The initial Supabase migration separates meetups, membership, invites, private origins, destination candidates, journey provenance, votes, recaps and ratings. Origins are available to members only. Recap records carry no origin fields, and group publication requires an explicit timestamp and a completed meetup. Ratings allow one optional 1–5 entry per participant. Only the author can write their own recap or rating. Member enrollment through invitation redemption and server-controlled lifecycle transitions need trusted application operations before hosted use.
 
@@ -41,7 +43,7 @@ All five upstream repositories were reachable over Git and had their documentati
 | Workflow | Available in the current branch | Remaining work |
 |---|---|---|
 | Meetup lifecycle | Create and edit a local draft, start planning, decide, complete and archive. | Persist transitions with authenticated ownership in the shared database. |
-| Invitations and membership | One device can simulate multiple participants. A versioned schema defines membership and invitations. | Sign-in, secure invitation creation and redemption, and cross-device synchronization. |
+| Invitations and membership | Verified participant sign-in by email code, device-local account lists, and a schema for group membership and invitations. | Link shared meetups to their owners, create and redeem secure invitations, and synchronize membership across devices. |
 | Origins and destinations | Device location, manual input, offline locality search, map pins, custom venues and a group map. | Street-level geocoding and broader venue and transport coverage. |
 | Travel and ranking | Four ranking modes, per-person limits, fixture trips, user-entered times and fares, and group voting. | Supported real routes and mode coverage, accessibility and transfer details, walking legs, arrival times, traffic availability and routing cache. |
 | Completion and memories | Local completion, editable recap caption and optional ratings with a count and average. SQL policies have been exercised locally. | Authenticated group publication, consent controls and optional media storage. |
