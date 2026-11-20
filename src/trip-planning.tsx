@@ -5,13 +5,13 @@ import { PlaceInput } from './place-input';
 import { demoJourney, Meetup, Participant, Venue, venues } from './planner';
 import { Button, Chip, Field, Label, layout, Panel } from './ui';
 
-export function TripPlanning({ meetup, save, participant }: { meetup: Meetup; save: (m: Meetup) => void; participant?: Participant }) {
+export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }: { onAdd: (id: string) => void; initialVenue?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant }) {
   const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(Boolean(initialVenue));
   const [place, setPlace] = useState('');
   const [coordinates, setCoordinates] = useState('');
   const [error, setError] = useState('');
-  const [selected, setSelected] = useState(venues[0].id);
+  const [selected, setSelected] = useState(initialVenue ?? venues[0].id);
   const places = [...venues, ...meetup.customVenues ?? []];
   const venue = places.find(item => item.id === selected)!;
   function add() {
@@ -20,7 +20,7 @@ export function TripPlanning({ meetup, save, participant }: { meetup: Meetup; sa
     if (coordinates.trim() && !point) return setError('Enter valid latitude and longitude.');
     const spot: Venue = { id: 'place-' + Date.now(), name: place.trim(), area: 'Group suggestion', icon: 'sun', color: 'mint', category: 'Custom', point };
     save({ ...meetup, customVenues: [...meetup.customVenues ?? [], spot] });
-    setSelected(spot.id); setPlace(''); setCoordinates(''); setAdding(false); setError(''); setEditing(true);
+    setSelected(spot.id); setPlace(''); setCoordinates(''); setAdding(false); setError(''); setEditing(true); onAdd(spot.id);
   }
   return <Panel>
     <View style={layout.wrap}>

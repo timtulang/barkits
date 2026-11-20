@@ -1,8 +1,12 @@
+import { activityCategory, Category, discover, LocatedFriend } from './discovery';
+import { catalog } from './venue-catalog';
+import { resolveLocality } from './place-search';
+import { NearbyPlaces, retainPlace } from './nearby-places';
 import { VenueDecision } from './venue-decision';
 import { PlanningMap } from './planning-map';
 import { TripPlanning } from './trip-planning';
 import PlaceMap from './place-map';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Linking, View } from 'react-native';
 import { Kits } from './kits';
 import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, demoJourney, venues } from './planner';
@@ -19,6 +23,16 @@ const rankingDescriptions: Record<Ranking, string> = {
 export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
   meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
+  const [tab, setTab] = useState<'nearby' | 'trips'>('nearby');
+  const [filter, setFilter] = useState<{ activity?: string; category: Category }>();
+  const [tripTarget, setTripTarget] = useState<string>();
+  const category = filter && filter.activity === meetup.activity ? filter.category : activityCategory(meetup.activity);
+  const located = useMemo(() => meetup.participants.flatMap((friend): LocatedFriend[] => {
+    const point = friend.point ?? resolveLocality(friend.origin);
+    return point ? [{ ...friend, point, approximate: !friend.point }] : [];
+  }), [meetup.participants]);
+  const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
+    discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
   const [ranking, setRanking] = useState<Ranking>('Balanced');
   const [expanded, setExpanded] = useState('');
   const [voter, setVoter] = useState('');
@@ -68,15 +82,23 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
     </Panel>
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>
-        <Label size={28} weight="title">Compare meetup spots</Label>
-        <Label color={palette.muted}>Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
-        <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
+        <Label size={28} weight="title">Suggested meeting places</Label>
+        <View style={layout.wrap}>
+          <Chip selected={tab === 'nearby'} onPress={() => setTab('nearby')}>Nearby places</Chip>
+          <Chip selected={tab === 'trips'} onPress={() => setTab('trips')}>Travel rankings</Chip>
+        </View>
         {!!currentVoter && <><Label weight="bold">Plan and vote as</Label><View style={layout.wrap}>
           {meetup.participants.map(friend => <Chip key={friend.id} selected={currentVoter.id === friend.id} onPress={() => setVoter(friend.id)}>{friend.name}</Chip>)}
         </View></>}
       </View>
-      <PlanningMap meetup={meetup} />
-      <TripPlanning meetup={meetup} save={save} participant={currentVoter} />
+      {tab === 'nearby' && <NearbyPlaces meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
+        category={category} select={category => setFilter({ activity: meetup.activity, category })} edit={editFriend} save={save}
+        compare={spot => { save(retainPlace(meetup, spot)); setTripTarget(spot.id); setTab('trips'); }} />}
+      <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />
+      <TripPlanning onAdd={id => { setTab('trips'); setTripTarget(id); }} key={tab + (tripTarget ?? '')} initialVenue={tab === 'trips' ? tripTarget : undefined} meetup={meetup} save={save} participant={currentVoter} />
+      {tab === 'trips' && <>
+        <Label>Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
+        <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
       {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label></Panel>}
       {candidates.map(({ venue: item, journeys, time, spread, cost }, index) => {
         return <Panel key={item.id}>
@@ -97,6 +119,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
         <Label>Group suggestion · Unranked. Some friends still need travel times.</Label>
         <VenueDecision meetup={meetup} venue={spot} voter={currentVoter} save={save} />
       </Panel>)}
+      </>}
     </>}
     {!!venue && <Panel><Label size={23} weight="title">Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>

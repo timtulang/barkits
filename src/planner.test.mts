@@ -1,3 +1,5 @@
+import { activityCategory, discover, type VenueRow } from './discovery.ts';
+import type { Point } from './geo.ts';
 import { parsePoint, directDistance } from './geo.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -49,4 +51,22 @@ test('coordinates support global locations and reject incomplete or out-of-range
   assert.deepEqual(parsePoint('0,0'), [0, 0]);
   for (const input of ['', '1,', ',0', '91,0', '1,-181', '0x01,4']) assert.equal(parsePoint(input), undefined);
   assert.ok(Math.abs(directDistance([0, 0], [0, 1]) - 111.195) < 0.01);
+});
+
+test('automatic discovery considers every real pin, venue category and transit proximity', () => {
+  const friend = { ...example.participants[0], approximate: false, point: [14, 121] as Point };
+  const other = { ...friend, id: '2', point: [14.1, 121] as Point };
+  const rows: VenueRow[] = [
+    ['a', 'North café', 'Local', 'Café', 14, 121, 0],
+    ['b', 'Middle café', 'Local', 'Café', 14.05, 121, 0],
+    ['c', 'Terminal café', 'Local', 'Café', 14.05, 121, 1],
+    ['d', 'Bistro', 'Local', 'Restaurant', 14.05, 121, 0],
+  ];
+  assert.equal(discover([friend], 'Café', rows)[0].venue.id, 'a');
+  const group = discover([friend, other], 'Café', rows);
+  assert.deepEqual(group.map(item => item.venue.id), ['c', 'b', 'a']);
+  assert.equal(group[0].distances.length, 2);
+  assert.equal(discover([friend, other], activityCategory('Group lunch'), rows)[0].venue.id, 'd');
+  assert.deepEqual(discover([{ ...friend, point: [10, 123] }], 'All', rows), []);
+  assert.deepEqual(discover([], 'All', rows), []);
 });

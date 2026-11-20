@@ -6,7 +6,13 @@ Start with four example participants from Caloocan, Quezon City, Makati and Pasi
 
 The Expo prototype uses device storage, with simulated participant identities. Invitations, group synchronization, street address geocoding, media and live provider data require later work. Keep personal addresses out of the prototype.
 
-## How ranking works
+## Automatic place discovery
+
+Planning opens on Nearby places. Barkits searches a bundled Philippine venue catalog for places within 50 km straight-line distance of every participant. Pins take priority, and unambiguous locality names resolve to labeled approximate city centers. Ambiguous or unknown input prompts for a pin. The activity selects the initial category, which the group can change.
+
+The score in kilometers is 60% longest individual distance plus 40% mean distance. Venues within 800 m of a mapped bus terminal receive a 0.5 km preference scaled by the share of public transport riders. Terminal proximity describes the destination area only. The group sees up to three named places with individual distances. Price, traffic, journey time, connectivity and opening hours require separate evidence. Groups with travel limits can add a place to travel comparisons to check those limits before finalizing it.
+
+## How travel ranking works
 
 Exclude any candidate exceeding a participant's time or budget. A missing fare cannot satisfy a budget cap. Fastest minimizes total minutes. Fairest minimizes the longest-to-shortest trip gap. Cheapest minimizes combined fare among candidates with complete fares. Balanced weights average time at 50%, time disparity at 30%, and average fare at 20%. Time uses a 60-minute reference and fare uses ₱100 with a normalized ceiling of 1. Balanced uses a conservative penalty for missing fares. Venue IDs break ties deterministically. Fixture trips do not include traffic, verified transit schedules, transfers or official provider quotes.
 
@@ -36,7 +42,7 @@ All five upstream repositories were reachable over Git and had their documentati
 |---|---|---|
 | Meetup lifecycle | Create and edit a local draft, start planning, decide, complete and archive. | Persist transitions with authenticated ownership in the shared database. |
 | Invitations and membership | One device can simulate multiple participants. A versioned schema defines membership and invitations. | Sign-in, secure invitation creation and redemption, and cross-device synchronization. |
-| Origins and destinations | Device location, manual input, offline locality search, map pins, custom venues and a group map. | Street-level geocoding and automatic candidate discovery with verified coverage. |
+| Origins and destinations | Device location, manual input, offline locality search, map pins, custom venues and a group map. | Street-level geocoding and broader venue and transport coverage. |
 | Travel and ranking | Four ranking modes, per-person limits, fixture trips, user-entered times and fares, and group voting. | Supported real routes and mode coverage, accessibility and transfer details, walking legs, arrival times, traffic availability and routing cache. |
 | Completion and memories | Local completion, editable recap caption and optional ratings with a count and average. SQL policies have been exercised locally. | Authenticated group publication, consent controls and optional media storage. |
 | Verification and release | Browser scenarios, local schema checks, zero-cost audit, and platform exports. | Multi-device acceptance tests, native-device verification and release preflight. |
