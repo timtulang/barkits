@@ -7,7 +7,8 @@ import { PlanningMap } from './planning-map';
 import { TripPlanning } from './trip-planning';
 import PlaceMap from './place-map';
 import { useMemo, useState } from 'react';
-import { Linking, View } from 'react-native';
+import { View } from 'react-native';
+import { GoogleMapsLink } from './google-maps-link';
 import { Kits } from './kits';
 import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, demoJourney, venues, retainPlace } from './planner';
 import { palette } from './theme';
@@ -39,7 +40,6 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
   const [expanded, setExpanded] = useState('');
   const [voter, setVoter] = useState('');
   const [caption, setCaption] = useState(meetup.recap ?? '');
-  const [linkError, setLinkError] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
   const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
@@ -56,15 +56,6 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
     if (value === null) delete next[currentVoter.id];
     else next[currentVoter.id] = value;
     save({ ...meetup, ratings: next });
-  }
-  async function openDirections() {
-    if (!venue?.point) return;
-    try {
-      await Linking.openURL(`https://www.openstreetmap.org/?mlat=${venue.point[0]}&mlon=${venue.point[1]}#map=17/${venue.point.join('/')}`);
-      setLinkError('');
-    } catch {
-      setLinkError('Couldn’t open the map.');
-    }
   }
   return <>
     <Button secondary onPress={back} icon="arrow-left">Back to meetups</Button>
@@ -126,9 +117,9 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
     {!!venue && <Panel><Label size={23} weight="title">Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>
         {venue.point && <><Button secondary onPress={() => setMapOpen(!mapOpen)} icon="map">{mapOpen ? 'Hide venue map' : 'View venue map'}</Button>
-          <Button secondary onPress={openDirections} icon="external-link">Open in OpenStreetMap</Button></>}
+          <GoogleMapsLink point={venue.point} /></>}
         {meetup.status === 'Decided' && <Button onPress={() => save({ ...meetup, status: 'Completed' })} icon="check">Mark completed</Button>}
-      </View>{mapOpen && venue.point && <PlaceMap point={venue.point} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />}{!!linkError && <Label>{linkError}</Label>}
+      </View>{mapOpen && venue.point && <PlaceMap point={venue.point} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />}
     </Panel>}
     {meetup.status === 'Archived' && <Panel>
       <Label size={24} weight="title">Meetup memories</Label>

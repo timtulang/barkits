@@ -44,3 +44,13 @@ Email sign-in uses Supabase Auth directly. The meetup database migration is need
 From the repo root, start Docker and run `supabase start` with the Supabase CLI. Copy the API URL and publishable key from `supabase status` into the corresponding variables in `.env.local`, then restart Expo. Open the local mail inbox URL printed by the CLI to retrieve codes. The checked-in Supabase configuration sets both local email templates.
 
 See [design system](docs/DESIGN_SYSTEM.md), [product and integration decisions](docs/PRODUCT.md), and [cost audit](docs/COST_AUDIT.md).
+
+## Google street maps on a Vercel preview
+
+Barkits uses Leaflet for the pin picker, group map and final venue map. Web builds can display Google's 2D roadmap in all three. Leaving the preview key unset selects OpenStreetMap. The **Open in Google Maps** action on a suggested or chosen venue works on web and native without a key.
+
+1. In a billing-enabled Google Cloud project, enable the **Map Tiles API**. For a ₱0 trial, check how much of the billing account's monthly free allowance other projects use first.
+2. In Google Cloud Console → Google Maps Platform → Quotas, lower the **daily 2D tile request quota** to **3,000 or less** before distributing the preview. At 3,000 per day, this project can use up to 93,000 requests in a 31-day month. Lower it further if other projects share the allowance. Budget alerts only send notifications. [Cost controls](https://developers.google.com/maps/billing-and-pricing/manage-costs)
+3. Create a browser API key. Apply **Websites** restrictions for your exact Vercel branch alias (for example, `https://your-preview.example.com/*`) and **API** restrictions for **Map Tiles API** only. Use the allowed alias when testing. The browser key is public by design.
+4. In Vercel → Project Settings → Environment Variables, add `EXPO_PUBLIC_GOOGLE_MAP_TILES_KEY` for **Preview**, scoped to `barkits-prototype`. Redeploy using `npm run build:web`. For a local web build, use a key restricted to your localhost origin in `.env.local`.
+5. Open **Saturday catch-up → Show group map**. Look for the Google Maps credit, zoom or pan, and select a marker. In **Add friend → Choose on map**, tapping a location should update the coordinates. A rejected key or exhausted quota shows an error with a retry action. Manual coordinate entry and the offline directory remain available.

@@ -3,6 +3,7 @@ import type { LocatedFriend, Category, discover } from './discovery';
 import { categories } from './discovery';
 import { Meetup, Participant, Venue, retainPlace } from './planner';
 import { Button, Chip, Label, layout, Panel } from './ui';
+import { GoogleMapsLink } from './google-maps-link';
 import { VenueDecision } from './venue-decision';
 
 type Props = {
@@ -28,7 +29,10 @@ export function NearbyPlaces({ meetup, voter, friends, suggestions, category, se
       {friends.map((friend, i) => <Label key={friend.id}>{friend.name} · {distances[i].toFixed(1)} km{friend.approximate ? ' from locality center' : ''}</Label>)}
       {nearBus && <Label>Within 800 m of a mapped bus terminal.</Label>}
       {hasLimits && <Label>Enter trips to check this place against the group’s travel limits.</Label>}
-      <Button secondary onPress={() => compare(venue)}>Compare trips here</Button>
+      <View style={layout.wrap}>
+        <Button secondary onPress={() => compare(venue)}>Compare trips here</Button>
+        {venue.point && <GoogleMapsLink point={venue.point} />}
+      </View>
       {!hasLimits && voter && <VenueDecision meetup={meetup} venue={venue} voter={voter} save={updated => save(retainPlace(updated, venue))} />}
     </Panel>)}
     {suggestions.length > 0 && <Chip onPress={() => void Linking.openURL('https://www.openstreetmap.org/copyright')}>Venue data © OpenStreetMap contributors</Chip>}
