@@ -34,14 +34,15 @@ export function Chip({ children, selected, onPress, icon }: {
 export function Panel({ children, style }: { children: ReactNode; style?: ViewStyle }) {
   return <View style={[styles.panel, style]}>{children}</View>;
 }
-export function Field({ label, value, onChange, placeholder, numeric, inputMode, autoComplete }: {
-  label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean; inputMode?: 'numeric' | 'email'; autoComplete?: 'email' | 'one-time-code';
+export function Field({ label, value, onChange, placeholder, numeric, inputMode, autoComplete, error, maxLength, multiline }: {
+  label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean; error?: string; maxLength?: number; multiline?: boolean; inputMode?: 'numeric' | 'decimal' | 'email'; autoComplete?: 'email' | 'one-time-code';
 }) {
   return <View style={{ gap: spacing.xs }}>
     <Label size={14} weight="bold">{label}</Label>
     <TextInput accessibilityLabel={label} value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={palette.muted}
-      inputMode={inputMode ?? (numeric ? 'numeric' : 'text')} autoComplete={autoComplete}
-      autoCapitalize={autoComplete ? 'none' : undefined} autoCorrect={autoComplete ? false : undefined} style={styles.input} />
+      maxLength={maxLength} multiline={multiline} inputMode={inputMode ?? (numeric ? 'numeric' : 'text')} autoComplete={autoComplete}
+      autoCapitalize={autoComplete ? 'none' : undefined} autoCorrect={autoComplete ? false : undefined} style={[styles.input, multiline && { minHeight: 78, paddingVertical: 10, textAlignVertical: 'top' }, !!error && { borderColor: palette.plum }]} />
+    {!!error && <View accessibilityRole="alert"><Label size={14} color={palette.plum}>{error}</Label></View>}
   </View>;
 }
 export const layout = StyleSheet.create({

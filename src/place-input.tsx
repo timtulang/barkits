@@ -11,6 +11,7 @@ import { Button, Field, Label, layout } from './ui';
 export function PlaceInput({ name, setName, coordinates, setCoordinates, destination = false, onSelection }: {
   name: string; setName: (value: string) => void; coordinates: string; setCoordinates: (value: string) => void; destination?: boolean; onSelection?: (place?: PlaceResult) => void;
 }) {
+  const [showCoordinates, setShowCoordinates] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState('');
@@ -35,7 +36,7 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
         onSelection?.();
         pinHasLabel.current = Boolean(name.trim());
         setCoordinates(point.map(value => value.toFixed(5)).join(', '));
-        setMessage('Location found. Check the coordinates before saving.');
+        setMessage('Location found. You can check the pin on the map.');
       }
     } catch (error) {
       if (request === serial.current) setMessage(error instanceof Error ? error.message : 'Location unavailable.');
@@ -53,11 +54,14 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
       setName([place.name, place.address, place.area].filter(Boolean).join(', '));
       onSelection?.(place);
     }} />
-    <Field label="Coordinates (optional)" placeholder="Latitude, longitude" value={coordinates} onChange={edit} />
     <View style={layout.wrap}>
       {!destination && <Button secondary icon="crosshair" disabled={locating} onPress={detect}>{locating ? 'Finding location…' : 'Use my location'}</Button>}
       <Button secondary icon="map" onPress={() => setShowMap(!showMap)}>{showMap ? 'Hide map' : 'Choose on map'}</Button>
     </View>
+    <View style={layout.wrap}>
+      <Button secondary onPress={() => setShowCoordinates(!showCoordinates)}>{showCoordinates ? 'Hide coordinates' : coordinates ? 'Edit coordinates' : 'Enter coordinates'}</Button>
+    </View>
+    {showCoordinates && <Field label="Coordinates (optional)" placeholder="14.5995, 120.9842" value={coordinates} onChange={edit} />}
     {!!message && <Label>{message}</Label>}
     {showMap && <><Label size={13}>Tap the map to drop a pin. {googleTilesKey ? 'Google Maps' : 'OpenStreetMap'} supplies tiles for the area you view.</Label>
       <PlaceMap point={parsePoint(coordinates)} onPick={async point => edit(point.map(value => value.toFixed(5)).join(', '))}
