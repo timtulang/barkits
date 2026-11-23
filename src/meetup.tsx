@@ -35,6 +35,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const located = useMemo(() => locateFriends(meetup.participants), [meetup.participants]);
   const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
     discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
+  const [fullMap, setFullMap] = useState(() => suggestions.length > 0);
   const [ranking, setRanking] = useState<Ranking>('Balanced');
   const [expanded, setExpanded] = useState('');
   const [voter, setVoter] = useState('');
@@ -50,6 +51,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const unranked = hasLimits ? [] : (meetup.customVenues ?? []).filter(spot =>
     meetup.participants.some(friend => meetup.manualMinutes?.[spot.id]?.[friend.id] === undefined && !demoJourney(spot, friend)));
   function openTrip(id: string) {
+    setFullMap(false);
     setTripTarget(id);
     setTab('details');
     requestAnimationFrame(scrollToTop);
@@ -105,7 +107,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       </View>
       {tab === 'details' && <TripPlanning destinationId={tripTarget} meetup={meetup} save={save} participant={currentVoter}
         selectDestination={setTripTarget} />}
-      {tab === 'nearby' && <NearbyPlaces meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
+      {tab === 'nearby' && <NearbyPlaces navigation={{ title: meetup.name, expanded: fullMap, setExpanded: setFullMap, back }} meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
         category={category} edit={editFriend} save={save}
         compare={spot => { save(retainPlace(meetup, spot)); openTrip(spot.id); }} />}
       {tab === 'trips' && <>

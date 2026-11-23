@@ -5,8 +5,10 @@ export type MapPin = { point: Point; label: string; kind: 'origin' | 'venue'; ve
 
 export function framePins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[]) {
   const numbered = pins.some(pin => pin.number !== undefined);
+  const fullscreen = map.getContainer().parentElement?.classList.contains('fullscreen-venue-map');
   map.fitBounds(L.latLngBounds(pins.map(pin => pin.point)), {
-    padding: numbered ? [48, 52] : [24, 24], maxZoom: numbered ? 17 : 15, animate: false,
+    paddingTopLeft: fullscreen ? [48, Math.min(108, map.getSize().y / 3)] : numbered ? [48, 52] : [24, 24],
+    paddingBottomRight: numbered ? [48, 52] : [24, 24], maxZoom: numbered ? 17 : 15, animate: false,
   });
 }
 

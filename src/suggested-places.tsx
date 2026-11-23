@@ -1,3 +1,4 @@
+import { FullscreenPlaceMap, type MapNavigation } from './fullscreen-place-map';
 import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import type { discover, LocatedFriend } from './discovery';
@@ -9,8 +10,8 @@ import { palette, radius, spacing } from './theme';
 import { Button, Icon, Label, layout } from './ui';
 import { VenueDistances } from './venue-summary';
 
-export function SuggestedPlaces({ suggestions, friends, actions }: {
-  suggestions: ReturnType<typeof discover>; friends: LocatedFriend[]; actions: (venue: Venue) => ReactNode;
+export function SuggestedPlaces({ suggestions, friends, actions, navigation }: {
+  navigation: MapNavigation; suggestions: ReturnType<typeof discover>; friends: LocatedFriend[]; actions: (venue: Venue) => ReactNode;
 }) {
   const [showOrigins, setShowOrigins] = useState(false);
   const [selectedId, setSelectedId] = useState<string>();
@@ -24,14 +25,12 @@ export function SuggestedPlaces({ suggestions, friends, actions }: {
     for (const friend of friends) pins.push({ kind: 'origin', point: friend.point,
       label: friend.name + (friend.approximate ? ' · Locality center' : ' · Starting point') });
   }
-  return <View style={{ gap: spacing.sm }}>
-    <PlaceMap pins={pins} onSelectVenue={async id => setSelectedId(id)}
-      dom={{ style: { height: 348 }, scrollEnabled: false, applicationNameForUserAgent: 'Barkits/0.1' }} />
-    <View style={layout.wrap}>
-      <View style={{ flexGrow: 1, flexBasis: 160 }}><Label kind="detail">Select a pin or place for details.{showOrigins ? ' Coral dots show starting points.' : ''}</Label></View>
-      <Button quiet expanded={showOrigins} icon="users" onPress={() => setShowOrigins(!showOrigins)}>{showOrigins ? 'Hide starting points' : 'Show starting points'}</Button>
-    </View>
-    {suggestions.map(({ venue }, index) => <Pressable key={venue.id} accessibilityRole="button" accessibilityLabel={'View details for ' + venue.name}
+  const select = async (id: string) => setSelectedId(id);
+  const originLabel = showOrigins ? 'Hide starting points' : 'Show starting points';
+  const originControl = <Button quiet expanded={showOrigins} accessibilityLabel={originLabel} icon={showOrigins ? 'check-circle' : 'users'} onPress={() => setShowOrigins(!showOrigins)}>
+    {navigation.expanded ? 'Starting points' : originLabel}
+  </Button>;
+  const places = suggestions.map(({ venue }, index) => <Pressable key={venue.id} accessibilityRole="button" accessibilityLabel={'View details for ' + venue.name}
       onPress={() => setSelectedId(venue.id)} style={({ pressed }) => [layout.row, {
         minHeight: 56, paddingVertical: spacing.sm, paddingHorizontal: spacing.xs, gap: spacing.md,
         borderBottomWidth: 1, borderColor: palette.line, backgroundColor: pressed ? palette.lavender : 'transparent',
@@ -42,13 +41,24 @@ export function SuggestedPlaces({ suggestions, friends, actions }: {
       <View style={{ flex: 1 }}><Label kind="value">{venue.name}</Label>
         <Label kind="detail">{[venue.category, venue.area].filter(Boolean).join(' · ')}</Label></View>
       <Icon name="chevron-right" size={17} color={palette.muted} />
-    </Pressable>)}
-    {selected && <EditorDialog key={selected.venue.id} title={selected.venue.name} close={() => setSelectedId(undefined)}>
+    </Pressable>);
+  const detail = selected && <EditorDialog key={selected.venue.id} title={selected.venue.name} close={() => setSelectedId(undefined)}>
       <Label kind="detail">{[selected.venue.category, selected.address, selected.venue.area].filter(Boolean).join(' · ')}</Label>
       <VenueDistances friends={friends} distances={selected.distances} />
       {selected.nearBus && <Label kind="detail">Within 800 m of a mapped bus terminal.</Label>}
       {actions(selected.venue)}
       {selected.venue.point && <GoogleMapsLink point={selected.venue.point} />}
-    </EditorDialog>}
+    </EditorDialog>;
+  if (navigation.expanded) return <FullscreenPlaceMap navigation={navigation} pins={pins} select={select}
+    count={suggestions.length} places={places} originControl={originControl} detail={detail} />;
+  return <View style={{ gap: spacing.sm }}>
+    <Button secondary icon="maximize-2" onPress={() => navigation.setExpanded(true)}>Open full-screen map</Button>
+    <PlaceMap pins={pins} onSelectVenue={select} dom={{ style: { height: 348 }, scrollEnabled: false, applicationNameForUserAgent: 'Barkits/0.1' }} />
+    <View style={layout.wrap}>
+      <View style={{ flexGrow: 1, flexBasis: 160 }}><Label kind="detail">Select a pin or place for details.{showOrigins ? ' Coral dots show starting points.' : ''}</Label></View>
+      {originControl}
+    </View>
+    {places}
+    {detail}
   </View>;
 }

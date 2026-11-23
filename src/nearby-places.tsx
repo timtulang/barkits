@@ -1,3 +1,4 @@
+import type { MapNavigation } from './fullscreen-place-map';
 import { SuggestedPlaces } from './suggested-places';
 import { Linking, View } from 'react-native';
 import type { LocatedFriend, Category, discover } from './discovery';
@@ -6,12 +7,12 @@ import { Button, Chip, Label, layout, Panel } from './ui';
 import { VenueDecision } from './venue-decision';
 
 type Props = {
-  meetup: Meetup; voter?: Participant; friends: LocatedFriend[]; suggestions: ReturnType<typeof discover>;
+  navigation: MapNavigation; meetup: Meetup; voter?: Participant; friends: LocatedFriend[]; suggestions: ReturnType<typeof discover>;
   category: Category; edit: (friend: Participant) => void;
   compare: (venue: Venue) => void; save: (meetup: Meetup) => void;
 };
 
-export function NearbyPlaces({ meetup, voter, friends, suggestions, category, edit, compare, save }: Props) {
+export function NearbyPlaces({ meetup, voter, friends, suggestions, category, edit, compare, save, navigation }: Props) {
   const missing = meetup.participants.filter(person => !friends.some(friend => friend.id === person.id));
   const hasLimits = meetup.participants.some(person => person.budget !== undefined || person.maxMinutes !== undefined);
   return <>
@@ -19,7 +20,7 @@ export function NearbyPlaces({ meetup, voter, friends, suggestions, category, ed
       missing.length ? <Panel><Label>Choose a locality match or pin for each starting point to calculate suggestions.</Label>
         <View style={layout.wrap}>{missing.map(friend => <Button key={friend.id} secondary onPress={() => edit(friend)}>Locate {friend.name}</Button>)}</View></Panel> :
       !suggestions.length ? <Label>No mapped {category === 'All' ? 'places' : category.toLowerCase() + ' venues'} in this catalog are within 50 km of every starting point. Try another category or suggest your own place.</Label> : null}
-    <SuggestedPlaces suggestions={suggestions} friends={friends} actions={venue => <>
+    <SuggestedPlaces navigation={navigation} suggestions={suggestions} friends={friends} actions={venue => <>
       {hasLimits && <Label>Enter trips to check this place against the group’s travel limits.</Label>}
       <Button secondary onPress={() => compare(venue)}>Compare trips here</Button>
       {!hasLimits && voter && <VenueDecision meetup={meetup} venue={venue} voter={voter} save={updated => save(retainPlace(updated, venue))} />}

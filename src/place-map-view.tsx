@@ -9,9 +9,9 @@ import { addPins, framePins, type MapPin } from './map-markers';
 import { GoogleRoadmap } from './google-roadmap';
 import type { Point } from './geo';
 
-export type MapProps = { onSelectVenue?: (id: string) => Promise<void>; pins?: MapPin[]; point?: Point; onPick?: (point: Point) => Promise<void>; dom?: DOMProps };
+export type MapProps = { viewportHeight?: number; onSelectVenue?: (id: string) => Promise<void>; pins?: MapPin[]; point?: Point; onPick?: (point: Point) => Promise<void>; dom?: DOMProps };
 
-export default function PlaceMapView({ point, onPick, pins, onSelectVenue, googleKey }: MapProps & { googleKey?: string }) {
+export default function PlaceMapView({ point, onPick, pins, onSelectVenue, viewportHeight, googleKey }: MapProps & { googleKey?: string }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Leaflet.Map | null>(null);
   const [ready, setReady] = useState(false);
@@ -67,8 +67,9 @@ export default function PlaceMapView({ point, onPick, pins, onSelectVenue, googl
     marker.current.setLatLng([lat, lng]).addTo(map.current);
     map.current.panTo([lat, lng], { animate: false });
   }, [lat, lng]);
-  return <div style={{ width: '100%' }}>
-    <div ref={container} aria-label={onSelectVenue ? 'Suggested places map' : 'Location map'} style={{ height: onSelectVenue ? 300 : 240, width: '100%', borderRadius: 12 }} />
+  return <div className={viewportHeight ? 'fullscreen-venue-map' : undefined}
+    style={{ position: 'relative', zIndex: 0, width: '100%', height: viewportHeight, display: 'flex', flexDirection: 'column' }}>
+    <div ref={container} aria-label={onSelectVenue ? 'Suggested places map' : 'Location map'} style={{ height: viewportHeight ? undefined : onSelectVenue ? 300 : 240, flex: viewportHeight ? 1 : undefined, minHeight: 0, width: '100%', borderRadius: viewportHeight ? 0 : 12 }} />
     {googleKey && ready && map.current && leaflet.current && <GoogleRoadmap map={map.current} leaflet={leaflet.current} apiKey={googleKey} />}
     {error && <div role="status" style={{ font: '14px sans-serif' }}>{error}</div>}
   </div>;

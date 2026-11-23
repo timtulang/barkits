@@ -18,3 +18,5 @@
 .suggestion-marker:focus-visible { outline: 3px solid #291d32; outline-offset: 1px; }
 .suggestion-marker .venue-pin { width: 30px; height: 30px; display: grid; place-items: center; }
 .suggestion-marker b { transform: rotate(45deg); font: bold 15px/1 system-ui, sans-serif; color: white; }
+
+.fullscreen-venue-map .leaflet-top { top: 66px; }

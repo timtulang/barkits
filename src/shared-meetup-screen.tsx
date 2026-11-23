@@ -1,6 +1,6 @@
 import { SuggestedPlaces } from './suggested-places';
 import { IconAction, ChoiceField } from './form-controls';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { activityCategory, categories, type Category, discover } from './discovery';
 import { ParticipantEditor } from './editor';
@@ -47,6 +47,10 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   const origins = useMemo(() => locateFriends(data?.members.flatMap(m => m.trip ? [m.trip] : []) ?? []), [data]);
   const allLocated = Boolean(origins.length && origins.length === data?.members.length);
   const suggestions = useMemo(() => planning && allLocated ? discover(origins, category, catalog) : [], [planning, allLocated, category, origins]);
+  const [fullMap, setFullMap] = useState<boolean>();
+  useEffect(() => {
+    if (data && fullMap === undefined) setFullMap(suggestions.length > 0);
+  }, [data, fullMap, suggestions.length]);
   const limited = data?.members.some(m => m.trip?.budget !== undefined || m.trip?.maxMinutes !== undefined);
   const archiving = data?.summary.status === 'completed';
   const lifecycle = <View style={layout.stack}>
@@ -85,7 +89,7 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
         {allLocated ? <>
           <ChoiceField label="Type of place" value={category} options={categories.map(value => ({ value, label: value }))} change={setFilter} />
           {!suggestions.length && <Label>No matching venues within 50 km of everyone. Try another category.</Label>}
-          <SuggestedPlaces suggestions={suggestions} friends={origins} actions={venue =>
+          <SuggestedPlaces navigation={{ title: data.summary.name, expanded: fullMap ?? true, setExpanded: setFullMap, back }} suggestions={suggestions} friends={origins} actions={venue =>
             data.summary.ballot.some(c => c.place.catalog_key === venue.id) ? <Label>On the group shortlist</Label> :
               <Button disabled={acting || loading} onPress={() => run(() => shortlistPlace(id, venue))}>Add to shortlist</Button>
           } />
