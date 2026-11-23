@@ -10,7 +10,7 @@ export function Icon({ name, size = 19, color = palette.ink }: { name: IconName;
 export function Label({ children, size = 15, weight = 'regular', color = palette.ink, heading = false }: {
   children: ReactNode; size?: number; weight?: keyof typeof font; color?: string; heading?: boolean;
 }) {
-  return <Text accessibilityRole={heading ? 'header' : undefined} style={{ fontFamily: font[weight], color, fontSize: size, lineHeight: Math.ceil(size * 1.22) }}>{children}</Text>;
+  return <Text accessibilityRole={heading ? 'header' : undefined} style={{ fontFamily: font[weight], color, fontSize: size, letterSpacing: weight === 'title' ? -size * 0.028 : 0, lineHeight: Math.ceil(size * (weight === 'title' ? 1.13 : 1.4)) }}>{children}</Text>;
 }
 export function Button({ children, icon, onPress, secondary = false, disabled = false, accessibilityLabel }: {
   children: ReactNode; icon?: IconName; onPress: () => void; secondary?: boolean; disabled?: boolean; accessibilityLabel?: string;

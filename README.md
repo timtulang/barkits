@@ -51,6 +51,8 @@ Apply the SQL migrations in `supabase/migrations` in timestamp order to the same
 6. Use **My trip estimate** on a shortlisted venue to enter your own one-way minutes and optional fare. Members with a fare or duration limit need a matching estimate within that limit for the organizer to finalize the venue. Changing your starting point or transportation mode clears your previous estimates.
 7. The organizer chooses **Choose this spot → Finalize location**. Members can reopen the meetup to see the confirmed venue and its map.
 
+8. After the gathering, the organizer selects **Mark completed → Confirm completion**. Members can save a private recap, publish it to the group, or optionally rate the meetup. Organizers can archive it. Find completed and archived groups under **Past meetups**. Authors can still withdraw a post or remove a rating after archiving.
+
 For database verification against a migrated local Supabase database, run `psql "$DATABASE_URL" -f scripts/check-shared-meetups.sql`. The script uses temporary fixtures inside a rolled-back transaction.
 
 Guest planning, the form improvements, and offline venue search work without Supabase or a Google Maps key.

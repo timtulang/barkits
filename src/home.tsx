@@ -1,68 +1,52 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
 import { Meetup, venues } from './planner';
 import { palette, radius, spacing } from './theme';
-import { Button, Chip, Icon, Label, layout, Panel } from './ui';
+import { Button, Chip, Icon, Label, layout } from './ui';
+import { StatusMark } from './workspace-layout';
 
-const steps = [
-  { icon: 'users', color: 'lavender', title: 'Bring the barkada', text: 'Add your friends and where everyone is coming from.' },
-  { icon: 'map-pin', color: 'softMango', title: 'Find your spot', text: 'Compare travel times and costs for the whole group.' },
-  { icon: 'heart', color: 'mint', title: 'Make it happen', text: 'Vote on a place, meet up, and save the memories.' },
-] as const;
-
-export function Home({ wide, titleSize, meetups, create, open, shared, signedIn }: {
-  shared?: ReactNode; signedIn?: boolean; wide: boolean; titleSize: number; meetups: Meetup[]; create: () => void; open: (index: number) => void;
+export function Home({ wide, meetups, create, open, shared, signedIn }: {
+  shared?: (past: boolean) => ReactNode; signedIn?: boolean; wide: boolean; meetups: Meetup[]; create: () => void; open: (index: number) => void;
 }) {
-  return <>
-    <View style={[styles.hero, wide && styles.heroWide]}>
-      <View style={[styles.heroCopy, wide && { flex: 1.12, padding: 40 }]}>
-        <View style={[layout.row, styles.kitsTag]}><Icon name="sun" size={15} /><Label size={13} weight="bold">Kita-kits, barkada!</Label></View>
-        <Label size={titleSize} weight="title" heading>Good plans.{'\n'}Better hangouts.</Label>
-        <Label size={17}>Find a meetup spot that works for everyone, wherever your barkada is coming from.</Label>
+  const [past, setPast] = useState(false);
+  const rows = meetups.map((item,index) => ({ item,index })).filter(({ item }) => ['Completed','Archived'].includes(item.status) === past);
+  return <View style={[styles.board, wide && styles.columns]}>
+    <View style={[styles.welcome, wide && styles.welcomeWide]}>
+      <View style={[styles.intro, wide && { padding: 32 }]}>
+        <Label size={wide ? 48 : 31} weight="title" heading>Tara, kita-kits!</Label>
+        <Label size={16}>Find a meeting place that works for the whole barkada.</Label>
         <Button icon="plus" onPress={create}>Plan a meetup</Button>
       </View>
-      <Kits style={wide ? styles.imageWide : styles.image} />
+      <Kits style={wide ? styles.artWide : styles.artSmall} />
     </View>
-
-    {shared}
-    <View style={styles.section}>
-      <View style={layout.between}>
-        <View style={{ gap: 5 }}><Label size={29} weight="title" heading>{signedIn ? 'On this device' : 'Your meetups'}</Label><Label color={palette.muted}>Pick up where you left off.</Label></View>
-        {wide && <Button onPress={create} icon="plus" secondary>New meetup</Button>}
+    <View style={[styles.plans,wide && { flex: 1.7 }]}>
+      <Label size={wide ? 38 : 29} weight="title" heading>Your meetups</Label>
+      <View style={layout.row}><Chip selected={!past} onPress={() => setPast(false)}>Active plans</Chip>
+        <Chip selected={past} onPress={() => setPast(true)}>Past meetups</Chip></View>
+      <View style={styles.entries}>
+        {signedIn && <Label size={19} weight="title">On this device</Label>}
+        {rows.map(({ item, index }) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={'Open ' + item.name} onPress={() => open(index)}
+          style={({pressed}) => [styles.entry, pressed && { backgroundColor: palette.softMango }]}>
+          <View style={{ flex:1, gap:8 }}><StatusMark status={item.status} /><Label size={23} weight="title">{item.name}</Label>
+            <Label size={14} color={palette.muted}>{item.date || 'Date to be decided'} · {item.participants.length} {item.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
+            {!!item.venue && <Label weight="bold">{[...venues,...item.customVenues ?? []].find(v => v.id === item.venue)?.name}</Label>}
+          </View><Icon name="arrow-right" /></Pressable>)}
+        {!rows.length && <Label color={palette.muted}>{past ? 'Completed meetups and their memories appear here.' : 'Plan a meetup to get started.'}</Label>}
       </View>
-      {meetups.map((meetup, index) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Open ${meetup.name}`} onPress={() => open(index)}>
-        <Panel style={styles.meetup}>
-          <View style={[styles.iconTile, { backgroundColor: palette.lavender }]}><Icon name="calendar" size={23} color={palette.plum} /></View>
-          <View style={{ flex: 1, gap: 5 }}>
-            <Label size={19} weight="title">{meetup.name}</Label>
-            <Label size={13} color={palette.muted}>{meetup.date || 'Date to be decided'} · {meetup.participants.length} {meetup.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
-            {!!meetup.venue && <Label size={13} weight="bold">{[...venues, ...meetup.customVenues ?? []].find(venue => venue.id === meetup.venue)?.name}</Label>}
-          </View>
-          <Chip selected>{meetup.status}</Chip><Icon name="chevron-right" color={palette.muted} />
-        </Panel>
-      </Pressable>)}
+      {shared?.(past)}
     </View>
-
-    <View style={styles.section}>
-      <Label size={29} weight="title" heading>How it works</Label>
-      <View style={{ flexDirection: wide ? 'row' : 'column', gap: 14 }}>
-        {steps.map(step => <Panel key={step.title} style={{ flex: 1, gap: 9, padding: 19 }}>
-          <View style={[styles.iconTile, { backgroundColor: palette[step.color], width: 40, height: 40 }]}><Icon name={step.icon} size={19} /></View>
-          <Label size={18} weight="title">{step.title}</Label><Label size={14} color={palette.muted}>{step.text}</Label>
-        </Panel>)}
-      </View>
-    </View>
-  </>;
+  </View>;
 }
 const styles = StyleSheet.create({
-  hero: { backgroundColor: palette.hero, borderRadius: radius.hero, overflow: 'hidden' },
-  heroWide: { flexDirection: 'row', alignItems: 'center', height: 368 },
-  heroCopy: { padding: spacing.xl, alignItems: 'flex-start', justifyContent: 'center', gap: 16 },
-  kitsTag: { backgroundColor: palette.softMango, paddingVertical: 7, paddingHorizontal: 11, borderRadius: radius.pill },
-  imageWide: { flex: 1, width: 0, height: 320 },
-  image: { width: '100%', height: 210 },
-  section: { gap: 15, marginTop: 5 },
-  meetup: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  iconTile: { width: 51, height: 51, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  board: { gap: spacing.section },
+  columns: { flexDirection:'row', alignItems:'flex-start', gap:40 },
+  welcome: { backgroundColor:palette.hero,borderRadius:radius.hero,overflow:'hidden',flexDirection:'row',alignItems:'center' },
+  welcomeWide: { flex:1,flexDirection:'column',alignItems:'stretch',paddingBottom:12 },
+  intro: { flex:1,gap:12,padding:20 },
+  artWide: { width:'100%',height:218 },
+  artSmall: { width:'29%',height:115 },
+  plans: { minWidth:0,gap:18 },
+  entries: { gap:12,borderTopWidth:1,borderColor:palette.line,paddingTop:16 },
+  entry: { backgroundColor:palette.paper,borderRadius:radius.card,padding:20,borderWidth:1,borderColor:palette.line,flexDirection:'row',alignItems:'center',gap:12 },
 });

@@ -4,7 +4,7 @@
 
 Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create a meetup with a name and optional activity, description, and target date and time. Save it as a draft to revisit on this device, or start planning immediately. Drafts can hold participant starting points and budgets. Starting planning opens comparisons and voting. Add friends with any starting place, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
 
-The Expo prototype supports guest planning and optional verified email accounts. On-device meetups support a manually entered roster. Signed-in organizers can also create a shared meetup. Single-use codes enroll real accounts, each with its own starting point and travel preferences. Shared membership and origins reload when the group opens, returns to the foreground, or a member selects Refresh group. Members shortlist venues and cast one changeable vote each. The organizer confirms the destination. Shared completion and recaps, street address geocoding, media and live routing require later work. Keep personal addresses out of the prototype.
+The Expo prototype supports guest planning and optional verified email accounts. On-device meetups support a manually entered roster. Signed-in organizers can also create a shared meetup. Single-use codes enroll real accounts, each with its own starting point and travel preferences. Shared membership and origins reload when the group opens, returns to the foreground, or a member selects Refresh group. Members shortlist venues and cast one changeable vote each. The organizer confirms the destination. The organizer can complete and archive the meetup. Members can write private drafts, explicitly publish a text recap to the group, and optionally give a 1–5 rating. Photo sharing, street address geocoding and live routing require later work. Keep personal addresses out of the prototype.
 
 ## Automatic place discovery
 
@@ -42,11 +42,11 @@ All five upstream repositories were reachable over Git and had their documentati
 
 | Workflow | Available in the current branch | Remaining work |
 |---|---|---|
-| Meetup lifecycle | Create and edit a local draft, start planning, decide, complete and archive. | Shared planning and organizer-confirmed decisions are persisted. Shared completion and archiving remain. |
-| Invitations and membership | Verified email sign-in, organizer ownership, expiring invitation codes, cross-device rosters, personal trip inputs and shared venue suggestions. Members can shortlist and vote, and organizers can finalize. | Shared completion and group recaps. |
+| Meetup lifecycle | Create and edit a local draft, start planning, decide, complete and archive. | Shared planning and organizer-confirmed decisions are persisted. Organizers can also complete and archive a decided meetup. |
+| Invitations and membership | Verified email sign-in, organizer ownership, expiring invitation codes, cross-device rosters, personal trip inputs and shared venue suggestions. Members can shortlist and vote, and organizers can finalize. | Optional recap media. |
 | Origins and destinations | Device location, manual input, offline locality search, map pins, custom venues and a group map. | Street-level geocoding and broader venue and transport coverage. |
 | Travel and ranking | Four ranking modes, per-person limits, fixture trips, user-entered times and fares, and group voting. | Supported real routes and mode coverage, accessibility and transfer details, walking legs, arrival times, traffic availability and routing cache. |
-| Completion and memories | Local completion, editable recap caption and optional ratings with a count and average. SQL policies have been exercised locally. | Authenticated group publication, consent controls and optional media storage. |
+| Completion and memories | Local completion, editable recap caption and optional ratings with a count and average. SQL policies have been exercised locally. | Group text publication and withdrawal are available. Optional media and tagging remain. |
 | Verification and release | Browser scenarios, local schema checks, zero-cost audit, and platform exports. | Multi-device acceptance tests, native-device verification and release preflight. |
 
 

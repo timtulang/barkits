@@ -7,16 +7,17 @@ import { Button, Field, Label, layout, Panel } from './ui';
 import { useSharedData } from './use-shared-data';
 import { font, palette } from './theme';
 
-export function SharedList({ open, join }: { open: (id: string) => void; join: () => void }) {
+export function SharedList({ open, join, past }: { past: boolean; open: (id: string) => void; join: () => void }) {
   const { data, loading, refresh, error } = useSharedData(listShared);
-  return <Panel><Label weight="title" size={22} heading>Shared meetups</Label>
+  const groups = data?.filter(g => ['completed','archived'].includes(g.status) === past);
+  return <View style={layout.stack}><Label weight="title" size={22} heading>Shared meetups</Label>
     <View style={layout.wrap}><Button secondary icon="users" onPress={join}>Join with code</Button>
       <Button secondary disabled={loading} onPress={refresh} icon="refresh-cw">Refresh list</Button></View>
     {loading && <Label>Loading shared meetups…</Label>}
     {!!error && <Label>{error}</Label>}
-    {data?.map(group => <Button key={group.id} secondary icon="users" onPress={() => open(group.id)}>{group.name}</Button>)}
-    {!loading && !error && !data?.length && <Label>To invite friends, choose “With friends” when you plan a meetup.</Label>}
-  </Panel>;
+    {groups?.map(group => <Button key={group.id} secondary icon="users" onPress={() => open(group.id)}>{group.name}</Button>)}
+    {!loading && !error && !groups?.length && <Label>{past ? 'No past shared meetups yet.' : 'Choose “With friends” when you plan a meetup to invite your group.'}</Label>}
+  </View>;
 }
 
 export function JoinDialog({ open, close }: { open: (id: string) => void; close: () => void }) {

@@ -6,6 +6,9 @@ import { GoogleMapsLink } from './google-maps-link';
 import { locateFriends } from './locate-friends';
 import { PlanningMap } from './planning-map';
 import { getShared, saveOwnTrip, shortlistPlace } from './services/shared-meetups';
+import { SharedMemories } from './shared-memories';
+import { finishMeetup } from './services/shared-memories';
+import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { SharedBallot } from './shared-ballot';
 import PlaceMap from './place-map';
 import { InviteFriend } from './shared-membership';
@@ -24,6 +27,7 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   const [actionError, setActionError] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
   const planning = data?.summary.status === 'planning';
+  const [confirmEnd,setConfirmEnd] = useState(false);
   const chosen = data?.summary.chosen;
   async function run(action: () => Promise<void>) {
     if (pending.current) return false;
@@ -42,29 +46,39 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   const allLocated = Boolean(origins.length && origins.length === data?.members.length);
   const suggestions = useMemo(() => planning && allLocated ? discover(origins, category, catalog) : [], [planning, allLocated, category, origins]);
   const limited = data?.members.some(m => m.trip?.budget !== undefined || m.trip?.maxMinutes !== undefined);
+  const archiving = data?.summary.status === 'completed';
+  const lifecycle = <View style={layout.stack}>
+    {confirmEnd ? <><Label>{archiving ? 'Archive this meetup? Members can still read the recaps.' : 'Mark this meetup completed? Members can then write a recap or leave a rating.'}</Label>
+      <View style={layout.wrap}><Button disabled={acting || loading} onPress={async () => {
+        if (await run(() => finishMeetup(id,archiving ? 'archived' : 'completed'))) setConfirmEnd(false);
+      }}>{archiving ? 'Confirm archive' : 'Confirm completion'}</Button><Button secondary onPress={() => setConfirmEnd(false)}>Cancel</Button></View></> :
+      <Button secondary={archiving} icon={archiving ? 'archive' : 'check'} onPress={() => setConfirmEnd(true)}>{archiving ? 'Archive meetup' : 'Mark completed'}</Button>}
+  </View>;
   return <>
     <View style={layout.wrap}><Button secondary onPress={back} icon="arrow-left">Back to meetups</Button>
       <Button secondary disabled={loading} onPress={refresh} icon="refresh-cw">Refresh group</Button></View>
     {loading && <Label>Loading group…</Label>}{!!error && <Label>{error}</Label>}
     {!!actionError && <View accessibilityRole="alert"><Label>{actionError}</Label></View>}
     {data && <>
-      <Label size={30} weight="title" heading>{data.summary.name}</Label>
+      <View style={layout.stack}><Label size={36} weight="title" heading>{data.summary.name}</Label><StatusMark status={data.summary.status} /></View>
       {!!data.summary.activity && <Label>{data.summary.activity}</Label>}
       {!!data.summary.starts_at && <Label>{new Date(data.summary.starts_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' })} · Philippine time</Label>}
       {!!data.summary.description && <Label>{data.summary.description}</Label>}
-      {chosen && <Panel><Label size={22} weight="title" heading>Meet at {chosen.name}</Label>
+      {chosen && !data.memories && <Panel><Label size={22} weight="title" heading>Meet at {chosen.name}</Label>
         <Label>Confirmed by the organizer · voting closed</Label>
         <View style={layout.wrap}><GoogleMapsLink point={[chosen.latitude, chosen.longitude]} />
           <Button secondary onPress={() => setMapOpen(!mapOpen)}>{mapOpen ? 'Hide venue map' : 'View venue map'}</Button></View>
+        {data.summary.owner_id === userId && data.summary.status === 'decided' && lifecycle}
         {mapOpen && <PlaceMap point={[chosen.latitude, chosen.longitude]} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />}
       </Panel>}
+      {!data.memories && <WorkspaceColumns sideFirst={planning && !mine?.trip} side={<>
       <Panel><Label size={20} weight="title">Friends ({data.members.length})</Label>
         {data.members.map(m => <View key={m.id}><Label weight="bold">{m.name}{m.id === userId ? ' (you)' : ''}{m.id === data.summary.owner_id ? ' · Organizer' : ''}</Label>
           <Label>{m.trip ? m.trip.origin + ' · ' + m.trip.mode : 'Starting point pending'}</Label></View>)}
         {planning && mine && <Button onPress={() => setEditing(true)} icon="map-pin">{mine.trip ? 'Edit my starting point' : 'Add my starting point'}</Button>}
       </Panel>
-      {planning && <>
-      {data.summary.owner_id === userId && <InviteFriend id={id} />}
+      {planning && data.summary.owner_id === userId && <InviteFriend id={id} />}
+      </>} main={<>{planning && <>
       <SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId} owner={data.summary.owner_id === userId}
         busy={acting || loading} run={run} refresh={refresh} />
       <Panel><Label size={20} weight="title">Nearby places</Label>
@@ -85,7 +99,10 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
       {!!origins.length && <PlanningMap origins={origins} places={suggestions.map(s => s.venue)} />}
       {editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}
         saveTrip={async trip => { await saveOwnTrip(id, trip); setEditing(false); refresh(); }} />}
-      </>}
+      </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</>} />}
+      {data.memories && <SharedMemories id={id} userId={userId} venue={chosen?.name ?? data.summary.name} members={data.members}
+        archived={data.summary.status === 'archived'} data={data.memories} refresh={refresh} run={run} busy={acting || loading}
+        archiveAction={data.summary.status === 'completed' && data.summary.owner_id === userId ? lifecycle : undefined} />}
     </>}
   </>;
 }

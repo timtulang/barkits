@@ -75,16 +75,16 @@ function Workspace({ user }: { user: User | null }) {
     <View style={styles.header}><View style={[styles.container, styles.headerInner]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Barkits home" onPress={() => navigateLocal(null)} style={layout.row}>
         <View style={styles.logo}><Icon name="map-pin" size={21} /></View>
-        <Label size={width < 350 ? 22 : 26} weight="title">barkits.</Label>
+        <Label size={width < 350 ? 22 : 26} weight="title" color={palette.cream}>barkits.</Label>
       </Pressable>
       {wide && <View style={layout.row}>
         <Chip icon="home" selected={!selected && !sharedId} onPress={() => navigateLocal(null)}>Home</Chip>
-        <Chip icon="calendar" selected={!!selected} onPress={() => navigateLocal(0)}>Demo meetup</Chip>
+        <Chip icon="calendar" selected={index === 0} onPress={() => navigateLocal(0)}>Demo meetup</Chip>
       </View>}
       <View style={layout.row}>
         <Pressable accessibilityRole="button" accessibilityLabel={user ? 'Your account' : 'Sign in'} onPress={() => setAccountOpen(true)}
           style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
-          <Icon name="user" />{wide && <Label weight="bold">{user ? 'Account' : 'Sign in'}</Label>}
+          <Icon name="user" color={palette.cream} />{wide && <Label weight="bold" color={palette.cream}>{user ? 'Account' : 'Sign in'}</Label>}
         </Pressable>
         <Button secondary disabled={!ready} accessibilityLabel="New meetup" icon={width < 400 ? undefined : 'plus'}
           onPress={() => setEditor('new')}>{width < 400 ? 'New' : 'New meetup'}</Button>
@@ -93,8 +93,8 @@ function Workspace({ user }: { user: User | null }) {
     <ScrollView keyboardShouldPersistTaps="handled" key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
       {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
-        <Home wide={wide} titleSize={width >= 1050 ? 55 : wide ? 43 : 36} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user}
-          shared={user ? <SharedList open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
+        <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user}
+          shared={past => user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
             <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button> : undefined} />)}
       <View style={styles.footer}>
         <View style={layout.row}><Icon name="map-pin" size={14} color={palette.plum} /><Label size={13} weight="bold" color={palette.plum}>Barkits</Label></View>
@@ -114,9 +114,9 @@ function Workspace({ user }: { user: User | null }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: palette.cream },
   container: { width: '100%', maxWidth: 1112, alignSelf: 'center', paddingHorizontal: 20 },
-  header: { backgroundColor: palette.paper, borderBottomWidth: 1, borderColor: palette.line },
+  header: { backgroundColor: palette.ink, borderBottomWidth: 1, borderColor: palette.line },
   headerInner: { minHeight: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   logo: { backgroundColor: palette.coral, width: 38, height: 38, borderRadius: radius.control, justifyContent: 'center', alignItems: 'center' },
-  content: { paddingTop: 27, paddingBottom: 32, gap: 24 },
+  content: { paddingTop: 24, paddingBottom: 32, gap: 24 },
   footer: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 12, borderTopWidth: 1, borderColor: palette.line, paddingTop: 18 },
 });

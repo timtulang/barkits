@@ -30,6 +30,12 @@ Nunito uses weights 600, 800 and 900 for body, controls and headings respectivel
 - Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus.
 - Keep essential information in text. Use brief, optional motion in celebratory moments and respect reduced motion. Kits makes one brief hop upon meetup completion when reduced motion is off. Controls respond immediately.
 
+## Responsive application layout
+
+Barkits uses a deep-ink navigation bar and a mango welcome panel with Kits. The home view places active and past meetups beside the welcome panel on wide web screens and immediately below it on phones. Shared and on-device plans keep their own labels. Status marks combine text, color and an icon. A completed meetup returns through Past meetups.
+
+Planning and memories use a primary work area with a narrower roster, invitations or rating column at 940 px and above. On phones the panels stack. Starting-point entry comes first when needed. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
+
 ## Forms
 
 Lead with the meetup or person’s name and the place search. Offer raw coordinates, fare limits, trip duration, schedule and notes as optional controls. Preserve their values when a section collapses. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.

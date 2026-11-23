@@ -1,3 +1,4 @@
+import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { activityCategory, Category, discover } from './discovery';
 import { catalog } from './venue-catalog';
 import { locateFriends } from './locate-friends';
@@ -54,7 +55,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
   }
   return <>
     <Button secondary onPress={back} icon="arrow-left">Back to meetups</Button>
-    <View style={{ gap: 6 }}><View style={layout.wrap}><Label size={40} weight="title">{meetup.name}</Label><Chip selected>{meetup.status}</Chip></View>
+    <View style={{ gap: 6 }}><View style={layout.wrap}><Label size={40} weight="title">{meetup.name}</Label><StatusMark status={meetup.status} /></View>
       <Label color={palette.muted}>{meetup.date || 'Date to be decided'} · Saved on this device</Label>
       {!!meetup.activity && <Label weight="bold">Activity · {meetup.activity}</Label>}
       {!!meetup.description && <Label>{meetup.description}</Label>}
@@ -63,11 +64,11 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
       <Button secondary icon="edit-2" onPress={editDetails}>Edit meetup details</Button>
       {meetup.status === 'Draft' && <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Start planning</Button>}
     </View>}
-    <Panel>
-      <View style={layout.between}><Label size={23} weight="title">Your barkada</Label>{canEdit && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
+    <WorkspaceColumns sideFirst side={<Panel>
+      <View style={layout.wrap}><Label size={23} weight="title">Your barkada</Label>{canEdit && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
       {meetup.participants.length === 0 && <View style={layout.row}><Kits style={{ width: 85, height: 58, borderRadius: 10 }} /><Label color={palette.muted}>Add friends to compare meetup spots.</Label></View>}
       {meetup.participants.map(friend => <View key={friend.id} style={layout.between}><View style={{ flex: 1 }}><Label><Label weight="bold">{friend.name}</Label> · {friend.origin} · {friend.mode}{friend.budget === undefined ? '' : ` · ₱${friend.budget} limit`}{friend.maxMinutes === undefined ? '' : ` · ${friend.maxMinutes} min limit`}</Label></View>{canEdit && <Chip onPress={() => editFriend(friend)}>Edit {friend.name}</Chip>}</View>)}
-    </Panel>
+    </Panel>} main={<>
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>
         <Label size={28} weight="title">Suggested meeting places</Label>
@@ -137,5 +138,6 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
       {ratings && <Label weight="bold">{ratings.average.toFixed(1)} ★ · {ratings.count} participant {ratings.count === 1 ? 'rating' : 'ratings'}</Label>}
       <Button secondary onPress={() => save({ ...meetup, status: 'Archived' })}>Archive meetup</Button>
     </Panel>}
+    </>} />
   </>;
 }

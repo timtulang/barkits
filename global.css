@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:focus-visible { outline: 3px solid #985531; outline-offset: 3px; }
+::selection { background: #ffda62; color: #291d32; }
+input, textarea { caret-color: #4c285c; }
