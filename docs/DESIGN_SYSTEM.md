@@ -46,7 +46,7 @@ Lead with the meetup or person’s name and the place search. Show the optional 
 
 ## Suggested place pins
 
-Open ready planning meetups on an edge-to-edge map. Float the meetup name and navigation above it and keep the place list in a collapsible tray below the map attribution. Start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. Keep coral dots for friends’ starting points on the group map.
+Open ready planning meetups on an edge-to-edge map. Float the meetup name and navigation above it and keep the place list in a collapsible tray below the map attribution. Start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
 
 ## Trip comparisons
 

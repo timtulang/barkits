@@ -4,11 +4,11 @@ import type { Point } from './geo';
 export type MapPin = { point: Point; label: string; kind: 'origin' | 'venue'; venueId?: string; number?: number };
 
 export function framePins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[]) {
-  const numbered = pins.some(pin => pin.number !== undefined);
+  const interactive = pins.some(pin => pin.venueId !== undefined);
   const fullscreen = map.getContainer().parentElement?.classList.contains('fullscreen-venue-map');
   map.fitBounds(L.latLngBounds(pins.map(pin => pin.point)), {
-    paddingTopLeft: fullscreen ? [48, Math.min(108, map.getSize().y / 3)] : numbered ? [48, 52] : [24, 24],
-    paddingBottomRight: numbered ? [48, 52] : [24, 24], maxZoom: numbered ? 17 : 15, animate: false,
+    paddingTopLeft: fullscreen ? [48, Math.min(108, map.getSize().y / 3)] : interactive ? [48, 52] : [24, 24],
+    paddingBottomRight: interactive ? [48, 52] : [24, 24], maxZoom: interactive ? 17 : 15, animate: false,
   });
 }
 
@@ -18,20 +18,22 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
   const leaders = L.layerGroup().addTo(layer);
   for (const pin of pins) {
     const pointer = document.createElement('span');
-    const isNumbered = pin.number !== undefined;
+    const isInteractive = pin.venueId !== undefined;
     pointer.className = pin.kind === 'origin' ? 'origin-pin' : 'venue-pin';
-    if (isNumbered) {
+    if (pin.number !== undefined) {
       const number = document.createElement('b');
       number.textContent = String(pin.number);
       pointer.append(number);
+    } else if (isInteractive) {
+      pointer.classList.add('confirmed-pin');
     }
     const icon = L.divIcon({
-      className: isNumbered ? 'suggestion-marker' : '',
+      className: isInteractive ? 'suggestion-marker' : '',
       html: pointer,
-      iconSize: isNumbered ? [44, 44] : [16, 16],
-      iconAnchor: isNumbered ? [22, 40] : [8, 8],
+      iconSize: isInteractive ? [44, 44] : [16, 16],
+      iconAnchor: isInteractive ? [22, 40] : [8, 8],
     });
-    const marker = L.marker(pin.point, { icon, title: pin.label, alt: pin.label, zIndexOffset: isNumbered ? 1000 : 0 }).addTo(layer);
+    const marker = L.marker(pin.point, { icon, title: pin.label, alt: pin.label, zIndexOffset: isInteractive ? 1000 : 0 }).addTo(layer);
     marker.getElement()?.setAttribute('aria-label', pin.label);
     const id = pin.venueId;
     if (id !== undefined) {

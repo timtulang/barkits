@@ -9,7 +9,7 @@ import { NearbyPlaces } from './nearby-places';
 import { VenueDecision } from './venue-decision';
 import { PlanningMap } from './planning-map';
 import { TripPlanning } from './trip-planning';
-import PlaceMap from './place-map';
+import { ConfirmedPlaceMap } from './confirmed-place-map';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { GoogleMapsLink } from './google-maps-link';
@@ -35,13 +35,12 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const located = useMemo(() => locateFriends(meetup.participants), [meetup.participants]);
   const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
     discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
-  const [fullMap, setFullMap] = useState(() => suggestions.length > 0);
+  const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
+  const [fullMap, setFullMap] = useState(() => suggestions.length > 0 || (meetup.status === 'Decided' && !!venue?.point));
   const [ranking, setRanking] = useState<Ranking>('Balanced');
   const [expanded, setExpanded] = useState('');
   const [voter, setVoter] = useState('');
   const [caption, setCaption] = useState(meetup.recap ?? '');
-  const [mapOpen, setMapOpen] = useState(false);
-  const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
   const canEdit = meetup.status === 'Planning' || meetup.status === 'Draft';
   const canRate = meetup.status === 'Completed';
@@ -139,10 +138,12 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
     </>}
     {!!venue && <Panel><Label kind="item" heading>Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>
-        {venue.point && <><Button secondary onPress={() => setMapOpen(!mapOpen)} icon="map">{mapOpen ? 'Hide venue map' : 'View venue map'}</Button>
+        {venue.point && <><Button secondary onPress={() => setFullMap(true)} icon="map">View venue map</Button>
           <GoogleMapsLink point={venue.point} /></>}
         {meetup.status === 'Decided' && <Button onPress={() => save({ ...meetup, status: 'Completed' })} icon="check">Mark completed</Button>}
-      </View>{mapOpen && venue.point && <PlaceMap point={venue.point} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />}
+      </View>
+      {fullMap && venue.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={meetup.date}
+        navigation={{ title: meetup.name, expanded: true, setExpanded: setFullMap, back }} />}
     </Panel>}
     {meetup.status === 'Archived' && <Panel>
       <Label kind="section" heading>Meetup memories</Label>

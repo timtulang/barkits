@@ -12,7 +12,7 @@ import { SharedMemories } from './shared-memories';
 import { finishMeetup } from './services/shared-memories';
 import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { SharedBallot } from './shared-ballot';
-import PlaceMap from './place-map';
+import { ConfirmedPlaceMap } from './confirmed-place-map';
 import { InviteFriend } from './shared-membership';
 import { Button, Label, layout, Panel } from './ui';
 import { useSharedData } from './use-shared-data';
@@ -27,7 +27,6 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   const [acting, setActing] = useState(false);
   const pending = useRef(false);
   const [actionError, setActionError] = useState('');
-  const [mapOpen, setMapOpen] = useState(false);
   const planning = data?.summary.status === 'planning';
   const [confirmEnd,setConfirmEnd] = useState(false);
   const chosen = data?.summary.chosen;
@@ -48,9 +47,12 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   const allLocated = Boolean(origins.length && origins.length === data?.members.length);
   const suggestions = useMemo(() => planning && allLocated ? discover(origins, category, catalog) : [], [planning, allLocated, category, origins]);
   const [fullMap, setFullMap] = useState<boolean>();
+  const openMapOnEntry = suggestions.length > 0 || (data?.summary.status === 'decided' && !!chosen);
   useEffect(() => {
-    if (data && fullMap === undefined) setFullMap(suggestions.length > 0);
-  }, [data, fullMap, suggestions.length]);
+    if (data && fullMap === undefined) setFullMap(openMapOnEntry);
+  }, [data, fullMap, openMapOnEntry]);
+  const startTime = data?.summary.starts_at;
+  const schedule = startTime ? new Date(startTime).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + ' · Philippine time' : undefined;
   const limited = data?.members.some(m => m.trip?.budget !== undefined || m.trip?.maxMinutes !== undefined);
   const archiving = data?.summary.status === 'completed';
   const lifecycle = <View style={layout.stack}>
@@ -68,14 +70,15 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
     {data && <>
       <View style={layout.stack}><Label kind="page" heading>{data.summary.name}</Label><StatusMark status={data.summary.status} /></View>
       {!!data.summary.activity && <Label>{data.summary.activity}</Label>}
-      {!!data.summary.starts_at && <Label>{new Date(data.summary.starts_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' })} · Philippine time</Label>}
+      {!!schedule && <Label>{schedule}</Label>}
       {!!data.summary.description && <Label>{data.summary.description}</Label>}
       {chosen && !data.memories && <Panel><Label kind="item" heading>Meet at {chosen.name}</Label>
         <Label>Confirmed by the organizer · voting closed</Label>
         <View style={layout.wrap}><GoogleMapsLink point={[chosen.latitude, chosen.longitude]} />
-          <Button secondary onPress={() => setMapOpen(!mapOpen)}>{mapOpen ? 'Hide venue map' : 'View venue map'}</Button></View>
+          <Button secondary onPress={() => setFullMap(true)}>View venue map</Button></View>
         {data.summary.owner_id === userId && data.summary.status === 'decided' && lifecycle}
-        {mapOpen && <PlaceMap point={[chosen.latitude, chosen.longitude]} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />}
+        {(fullMap ?? openMapOnEntry) && <ConfirmedPlaceMap name={chosen.name} point={[chosen.latitude, chosen.longitude]} schedule={schedule}
+          navigation={{ title: data.summary.name, expanded: true, setExpanded: setFullMap, back }} />}
       </Panel>}
       {!data.memories && <WorkspaceColumns sideFirst={planning && !mine?.trip} side={<>
       <Panel><Label kind="item" heading>Friends ({data.members.length})</Label>

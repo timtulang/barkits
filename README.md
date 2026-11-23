@@ -24,6 +24,8 @@ For a static web export, run `npm run build:web`. Run `npm start` to use a compa
 
 Open the Saturday catch-up demo to compare four friends' trips, try ranking modes, cast votes, finalize a venue, complete the meetup, and save a recap or optional ratings. A new meetup starts with an empty group.
 
+Once a venue is confirmed, reopen the meetup to see its full-screen destination map. Tap the checked pin for details or **Get directions** to route to that spot in Google Maps. This works without a Google Cloud key.
+
 ## Try trip options
 
 Open **Saturday catch-up → Meetup details → Trip details**, pick a friend and a venue, then open **Compare ride fares**. Enter the prices shown for the same trip in Angkas and Grab, choose one, and save the trip. In a shared meetup, use **Group shortlist → My trip estimate**. The saved fare shows its provider and when the estimate was saved. Live provider prices require approved access.

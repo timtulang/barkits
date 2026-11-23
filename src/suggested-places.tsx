@@ -1,4 +1,4 @@
-import { FullscreenPlaceMap, type MapNavigation } from './fullscreen-place-map';
+import { FullscreenPlaceMap, PlaceListTray, type MapNavigation } from './fullscreen-place-map';
 import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import type { discover, LocatedFriend } from './discovery';
@@ -50,7 +50,9 @@ export function SuggestedPlaces({ suggestions, friends, actions, navigation }: {
       {selected.venue.point && <GoogleMapsLink point={selected.venue.point} />}
     </EditorDialog>;
   if (navigation.expanded) return <FullscreenPlaceMap navigation={navigation} pins={pins} select={select}
-    count={suggestions.length} places={places} originControl={originControl} detail={detail} />;
+    detail={detail}>
+    <PlaceListTray count={suggestions.length} places={places} originControl={originControl} />
+  </FullscreenPlaceMap>;
   return <View style={{ gap: spacing.sm }}>
     <Button secondary icon="maximize-2" onPress={() => navigation.setExpanded(true)}>Open full-screen map</Button>
     <PlaceMap pins={pins} onSelectVenue={select} dom={{ style: { height: 348 }, scrollEnabled: false, applicationNameForUserAgent: 'Barkits/0.1' }} />

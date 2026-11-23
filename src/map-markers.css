@@ -20,3 +20,11 @@
 .suggestion-marker b { transform: rotate(45deg); font: bold 15px/1 system-ui, sans-serif; color: white; }
 
 .fullscreen-venue-map .leaflet-top { top: 66px; }
+
+.confirmed-pin::after {
+  content: '';
+  width: 12px;
+  height: 6px;
+  border-left: 3px solid white;
+  border-bottom: 3px solid white;
+}
