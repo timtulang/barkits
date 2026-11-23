@@ -19,7 +19,7 @@ export function activityCategory(activity = ''): Category {
 export function discover(friends: LocatedFriend[], category: Category, catalog: VenueRow[]) {
   if (!friends.length) return [];
   const transitShare = friends.filter(friend => (friend.mode === 'Public transport' || friend.mode === 'Mixed commute')).length / friends.length;
-  const candidates = catalog.flatMap(([id, name, area, kind, lat, lng, nearBus]) => {
+  const candidates = catalog.flatMap(([id, name, area, kind, lat, lng, nearBus, address]) => {
     if (category !== 'All' && kind !== category) return [];
     // latitude alone bounds the minimum possible distance
     if (Math.abs(friends[0].point[0] - lat) > 0.46) return [];
@@ -30,7 +30,7 @@ export function discover(friends: LocatedFriend[], category: Category, catalog: 
     const mean = distances.reduce((sum, d) => sum + d, 0) / friends.length;
     const score = 0.6 * longest + 0.4 * mean - (nearBus ? 0.5 * transitShare : 0);
     const venue: Venue = { id, name, area, point, category: kind, icon: kind === 'Mall' ? 'shopping-bag' : kind === 'Café' ? 'coffee' : 'sun', color: 'mint' };
-    return [{ venue, distances, longest, nearBus: Boolean(nearBus), score }];
+    return [{ venue, address, distances, longest, nearBus: Boolean(nearBus), score }];
   });
   candidates.sort((a,b) => a.score - b.score || a.venue.id.localeCompare(b.venue.id));
   const best: typeof candidates = [];

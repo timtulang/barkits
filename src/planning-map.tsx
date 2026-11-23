@@ -16,7 +16,7 @@ export function PlanningMap({ meetup, origins, places }: { meetup?: Pick<Meetup,
   }
   return <Panel>
     <Button secondary icon="map" onPress={() => setOpen(!open)}>{open ? 'Hide group map' : 'Show group map'}</Button>
-    {open && <><Label size={13}>Coral dots show starting points. Purple squares show meeting places. Select a marker for its name.</Label>
+    {open && <><Label size={13}>Coral dots show starting points. Purple pins show meeting places. Select a marker for its name.</Label>
       <PlaceMap pins={pins} dom={{ style: { height: 275 }, applicationNameForUserAgent: 'Barkits/0.1' }} />
     </>}
   </Panel>;

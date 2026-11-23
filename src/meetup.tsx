@@ -133,7 +133,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
         <VenueDecision meetup={meetup} venue={spot} voter={currentVoter} save={save} />
       </Panel>)}
       </>}
-      {tab !== 'details' && <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />}
+      {(tab === 'trips' || (tab === 'nearby' && !suggestions.length)) && <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />}
     </>}
     {!!venue && <Panel><Label kind="item" heading>Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>

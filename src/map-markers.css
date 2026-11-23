@@ -1,0 +1,20 @@
+.origin-pin, .venue-pin {
+  display: block;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #291d32;
+  background: #f78f78;
+  border-radius: 50%;
+}
+.venue-pin {
+  background: #4c285c;
+  border-color: #fff9ef;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 4px #291d3255;
+}
+.suggestion-marker { display: grid; place-items: center; border-radius: 10px; }
+.suggestion-marker:focus-visible { outline: 3px solid #291d32; outline-offset: 1px; }
+.suggestion-marker .venue-pin { width: 30px; height: 30px; display: grid; place-items: center; }
+.suggestion-marker b { transform: rotate(45deg); font: bold 15px/1 system-ui, sans-serif; color: white; }

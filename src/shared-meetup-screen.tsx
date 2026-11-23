@@ -1,4 +1,4 @@
-import { VenueSummary } from './venue-summary';
+import { SuggestedPlaces } from './suggested-places';
 import { IconAction, ChoiceField } from './form-controls';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
@@ -81,23 +81,21 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
       </Panel>
       {planning && data.summary.owner_id === userId && <InviteFriend id={id} />}
       </>} main={<>{planning && <>
-      <SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId} owner={data.summary.owner_id === userId}
-        busy={acting || loading} run={run} refresh={refresh} />
       <Panel><Label kind="section" heading>Nearby places</Label>
         {allLocated ? <>
           <ChoiceField label="Type of place" value={category} options={categories.map(value => ({ value, label: value }))} change={setFilter} />
-          <Label kind="detail">Ranked by straight-line distance from the group’s starting points.{limited ? ' Travel time and fare limits still need a route estimate.' : ''}</Label>
           {!suggestions.length && <Label>No matching venues within 50 km of everyone. Try another category.</Label>}
-          {suggestions.map(({ venue, distances }) => <View key={venue.id} style={layout.stack}>
-            <VenueSummary name={venue.name} location={[venue.category, venue.area].filter(Boolean).join(' · ')} friends={origins} distances={distances} />
-            {data.summary.ballot.some(c => c.place.catalog_key === venue.id) ? <Label>On the group shortlist</Label> :
-              <Button secondary disabled={acting || loading} onPress={() => run(() => shortlistPlace(id, venue))}>Add to shortlist</Button>}
-            {venue.point && <GoogleMapsLink point={venue.point} />}
-          </View>)}
+          <SuggestedPlaces suggestions={suggestions} friends={origins} actions={venue =>
+            data.summary.ballot.some(c => c.place.catalog_key === venue.id) ? <Label>On the group shortlist</Label> :
+              <Button disabled={acting || loading} onPress={() => run(() => shortlistPlace(id, venue))}>Add to shortlist</Button>
+          } />
+          <Label kind="detail">Ranked by straight-line distance from the group’s starting points.{limited ? ' Travel time and fare limits still need a route estimate.' : ''}</Label>
           {!!suggestions.length && <Label size={13}>Venue data © OpenStreetMap contributors</Label>}
         </> : <Label>Choose a place from search or drop a pin for everyone to get suggestions. {origins.length} of {data.members.length} starting points ready.</Label>}
       </Panel>
-      {!!origins.length && <PlanningMap origins={origins} places={suggestions.map(s => s.venue)} />}
+      <SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId} owner={data.summary.owner_id === userId}
+        busy={acting || loading} run={run} refresh={refresh} />
+      {!!origins.length && !suggestions.length && <PlanningMap origins={origins} places={suggestions.map(s => s.venue)} />}
       {editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}
         saveTrip={async trip => { await saveOwnTrip(id, trip); setEditing(false); refresh(); }} />}
       </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</>} />}

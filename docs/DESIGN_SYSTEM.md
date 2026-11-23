@@ -44,6 +44,10 @@ Planning and memories use a primary work area with a narrower roster, invitation
 
 Lead with the meetup or person’s name and the place search. Show the optional schedule, notes and travel limits directly in the form. Present raw coordinates as a labeled alternative to place search. Use a labeled selector for a single choice such as transportation mode. Keep the close icon in the sheet header and the main creation or save action in the footer. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
 
+## Suggested place pins
+
+Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. Keep coral dots for friends’ starting points on the group map.
+
 ## Trip comparisons
 
 Keep the route, one-way fare and travel time together. Use the mint panel for a possible train connection. Name the boarding and exit stations, direction, rail-only amount and distance to each station. Put the operator and effective date beside the fare lookup. Use a provider name and save time for a ride price entered by a rider. Keep Kits in the welcome and memory screens so travel decisions have room for names, numbers and controls.
