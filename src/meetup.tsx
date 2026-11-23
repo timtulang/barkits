@@ -108,7 +108,6 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       {tab === 'nearby' && <NearbyPlaces meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
         category={category} edit={editFriend} save={save}
         compare={spot => { save(retainPlace(meetup, spot)); openTrip(spot.id); }} />}
-      {tab !== 'details' && <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />}
       {tab === 'trips' && <>
         <Label kind="detail">Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
         <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
@@ -134,6 +133,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
         <VenueDecision meetup={meetup} venue={spot} voter={currentVoter} save={save} />
       </Panel>)}
       </>}
+      {tab !== 'details' && <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />}
     </>}
     {!!venue && <Panel><Label kind="item" heading>Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>
