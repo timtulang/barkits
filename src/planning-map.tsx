@@ -4,13 +4,13 @@ import { Meetup, Venue } from './planner';
 import PlaceMap, { MapPin } from './place-map';
 import { Button, Label, Panel } from './ui';
 
-export function PlanningMap({ meetup, origins, places }: { meetup: Meetup; origins: LocatedFriend[]; places: Venue[] }) {
+export function PlanningMap({ meetup, origins, places }: { meetup?: Pick<Meetup, 'customVenues'>; origins: LocatedFriend[]; places: Venue[] }) {
   const [open, setOpen] = useState(false);
   const pins: MapPin[] = [];
   for (const friend of origins) {
     if (friend.point) pins.push({ point: friend.point, label: friend.name + (friend.approximate ? ' · Locality center' : ' · Starting point'), kind: 'origin' });
   }
-  const shown = new Map([...places, ...meetup.customVenues ?? []].map(venue => [venue.id, venue]));
+  const shown = new Map([...places, ...meetup?.customVenues ?? []].map(venue => [venue.id, venue]));
   for (const venue of shown.values()) {
     if (venue.point) pins.push({ point: venue.point, label: venue.name + ' · Meeting place', kind: 'venue' });
   }

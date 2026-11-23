@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
 import { Meetup, venues } from './planner';
@@ -10,8 +11,8 @@ const steps = [
   { icon: 'heart', color: 'mint', title: 'Make it happen', text: 'Vote on a place, meet up, and save the memories.' },
 ] as const;
 
-export function Home({ wide, titleSize, meetups, create, open }: {
-  wide: boolean; titleSize: number; meetups: Meetup[]; create: () => void; open: (index: number) => void;
+export function Home({ wide, titleSize, meetups, create, open, shared, signedIn }: {
+  shared?: ReactNode; signedIn?: boolean; wide: boolean; titleSize: number; meetups: Meetup[]; create: () => void; open: (index: number) => void;
 }) {
   return <>
     <View style={[styles.hero, wide && styles.heroWide]}>
@@ -24,9 +25,10 @@ export function Home({ wide, titleSize, meetups, create, open }: {
       <Kits style={wide ? styles.imageWide : styles.image} />
     </View>
 
+    {shared}
     <View style={styles.section}>
       <View style={layout.between}>
-        <View style={{ gap: 5 }}><Label size={29} weight="title" heading>Your meetups</Label><Label color={palette.muted}>Pick up where you left off.</Label></View>
+        <View style={{ gap: 5 }}><Label size={29} weight="title" heading>{signedIn ? 'On this device' : 'Your meetups'}</Label><Label color={palette.muted}>Pick up where you left off.</Label></View>
         {wide && <Button onPress={create} icon="plus" secondary>New meetup</Button>}
       </View>
       {meetups.map((meetup, index) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Open ${meetup.name}`} onPress={() => open(index)}>

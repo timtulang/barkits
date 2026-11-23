@@ -30,6 +30,10 @@ Nunito uses weights 600, 800 and 900 for body, controls and headings respectivel
 - Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus.
 - Keep essential information in text. Use brief, optional motion in celebratory moments and respect reduced motion. Kits makes one brief hop upon meetup completion when reduced motion is off. Controls respond immediately.
 
+## Forms
+
+Lead with the meetup or person’s name and the place search. Offer raw coordinates, fare limits, trip duration, schedule and notes as optional controls. Preserve their values when a section collapses. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
+
 ## Asset licensing
 
 Nunito is distributed under the SIL Open Font License 1.1. Feather icons use the MIT license. Kits is original artwork generated for Barkits. Font and icon notices are stored in `assets/licenses/`.

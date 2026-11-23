@@ -11,6 +11,10 @@ import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
 import { palette, radius } from '../src/theme';
 import { Button, Chip, Icon, Label, layout } from '../src/ui';
+import { JoinDialog, SharedList } from '../src/shared-membership';
+import { SharedMeetupScreen } from '../src/shared-meetup-screen';
+import { createShared } from '../src/services/shared-meetups';
+import { authSetup } from '../src/services/auth';
 import { useAccount } from '../src/use-account';
 
 export default function Index() {
@@ -22,6 +26,10 @@ export default function Index() {
 function Workspace({ user }: { user: User | null }) {
   const storageKey = user ? 'barkits.meetups.v1.' + user.id : 'barkits.meetups.v1';
   const [accountOpen, setAccountOpen] = useState(false);
+  const [sharedId, setSharedId] = useState<string>();
+  const [joining, setJoining] = useState(false);
+  function navigateLocal(next: number | null) { setSharedId(undefined); setIndex(next); }
+  function openShared(id: string) { setIndex(null); setJoining(false); setEditor(null); setSharedId(id); }
   const { width } = useWindowDimensions();
   const wide = width >= 860;
   const [meetups, setMeetups] = useState<Meetup[]>([example]);
@@ -54,7 +62,7 @@ function Workspace({ user }: { user: User | null }) {
   const selected = index === null ? null : meetups[index];
   function saveEditor(meetup: Meetup) {
     if (editor === 'new') {
-      setIndex(meetups.length);
+      navigateLocal(meetups.length);
       setMeetups(current => [...current, meetup]);
     } else {
       save(meetup);
@@ -65,13 +73,13 @@ function Workspace({ user }: { user: User | null }) {
 
   return <SafeAreaView style={styles.safe}>
     <View style={styles.header}><View style={[styles.container, styles.headerInner]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Barkits home" onPress={() => setIndex(null)} style={layout.row}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Barkits home" onPress={() => navigateLocal(null)} style={layout.row}>
         <View style={styles.logo}><Icon name="map-pin" size={21} /></View>
         <Label size={width < 350 ? 22 : 26} weight="title">barkits.</Label>
       </Pressable>
       {wide && <View style={layout.row}>
-        <Chip icon="home" selected={!selected} onPress={() => setIndex(null)}>Home</Chip>
-        <Chip icon="calendar" selected={!!selected} onPress={() => setIndex(0)}>Demo meetup</Chip>
+        <Chip icon="home" selected={!selected && !sharedId} onPress={() => navigateLocal(null)}>Home</Chip>
+        <Chip icon="calendar" selected={!!selected} onPress={() => navigateLocal(0)}>Demo meetup</Chip>
       </View>}
       <View style={layout.row}>
         <Pressable accessibilityRole="button" accessibilityLabel={user ? 'Your account' : 'Sign in'} onPress={() => setAccountOpen(true)}
@@ -82,17 +90,21 @@ function Workspace({ user }: { user: User | null }) {
           onPress={() => setEditor('new')}>{width < 400 ? 'New' : 'New meetup'}</Button>
       </View>
     </View></View>
-    <ScrollView keyboardShouldPersistTaps="handled" key={index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
+    <ScrollView keyboardShouldPersistTaps="handled" key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
-      {ready && (selected ? <MeetupScreen key={index} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => setIndex(null)} /> :
-        <Home wide={wide} titleSize={width >= 1050 ? 55 : wide ? 43 : 36} meetups={meetups} create={() => setEditor('new')} open={setIndex} />)}
+      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
+        <Home wide={wide} titleSize={width >= 1050 ? 55 : wide ? 43 : 36} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user}
+          shared={user ? <SharedList open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
+            <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button> : undefined} />)}
       <View style={styles.footer}>
         <View style={layout.row}><Icon name="map-pin" size={14} color={palette.plum} /><Label size={13} weight="bold" color={palette.plum}>Barkits</Label></View>
         <Label size={13} color={palette.muted}>Made for the barkada.</Label>
       </View>
     </ScrollView>
+    {joining && user && <JoinDialog close={() => setJoining(false)} open={openShared} />}
     {accountOpen && <AccountDialog user={user} close={() => setAccountOpen(false)} />}
     {(editor === 'new' || editor === 'details') && <MeetupEditor key={editor} meetup={editor === 'details' && selected ? selected : undefined}
+      share={editor === 'new' && user ? async (id, meetup, name) => openShared(await createShared(id, meetup, name)) : undefined}
       close={() => setEditor(null)} save={saveEditor} />}
     {editor === 'participant' && selected && <ParticipantEditor meetup={selected} participant={editedFriend}
       close={() => { setEditedFriend(undefined); setEditor(null); }} save={saveEditor} />}
