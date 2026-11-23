@@ -28,8 +28,8 @@ export function Home({ wide, meetups, create, open, shared, signedIn }: {
         {signedIn && <Label size={19} weight="title">On this device</Label>}
         {rows.map(({ item, index }) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={'Open ' + item.name} onPress={() => open(index)}
           style={({pressed}) => [styles.entry, pressed && { backgroundColor: palette.softMango }]}>
-          <View style={{ flex:1, gap:8 }}><StatusMark status={item.status} /><Label size={23} weight="title">{item.name}</Label>
-            <Label size={14} color={palette.muted}>{item.date || 'Date to be decided'} · {item.participants.length} {item.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
+          <View style={{ flex:1, gap:8 }}><Label kind="item">{item.name}</Label><StatusMark status={item.status} />
+            <Label kind="detail">{item.date || 'Date to be decided'} · {item.participants.length} {item.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
             {!!item.venue && <Label weight="bold">{[...venues,...item.customVenues ?? []].find(v => v.id === item.venue)?.name}</Label>}
           </View><Icon name="arrow-right" /></Pressable>)}
         {!rows.length && <Label color={palette.muted}>{past ? 'Completed meetups and their memories appear here.' : 'Plan a meetup to get started.'}</Label>}

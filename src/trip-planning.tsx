@@ -1,3 +1,4 @@
+import { ChoiceField } from './form-controls';
 import type { PlaceResult } from './search-matches';
 import { TripOptions } from './trip-options';
 import { validFare, type RideProvider } from './transport-fares';
@@ -6,18 +7,16 @@ import { View } from 'react-native';
 import { directDistance, parsePoint } from './geo';
 import { PlaceInput } from './place-input';
 import { demoJourney, Meetup, Participant, Venue, venues, retainPlace } from './planner';
-import { Button, Chip, Field, Label, layout, Panel } from './ui';
+import { Button, Field, Label, layout, Panel } from './ui';
 
-export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }: { onAdd: (id: string) => void; initialVenue?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant }) {
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState(Boolean(initialVenue));
+export function TripPlanning({ meetup, save, participant, destinationId, selectDestination }: { selectDestination: (id: string) => void; destinationId?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant }) {
   const [match, setMatch] = useState<PlaceResult>();
   const [place, setPlace] = useState('');
   const [coordinates, setCoordinates] = useState('');
   const [error, setError] = useState('');
-  const [selected, setSelected] = useState(initialVenue ?? venues[0].id);
+  const selected = destinationId ?? venues[0].id;
   const places = [...venues, ...meetup.customVenues ?? []];
-  const venue = places.find(item => item.id === selected)!;
+  const venue = places.find(item => item.id === selected);
   function add() {
     const point = parsePoint(coordinates);
     if (!place.trim()) return setError('Enter a name for the meeting place.');
@@ -28,18 +27,16 @@ export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }:
     } : { id: 'place-' + Date.now(), name: place.trim(), area: 'Group suggestion', icon: 'sun', color: 'mint', category: 'Custom', point };
     save(retainPlace(meetup, spot));
     setMatch(undefined);
-    setSelected(spot.id); setPlace(''); setCoordinates(''); setAdding(false); setError(''); setEditing(true); onAdd(spot.id);
+    selectDestination(spot.id); setPlace(''); setCoordinates(''); setError('');
   }
   return <Panel>
-    <View style={layout.wrap}>
-      <Button secondary icon="search" onPress={() => setAdding(!adding)}>{adding ? 'Close place search' : 'Search meeting places'}</Button>
-      {participant && <Button secondary icon="edit-2" onPress={() => setEditing(!editing)}>{editing ? 'Hide trip inputs' : 'Enter trip details'}</Button>}
-    </View>
-    {adding && <><PlaceInput destination onSelection={setMatch} name={place} setName={setPlace} coordinates={coordinates} setCoordinates={setCoordinates} />
+    <ChoiceField label="Destination" value={selected} change={selectDestination}
+      options={[...places.map(item => ({ value: item.id, label: item.name })), { value: 'new-place', label: 'Search another meeting place…' }]} />
+    {selected === 'new-place' && <><PlaceInput destination onSelection={setMatch} name={place} setName={setPlace} coordinates={coordinates} setCoordinates={setCoordinates} />
       {!!error && <Label>{error}</Label>}<Button onPress={add}>Add meeting place</Button></>}
-    {editing && participant && <>
-      <Label weight="bold">Trip for {participant.name}</Label>
-      <View style={layout.wrap}>{places.map(item => <Chip key={item.id} selected={item.id === selected} onPress={() => setSelected(item.id)}>{item.name}</Chip>)}</View>
+    {!participant && <Label>Add a friend and starting point to enter a trip estimate.</Label>}
+    {venue && participant && <>
+      <Label kind="item" heading>Trip for {participant.name}</Label>
       {participant.point && venue.point && <Label>{directDistance(participant.point, venue.point).toFixed(1)} km straight-line distance</Label>}
       <TripFields key={JSON.stringify([participant.id, venue.id, participant.origin, participant.point, participant.mode])} participant={participant} meetup={meetup} venue={venue} save={save} />
     </>}
@@ -72,12 +69,12 @@ function TripFields({ participant, meetup, venue, save }: { participant: Partici
     setMessage('Trip details saved.');
   }
   return <View style={layout.stack}>
-    <Label>{demo ? 'You can replace this demo trip with your own travel figures.' : 'Enter the expected travel time to include this trip in rankings.'}</Label>
+    <Label kind="detail">{demo ? 'You can replace this demo trip with your own travel figures.' : 'Enter the expected travel time to include this trip in rankings.'}</Label>
+    <Field label="Travel time (minutes)" numeric value={time} onChange={value => { setTime(value); setMessage(''); }} />
+    <Field label="Travel fare (₱, optional)" inputMode="decimal" value={fare} onChange={value => { setFare(value); setProvider(undefined); setMessage(''); }} />
     <TripOptions origin={participant.point?.join(',') ?? participant.origin} destination={venue.point?.join(',') ?? [venue.name,venue.area].filter(Boolean).join(', ')}
       walking={participant.mode === 'Walking'} currentProvider={provider} currentFare={fare} onUse={(p,f) => { setProvider(p); setFare(f); setMessage(''); }} />
     {note && <Label size={13}>Saved {note.provider} fare · {new Date(note.savedAt).toLocaleString('en-PH')}</Label>}
-    <Field label="Travel time (minutes)" numeric value={time} onChange={value => { setTime(value); setMessage(''); }} />
-    <Field label="Travel fare (₱, optional)" inputMode="decimal" value={fare} onChange={value => { setFare(value); setProvider(undefined); setMessage(''); }} />
     <Button onPress={submit}>Save trip details</Button>{!!message && <Label>{message}</Label>}
   </View>;
 }

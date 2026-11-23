@@ -14,7 +14,7 @@ export function GoogleMapsLink({ point }: { point: Point }) {
     }
   }
   return <>
-    <Button secondary onPress={open} icon="external-link">Open in Google Maps</Button>
+    <Button quiet onPress={open} icon="external-link">Open in Google Maps</Button>
     {error && <Label>Couldn’t open Google Maps. Try again.</Label>}
   </>;
 }

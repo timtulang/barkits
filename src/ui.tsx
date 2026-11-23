@@ -1,25 +1,25 @@
 import Feather from '@expo/vector-icons/Feather';
 import { ComponentProps, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View, ViewStyle } from 'react-native';
-import { font, palette, radius, spacing } from './theme';
+import { font, palette, radius, spacing, typography } from './theme';
 
 export type IconName = ComponentProps<typeof Feather>['name'];
 export function Icon({ name, size = 19, color = palette.ink }: { name: IconName; size?: number; color?: string }) {
   return <View aria-hidden importantForAccessibility="no-hide-descendants"><Feather name={name} size={size} color={color} /></View>;
 }
-export function Label({ children, size = 15, weight = 'regular', color = palette.ink, heading = false }: {
-  children: ReactNode; size?: number; weight?: keyof typeof font; color?: string; heading?: boolean;
+export function Label({ children, kind = 'body', size = typography[kind].size, weight = typography[kind].weight, color = typography[kind].color, heading = false }: {
+  children: ReactNode; kind?: keyof typeof typography; size?: number; weight?: keyof typeof font; color?: string; heading?: boolean;
 }) {
-  return <Text accessibilityRole={heading ? 'header' : undefined} style={{ fontFamily: font[weight], color, fontSize: size, letterSpacing: weight === 'title' ? -size * 0.028 : 0, lineHeight: Math.ceil(size * (weight === 'title' ? 1.13 : 1.4)) }}>{children}</Text>;
+  return <Text accessibilityRole={heading ? 'header' : undefined} style={{ fontFamily: font[weight], color, fontSize: size, letterSpacing: weight === 'title' ? -size * 0.028 : 0, lineHeight: Math.ceil(size * (weight === 'title' ? 1.13 : 1.4)), fontVariant: kind === 'value' ? ['tabular-nums'] : undefined }}>{children}</Text>;
 }
-export function Button({ children, icon, onPress, secondary = false, disabled = false, accessibilityLabel }: {
-  children: ReactNode; icon?: IconName; onPress: () => void; secondary?: boolean; disabled?: boolean; accessibilityLabel?: string;
+export function Button({ children, icon, onPress, secondary = false, quiet = false, disabled = false, accessibilityLabel, expanded }: {
+  children: ReactNode; icon?: IconName; onPress: () => void; secondary?: boolean; quiet?: boolean; expanded?: boolean; disabled?: boolean; accessibilityLabel?: string;
 }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} disabled={disabled} onPress={onPress} style={({ pressed }) => [
-    styles.button, secondary && styles.secondary, pressed && { opacity: 0.85 }, disabled && { opacity: 0.45 },
+  return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} accessibilityState={{ expanded, disabled }} disabled={disabled} onPress={onPress} style={({ pressed }) => [
+    styles.button, secondary && styles.secondary, quiet && styles.quiet, pressed && { opacity: 0.85 }, disabled && { opacity: 0.45 },
   ]}>
-    {icon && <Icon name={icon} size={17} color={secondary ? palette.ink : palette.white} />}
-    <Label weight="bold" color={secondary ? palette.ink : palette.white}>{children}</Label>
+    {icon && <Icon name={icon} size={17} color={quiet ? palette.plum : secondary ? palette.ink : palette.white} />}
+    <Label weight="bold" color={quiet ? palette.plum : secondary ? palette.ink : palette.white}>{children}</Label>
   </Pressable>;
 }
 export function Chip({ children, selected, onPress, icon }: {
@@ -38,7 +38,7 @@ export function Field({ label, value, onChange, placeholder, numeric, inputMode,
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean; error?: string; maxLength?: number; multiline?: boolean; inputMode?: 'numeric' | 'decimal' | 'email'; autoComplete?: 'email' | 'one-time-code';
 }) {
   return <View style={{ gap: spacing.xs }}>
-    <Label size={14} weight="bold">{label}</Label>
+    <Label kind="label">{label}</Label>
     <TextInput accessibilityLabel={label} value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={palette.muted}
       maxLength={maxLength} multiline={multiline} inputMode={inputMode ?? (numeric ? 'numeric' : 'text')} autoComplete={autoComplete}
       autoCapitalize={autoComplete ? 'none' : undefined} autoCorrect={autoComplete ? false : undefined} style={[styles.input, multiline && { minHeight: 78, paddingVertical: 10, textAlignVertical: 'top' }, !!error && { borderColor: palette.plum }]} />
@@ -53,9 +53,10 @@ export const layout = StyleSheet.create({
 });
 const styles = StyleSheet.create({
   button: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', minHeight: 44, borderRadius: radius.control, paddingHorizontal: 17, paddingVertical: 10, backgroundColor: palette.ink },
+  quiet: { backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 4 },
   secondary: { backgroundColor: palette.paper, borderWidth: 1, borderColor: palette.line },
   chip: { borderWidth: 1, borderColor: palette.line, backgroundColor: palette.paper, minHeight: 44, paddingHorizontal: 13, paddingVertical: 7, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   selected: { backgroundColor: palette.lavender, borderColor: '#DCC8EA' },
   panel: { backgroundColor: palette.paper, borderWidth: 1, borderColor: palette.line, borderRadius: radius.card, padding: spacing.xl, gap: spacing.md },
-  input: { minHeight: 45, borderRadius: radius.control, borderWidth: 1, borderColor: palette.line, backgroundColor: palette.white, paddingHorizontal: 12, color: palette.ink, fontFamily: font.regular, fontSize: 15 },
+  input: { minHeight: 45, borderRadius: radius.control, borderWidth: 1, borderColor: palette.line, backgroundColor: palette.white, paddingHorizontal: 12, color: palette.ink, fontFamily: font.regular, fontSize: 16 },
 });

@@ -52,11 +52,11 @@ export function SharedMemories({ id, userId, venue, point, archived, members, da
   const average = data.ratings.length ? (data.ratings.reduce((sum,r) => sum + r.stars,0) / data.ratings.length).toFixed(1) : null;
   return <WorkspaceColumns main={<>
     <View style={{ backgroundColor: palette.hero, borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-      <View style={{ flex: 1 }}><Label size={27} weight="title" heading>Meetup memories</Label><Label>{venue}</Label></View>
+      <View style={{ flex: 1 }}><Label kind="section" heading>Meetup memories</Label><Label>{venue}</Label></View>
       <Kits celebrate={!archived} style={{ width: 84, height: 72 }} />
     </View>
     {point && <GoogleMapsLink point={point} />}
-    <View style={layout.between}><Label size={22} weight="title" heading>Recaps</Label>{!archived && <Button onPress={() => setEditor('new')} icon="edit-3">Write a recap</Button>}</View>
+    <View style={layout.between}><Label kind="item" heading>Recaps</Label>{!archived && <Button onPress={() => setEditor('new')} icon="edit-3">Write a recap</Button>}</View>
     {!data.recaps.length && <Label color={palette.muted}>No recaps yet.</Label>}
     {data.recaps.map(post => <Panel key={post.id}>
       <View style={layout.wrap}><Label weight="bold">{members.find(m => m.id === post.author_id)?.name ?? 'Group member'}</Label>

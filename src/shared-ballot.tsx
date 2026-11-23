@@ -31,16 +31,16 @@ function EstimateEditor({ candidate, current, trip, save, close }: {
     catch (problem) { setError(problem instanceof Error ? problem.message : 'Couldn’t save this estimate. Try again.'); }
     finally { setBusy(false); }
   }
-  return <EditorDialog title="Your trip estimate" close={() => { if (!busy) close(); }}>
+  return <EditorDialog title="Your trip estimate" close={close} busy={busy}>
     <Label>{candidate.place.name} · visible to this group</Label>
-    <TripOptions origin={trip.point?.join(',') ?? trip.origin} destination={[candidate.place.latitude,candidate.place.longitude].join(',')}
-      walking={trip.mode === 'Walking'} currentProvider={provider} currentFare={fare} onUse={(p,f) => { setProvider(p); setFare(f); }} />
     <Field label="Travel time (minutes)" numeric value={minutes} onChange={setMinutes}
       error={submitted && !validTime ? 'Enter a whole number of minutes, including zero.' : undefined} />
     <Field label="One-way fare (₱, optional)" inputMode="decimal" value={fare} onChange={text => { setFare(text); setProvider(undefined); }}
       error={submitted && !validFare ? 'Enter a fare in pesos with up to two decimal places.' : undefined} />
+    <TripOptions origin={trip.point?.join(',') ?? trip.origin} destination={[candidate.place.latitude,candidate.place.longitude].join(',')}
+      walking={trip.mode === 'Walking'} currentProvider={provider} currentFare={fare} onUse={(p,f) => { setProvider(p); setFare(f); }} />
     {!!error && <View accessibilityRole="alert"><Label>{error}</Label></View>}
-    <View style={layout.wrap}><Button disabled={busy} onPress={submit}>Save estimate</Button><Button secondary disabled={busy} onPress={close}>Cancel</Button></View>
+    <View style={layout.wrap}><Button disabled={busy} onPress={submit}>Save estimate</Button></View>
   </EditorDialog>;
 }
 
@@ -55,14 +55,14 @@ export function SharedBallot({ id, ballot, members, userId, owner, busy, run, re
   const [editing, setEditing] = useState<Candidate>();
   const myTrip = members.find(m => m.id === userId)?.trip;
   const sorted = [...ballot].sort((a,b) => b.votes.length - a.votes.length || a.place.name.localeCompare(b.place.name) || a.venue_id.localeCompare(b.venue_id));
-  return <Panel><Label size={20} weight="title" heading>Group shortlist</Label>
-    <Label>{ballot.length ? 'Each friend has one vote. You can change yours until the organizer confirms a place.' : 'Add a nearby place for the group to vote on.'}</Label>
+  return <Panel><Label kind="section" heading>Group shortlist</Label>
+    <Label kind="detail">{ballot.length ? 'Each friend has one vote. You can change yours until the organizer confirms a place.' : 'Add a nearby place for the group to vote on.'}</Label>
     {sorted.map(c => {
       const voted = c.votes.some(v => v.user_id === userId);
       const blockers = members.filter(m => unmetLimit(m, c.estimates.find(e => e.user_id === m.id)));
       return <View key={c.venue_id} style={layout.stack}>
-        <Label weight="title" size={18}>{c.place.name}</Label>
-        <Label>{c.votes.length} {c.votes.length === 1 ? 'vote' : 'votes'}{voted ? ' · includes your vote' : ''}</Label>
+        <Label kind="item" heading>{c.place.name}</Label>
+        <Label kind="label">{c.votes.length} {c.votes.length === 1 ? 'vote' : 'votes'}{voted ? ' · includes your vote' : ''}</Label>
         {c.estimates.map(e => <Label key={e.user_id}>{members.find(m => m.id === e.user_id)?.name} · Estimated {e.minutes ?? '—'} min · {e.fare_pesos === null ? 'Fare unknown' : '₱' + e.fare_pesos}{e.source.startsWith('User-entered ') ? ' · ' + e.source + ' · ' + new Date(e.calculated_at).toLocaleString('en-PH') : ''}</Label>)}
         {!!blockers.length && <Label>Needs an estimate within the travel limits for {blockers.map(m => m.name).join(', ')}.</Label>}
         <View style={layout.wrap}>

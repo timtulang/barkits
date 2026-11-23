@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '@supabase/supabase-js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountDialog } from '../src/account-dialog';
@@ -10,7 +10,7 @@ import { Home } from '../src/home';
 import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
 import { palette, radius } from '../src/theme';
-import { Button, Chip, Icon, Label, layout } from '../src/ui';
+import { Button, Icon, Label, layout } from '../src/ui';
 import { JoinDialog, SharedList } from '../src/shared-membership';
 import { SharedMeetupScreen } from '../src/shared-meetup-screen';
 import { createShared } from '../src/services/shared-meetups';
@@ -24,6 +24,7 @@ export default function Index() {
 }
 
 function Workspace({ user }: { user: User | null }) {
+  const scroll = useRef<ScrollView>(null);
   const storageKey = user ? 'barkits.meetups.v1.' + user.id : 'barkits.meetups.v1';
   const [accountOpen, setAccountOpen] = useState(false);
   const [sharedId, setSharedId] = useState<string>();
@@ -77,22 +78,18 @@ function Workspace({ user }: { user: User | null }) {
         <View style={styles.logo}><Icon name="map-pin" size={21} /></View>
         <Label size={width < 350 ? 22 : 26} weight="title" color={palette.cream}>barkits.</Label>
       </Pressable>
-      {wide && <View style={layout.row}>
-        <Chip icon="home" selected={!selected && !sharedId} onPress={() => navigateLocal(null)}>Home</Chip>
-        <Chip icon="calendar" selected={index === 0} onPress={() => navigateLocal(0)}>Demo meetup</Chip>
-      </View>}
       <View style={layout.row}>
         <Pressable accessibilityRole="button" accessibilityLabel={user ? 'Your account' : 'Sign in'} onPress={() => setAccountOpen(true)}
           style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
           <Icon name="user" color={palette.cream} />{wide && <Label weight="bold" color={palette.cream}>{user ? 'Account' : 'Sign in'}</Label>}
         </Pressable>
-        <Button secondary disabled={!ready} accessibilityLabel="New meetup" icon={width < 400 ? undefined : 'plus'}
-          onPress={() => setEditor('new')}>{width < 400 ? 'New' : 'New meetup'}</Button>
+        {(selected || sharedId) && <Button secondary disabled={!ready} accessibilityLabel="New meetup" icon={width < 400 ? undefined : 'plus'}
+          onPress={() => setEditor('new')}>{width < 400 ? 'New' : 'New meetup'}</Button>}
       </View>
     </View></View>
-    <ScrollView keyboardShouldPersistTaps="handled" key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
+    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
-      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
+      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
         <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user}
           shared={past => user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
             <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button> : undefined} />)}

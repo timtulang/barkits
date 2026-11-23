@@ -51,7 +51,7 @@ export function PlaceSearchField({ label, value, change, select }: {
           }
         }}
         onSubmitEditing={() => { if (results[active]) pick(results[active]); else if (total === 1) pick(results[0]); else setOpen(true); }}
-        style={{ flex: 1, minWidth: 0, height: 44, fontFamily: font.regular, color: palette.ink, fontSize: 15 }} />
+        style={{ flex: 1, minWidth: 0, height: 44, fontFamily: font.regular, color: palette.ink, fontSize: 16 }} />
       {!!value && <Pressable accessibilityRole="button" accessibilityLabel={'Clear ' + label.toLowerCase()} onPress={() => { update(''); field.current?.focus(); }} style={styles.clear}>
         <Icon name="x" size={16} />
       </Pressable>}

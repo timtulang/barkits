@@ -86,6 +86,6 @@ export function AccountDialog({ user, close }: { user: User | null; close: () =>
       <Button disabled={busy} onPress={send}>{busy ? 'Sending…' : 'Send code'}</Button>
     </>}
     {!!error && <Label>{error}</Label>}
-    <Button secondary onPress={close}>Close</Button>
+
   </EditorDialog>;
 }

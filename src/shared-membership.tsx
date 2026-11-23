@@ -1,3 +1,4 @@
+import { IconAction } from './form-controls';
 import * as Clipboard from 'expo-clipboard';
 import { useState, useRef } from 'react';
 import { Text, View } from 'react-native';
@@ -12,7 +13,7 @@ export function SharedList({ open, join, past }: { past: boolean; open: (id: str
   const groups = data?.filter(g => ['completed','archived'].includes(g.status) === past);
   return <View style={layout.stack}><Label weight="title" size={22} heading>Shared meetups</Label>
     <View style={layout.wrap}><Button secondary icon="users" onPress={join}>Join with code</Button>
-      <Button secondary disabled={loading} onPress={refresh} icon="refresh-cw">Refresh list</Button></View>
+      <IconAction disabled={loading} onPress={refresh} name="refresh-cw" label="Refresh list" /></View>
     {loading && <Label>Loading shared meetups…</Label>}
     {!!error && <Label>{error}</Label>}
     {groups?.map(group => <Button key={group.id} secondary icon="users" onPress={() => open(group.id)}>{group.name}</Button>)}
@@ -39,13 +40,13 @@ export function JoinDialog({ open, close }: { open: (id: string) => void; close:
     catch (e) { setError(e instanceof Error ? e.message : 'Couldn’t join this meetup. Try again.'); }
     finally { pending.current = false; setBusy(false); }
   }
-  return <EditorDialog title="Join a meetup" close={() => { if (!busy) close(); }}>
+  return <EditorDialog title="Join a meetup" close={close} busy={busy}>
     <Field label="Invite code" placeholder="Paste the organizer’s code" value={code} onChange={setCode}
       error={submitted && !validCode ? 'Enter the 16-character code. Spaces and hyphens are OK.' : undefined} />
     <Field label="Your display name" placeholder="What your friends call you" value={name} onChange={setName} maxLength={80}
       error={submitted && !name.trim() ? 'Enter the name your friends will see.' : undefined} />
     {!!error && <View accessibilityRole="alert"><Label>{error}</Label></View>}
-    <View style={layout.wrap}><Button disabled={busy} onPress={join}>{busy ? 'Joining…' : 'Join meetup'}</Button><Button secondary disabled={busy} onPress={close}>Cancel</Button></View>
+    <View style={layout.wrap}><Button disabled={busy} onPress={join}>{busy ? 'Joining…' : 'Join meetup'}</Button></View>
   </EditorDialog>;
 }
 

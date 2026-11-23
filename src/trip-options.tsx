@@ -37,12 +37,12 @@ export function TripOptions({ origin, destination, walking, onUse, currentProvid
   const fare = lrtFare(from, to);
   const comparison = compareRideFares(quotes.Angkas, quotes.Grab);
   return <View style={layout.stack}>
-    <Label weight="title" size={18}>Check your trip</Label>
+    <Label kind="item" heading>Check your trip</Label>
     {connection && !walking && <View style={{ backgroundColor: palette.mint, borderRadius: radius.control, padding: spacing.md, gap: spacing.xs }}>
       <Label weight="bold">Possible LRT-1 trip · ₱{connection.fare} rail fare</Label>
       <Label>Board at {connection.boarding.name} · Toward {connection.toward}</Label>
       <Label>Get off at {connection.exit.name}</Label>
-      <Label size={14}>Straight-line distance to the train is {connection.boarding.distance.toFixed(1)} km from your start and {connection.exit.distance.toFixed(1)} km from your destination. Check access and service in transit directions.</Label>
+      <Label kind="detail">Straight-line distance to the train is {connection.boarding.distance.toFixed(1)} km from your start and {connection.exit.distance.toFixed(1)} km from your destination. Check access and service in transit directions.</Label>
     </View>}
     <Label size={14} color={palette.muted}>Directions open in Google Maps with this starting point and destination.</Label>
     <View style={layout.wrap}>
@@ -55,11 +55,11 @@ export function TripOptions({ origin, destination, walking, onUse, currentProvid
       <StationField label="Boarding station" value={from} change={setFrom} />
       <StationField label="Exit station" value={to} change={setTo} />
       {from && to && <Label weight="bold">{fare === undefined ? 'Choose two different stations.' : '₱' + fare + ' · ' + from + ' to ' + to}</Label>}
-      <Label size={14}>Rail leg only. Add any jeepney, bus, or other connecting fares to your one-way total.</Label>
+      <Label kind="detail">Rail leg only. Add any jeepney, bus, or other connecting fares to your one-way total.</Label>
       <Button secondary icon="external-link" onPress={() => visit(lrtFareSource)}>LRMC fare matrix · April 2, 2025</Button>
     </>}
     {tab === 'rides' && <>
-      <Label size={14}>Check the same pickup and destination in the Angkas and Grab apps, then enter the prices here. Only the fare you choose is saved with your trip.</Label>
+      <Label kind="detail">Check the same pickup and destination in the Angkas and Grab apps, then enter the prices here. Only the fare you choose is saved with your trip.</Label>
       {rideProviders.map(provider => <View key={provider} style={layout.stack}>
         <Field label={provider + ' app price (₱)'} inputMode="decimal" value={quotes[provider]} onChange={text => setQuotes(q => ({ ...q, [provider]: text }))} />
         <View style={layout.wrap}><Button secondary icon="external-link" onPress={() => visit(websites[provider])}>{provider} website</Button>

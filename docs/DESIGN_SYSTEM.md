@@ -23,6 +23,10 @@ Kits is an original, waving coral location pin with a cream face, deep-ink outli
 
 Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 20-point radius, and buttons and fields use 12. `src/ui.tsx` contains the shared labels, buttons, chips, fields, panels, and Feather icon wrapper. Product state and ranking logic live outside that layer.
 
+## Text hierarchy
+
+Use the role scale in `src/theme.ts` with the shared Label. Page titles are 36 points, major sections 28 and venue or item titles 22. Body and numeric values are 16. Field labels and supporting details are 14. Nunito’s heaviest weight leads the page, bold identifies a name or value, and muted ink carries location, provenance and context. Keep a venue name close to its location. Align people and distance values across a row and state a shared approximation once. Travel rankings group total minutes, time gap and cost under their own labels. Allow long names to wrap and let figures reflow before they collide.
+
 ## Voice and access
 
 - Write short English labels for actions and navigation. Use natural Filipino-English in welcome copy, empty states, and recap prompts. “Kita-kits, barkada!” works as a greeting. “Finalize location” names the action clearly.
@@ -34,11 +38,11 @@ Nunito uses weights 600, 800 and 900 for body, controls and headings respectivel
 
 Barkits uses a deep-ink navigation bar and a mango welcome panel with Kits. The home view places active and past meetups beside the welcome panel on wide web screens and immediately below it on phones. Shared and on-device plans keep their own labels. Status marks combine text, color and an icon. A completed meetup returns through Past meetups.
 
-Planning and memories use a primary work area with a narrower roster, invitations or rating column at 940 px and above. On phones the panels stack. Starting-point entry comes first when needed. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
+Planning and memories use a primary work area with a narrower roster, invitations or rating column at 940 px and above. On phones the panels stack. On phones, an empty roster leads to Add friend. Once an on-device plan has participants, venue suggestions come first. Nearby places, Travel rankings and Trip details appear as labeled sections. Use a pencil for editing a named item, a circular arrow for refresh, and an × for closing a sheet. Give each icon-only action a descriptive accessible name, a 44-point target and a hover title on web. Keep decisions, prices and permission requests in words. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
 
 ## Forms
 
-Lead with the meetup or person’s name and the place search. Offer raw coordinates, fare limits, trip duration, schedule and notes as optional controls. Preserve their values when a section collapses. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
+Lead with the meetup or person’s name and the place search. Show the optional schedule, notes and travel limits directly in the form. Present raw coordinates as a labeled alternative to place search. Use a labeled selector for a single choice such as transportation mode. Keep the close icon in the sheet header and the main creation or save action in the footer. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
 
 ## Trip comparisons
 

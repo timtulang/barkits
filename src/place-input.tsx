@@ -55,11 +55,9 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
       onSelection?.(place);
     }} />
     <View style={layout.wrap}>
-      {!destination && <Button secondary icon="crosshair" disabled={locating} onPress={detect}>{locating ? 'Finding location…' : 'Use my location'}</Button>}
-      <Button secondary icon="map" onPress={() => setShowMap(!showMap)}>{showMap ? 'Hide map' : 'Choose on map'}</Button>
-    </View>
-    <View style={layout.wrap}>
-      <Button secondary onPress={() => setShowCoordinates(!showCoordinates)}>{showCoordinates ? 'Hide coordinates' : coordinates ? 'Edit coordinates' : 'Enter coordinates'}</Button>
+      {!destination && <Button quiet icon="crosshair" disabled={locating} onPress={detect}>{locating ? 'Finding location…' : 'Use my location'}</Button>}
+      <Button quiet icon="map" expanded={showMap} onPress={() => setShowMap(!showMap)}>{showMap ? 'Hide map' : 'Choose on map'}</Button>
+      <Button quiet expanded={showCoordinates} onPress={() => setShowCoordinates(!showCoordinates)}>{showCoordinates ? 'Hide coordinates' : coordinates ? 'Edit coordinates' : 'Enter coordinates'}</Button>
     </View>
     {showCoordinates && <Field label="Coordinates (optional)" placeholder="14.5995, 120.9842" value={coordinates} onChange={edit} />}
     {!!message && <Label>{message}</Label>}

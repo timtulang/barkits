@@ -1,10 +1,11 @@
+import { ChoiceField, FormSection } from './form-controls';
 import { EditorDialog } from './editor-dialog';
 import { parsePoint } from './geo';
 import { PlaceInput } from './place-input';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { Meetup, modes, Participant } from './planner';
-import { Button, Chip, Field, Label, layout } from './ui';
+import { Button, Field, Label } from './ui';
 import { palette } from './theme';
 
 type Props = { participant?: Participant; close: () => void } & (
@@ -21,7 +22,6 @@ export function ParticipantEditor(props: Props) {
   const [budget, setBudget] = useState(participant?.budget?.toString() ?? '');
   const [duration, setDuration] = useState(participant?.maxMinutes?.toString() ?? '');
   const [error, setError] = useState('');
-  const [limitsOpen, setLimitsOpen] = useState(Boolean(budget || duration));
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const pending = useRef(false);
@@ -31,7 +31,7 @@ export function ParticipantEditor(props: Props) {
     setSubmitted(true);
     setError('');
     if (pending.current || !name.trim()) return;
-    if (invalidFare || invalidTime) { setLimitsOpen(true); return; }
+    if (invalidFare || invalidTime) return;
     const point = parsePoint(coordinates);
     if (coordinates.trim() && !point) return setError('Enter valid latitude and longitude separated by a comma.');
     if (!origin.trim() && !point) return setError('Enter a starting place, use your location, or choose a map pin.');
@@ -70,21 +70,20 @@ export function ParticipantEditor(props: Props) {
       [...meetup.participants, friend];
     save({ ...meetup, participants, fareNotes, manualFares, manualMinutes });
   }
-  return <EditorDialog title={member ? 'Your starting point' : participant ? 'Edit friend' : 'Add a friend'} close={() => { if (!saving) close(); }}>
+  return <EditorDialog title={member ? 'Your starting point' : participant ? 'Edit friend' : 'Add a friend'} close={close} busy={saving} actions={<Button disabled={saving} onPress={submit}>{saving ? 'Saving…' : 'Save'}</Button>}>
     {member ? <Label>Your starting point and travel preferences are visible to members of this meetup.</Label> :
       <Field label="Name" placeholder="Your friend’s name" value={name} onChange={setName}
         error={submitted && !name.trim() ? 'Enter a name to continue.' : undefined} />}
     <PlaceInput name={origin} setName={setOrigin} coordinates={coordinates} setCoordinates={setCoordinates} />
-    <Label weight="bold">Transportation</Label>
-    <View style={layout.wrap}>{modes.map(item => <Chip key={item} onPress={() => setMode(item)} selected={item === mode}>{item}</Chip>)}</View>
-    <Button secondary icon={limitsOpen ? 'chevron-up' : 'chevron-down'} onPress={() => setLimitsOpen(!limitsOpen)}>{limitsOpen ? 'Hide travel limits' : 'Add travel limits'}</Button>
-    {limitsOpen && <>
+    <ChoiceField label="Transportation" value={mode} options={modes.map(value => ({ value, label: value }))} change={setMode} />
+    <FormSection title="Travel limits (optional)">
+      <Label size={14} color={palette.muted}>Places must fit any limit you set for this one-way trip.</Label>
       <Field label="Maximum fare in ₱ (optional)" placeholder="e.g. 100" inputMode="decimal" value={budget} onChange={setBudget}
         error={submitted && invalidFare ? 'Enter a fare from ₱0 to ₱9,999,999.99 with up to two decimal places.' : undefined} />
       <Field label="Maximum minutes (optional)" placeholder="e.g. 45" numeric value={duration} onChange={setDuration}
         error={submitted && invalidTime ? 'Enter a positive whole number of minutes.' : undefined} />
-    </>}
+    </FormSection>
     {!!error && <View accessibilityRole="alert"><Label color={palette.plum}>{error}</Label></View>}
-    <View style={layout.wrap}><Button disabled={saving} onPress={submit}>{saving ? 'Saving…' : 'Save'}</Button><Button secondary disabled={saving} onPress={close}>Cancel</Button></View>
+
   </EditorDialog>;
 }
