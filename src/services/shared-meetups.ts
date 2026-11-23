@@ -1,7 +1,10 @@
-import type { Meetup, Participant } from '../planner';
+import type { Meetup, Participant, Venue } from '../planner';
 import { authSetup } from './auth';
 
-export type SharedSummary = { id: string; owner_id: string; name: string; description: string | null; activity: string | null; starts_at: string | null };
+export type SharedSummary = { id: string; owner_id: string; name: string; description: string | null; activity: string | null; starts_at: string | null; status: Lowercase<Meetup['status']> };
+export type SharedPlace = { name: string; latitude: number; longitude: number; catalog_key: string | null };
+export type SharedEstimate = { user_id: string; minutes: number | null; fare_pesos: number | null };
+export type Candidate = { venue_id: string; place: SharedPlace; votes: { user_id: string }[]; estimates: SharedEstimate[] };
 type Origin = { user_id: string; label: string; latitude: number | null; longitude: number | null; mode: Participant['mode']; max_fare_pesos: number | null; max_minutes: number | null };
 export type Member = { id: string; name: string; trip?: Participant };
 
@@ -11,17 +14,19 @@ function client() {
 }
 async function result<T>(query: PromiseLike<{ data: T | null; error: { message: string; code?: string } | null }>) {
   const { data, error } = await query;
-  if (error) throw new Error(['PGRST202', 'PGRST205', '42P01'].includes(error.code ?? '') ?
+  if (error) throw new Error(['PGRST202', 'PGRST205', '42P01', '42703', 'PGRST200'].includes(error.code ?? '') ?
     'Shared meetups need the Barkits database migrations in this Supabase project.' : error.message);
   return data;
 }
-const fields = 'id,owner_id,name,description,activity,starts_at';
+const fields = 'id,owner_id,name,description,activity,starts_at,status';
+const placeFields = 'name,latitude,longitude,catalog_key';
+const decisionFields = fields + ',chosen:venues!meetups_venue_id_fkey(' + placeFields + '),ballot:meetup_candidates(venue_id,place:venues!meetup_candidates_venue_id_fkey(' + placeFields + '),votes:meetup_votes(user_id),estimates:meetup_journeys(user_id,minutes,fare_pesos))';
 export async function listShared() {
   return (await result(client().from('meetups').select(fields).order('created_at', { ascending: false }))) as SharedSummary[];
 }
 export async function getShared(id: string) {
   const [summary, roster, origins] = await Promise.all([
-    result<SharedSummary>(client().from('meetups').select(fields).eq('id', id).single()),
+    result(client().from('meetups').select(decisionFields).eq('id', id).single<SharedSummary & { chosen: SharedPlace | null; ballot: Candidate[] }>()),
     result(client().from('meetup_members').select('user_id,display_name').eq('meetup_id', id).order('display_name')),
     result(client().from('meetup_origins').select('user_id,label,latitude,longitude,mode,max_fare_pesos,max_minutes').eq('meetup_id', id)),
   ]);
@@ -49,4 +54,18 @@ export async function saveOwnTrip(id: string, friend: Participant) {
   await result(client().from('meetup_origins').upsert({ meetup_id: id, user_id: friend.id, label: friend.origin,
     mode: friend.mode, latitude: friend.point?.[0] ?? null, longitude: friend.point?.[1] ?? null,
     max_fare_pesos: friend.budget ?? null, max_minutes: friend.maxMinutes ?? null }));
+}
+
+export async function shortlistPlace(id: string, venue: Venue) {
+  if (!venue.point) throw new Error('Choose a place with a map pin.');
+  await result(client().rpc('shortlist_shared_venue', { target: id, place_key: venue.id, place_name: venue.name, lat: venue.point[0], lng: venue.point[1] }));
+}
+export async function setSharedVote(id: string, candidate: string | null) {
+  await result(client().rpc('set_shared_vote', { target: id, candidate }));
+}
+export async function saveEstimate(id: string, candidate: string, minutes: number, fare: number | null) {
+  await result(client().rpc('save_shared_estimate', { target: id, candidate, trip_minutes: minutes, fare }));
+}
+export async function finalizeShared(id: string, candidate: string) {
+  await result(client().rpc('finalize_shared_venue', { target: id, candidate }));
 }

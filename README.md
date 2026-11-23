@@ -41,12 +41,17 @@ Email sign-in uses Supabase Auth directly.
 
 ### Shared meetups and invite codes
 
-Apply both SQL files in `supabase/migrations` in timestamp order to the same Supabase project as Auth. With a linked development project, `supabase db push --dry-run` previews the pending migrations and `supabase db push` applies them. Projects that previously applied the initial schema only need the new shared-meetups migration. Use the publishable key already configured for the app.
+Apply the SQL migrations in `supabase/migrations` in timestamp order to the same Supabase project as Auth. With a linked development project, `supabase db push --dry-run` previews the pending migrations and `supabase db push` applies them. For an existing project, apply only its pending migrations, including the shared decisions migration. Use the publishable key already configured for the app.
 
 1. Sign in and choose **Plan a meetup → With friends**. Add a meetup name and the display name your friends will see. Schedule and notes are optional.
 2. Open **Create invite code** and copy the code to send to one friend. It expires after 24 hours. Creating another code replaces any unused one.
 3. On another device, the friend signs in and chooses **Shared meetups → Join with code**. The group can see each member’s display name and the starting point and preferences they choose to save.
-4. Each member selects **Add my starting point**. Use **Refresh group** to see new members and updated origins. Once every origin is located, Barkits calculates nearby venues for the group. Shared voting and final venue selection are future steps.
+4. Each member selects **Add my starting point**. Use **Refresh group** to see new members and updated origins. Once every origin is located, Barkits calculates nearby venues for the group.
+5. Select **Add to shortlist** beside a suggestion. Every member can vote for one venue, change their vote, or withdraw it. Use **Refresh group** to see other members’ changes.
+6. Use **My trip estimate** on a shortlisted venue to enter your own one-way minutes and optional fare. Members with a fare or duration limit need a matching estimate within that limit for the organizer to finalize the venue. Changing your starting point or transportation mode clears your previous estimates.
+7. The organizer chooses **Choose this spot → Finalize location**. Members can reopen the meetup to see the confirmed venue and its map.
+
+For database verification against a migrated local Supabase database, run `psql "$DATABASE_URL" -f scripts/check-shared-meetups.sql`. The script uses temporary fixtures inside a rolled-back transaction.
 
 Guest planning, the form improvements, and offline venue search work without Supabase or a Google Maps key.
 
