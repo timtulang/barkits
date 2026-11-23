@@ -1,3 +1,5 @@
+import { railConnection } from './rail-connection.ts';
+import { compareRideFares, lrtFare, lrtStations, transitUrl, validFare } from './transport-fares.ts';
 import { indexPlace, matchPlaces } from './search-matches.ts';
 import { activityCategory, discover, type VenueRow } from './discovery.ts';
 import type { Point } from './geo.ts';
@@ -87,4 +89,48 @@ test('place search handles reordered words, branch addresses, aliases and accent
   assert.equal(matchPlaces(index, 'Luna', 1).results.length, 1);
   assert.equal(matchPlaces(index, 'R').total, 0);
   assert.equal(matchPlaces(index, 'Cebu Makati').total, 0);
+});
+
+test('LRT-1 single-journey fares cover the published stations in either direction', () => {
+  assert.equal(lrtStations.length, 25);
+  for (const from of lrtStations) for (const to of lrtStations) {
+    const fare = lrtFare(from, to);
+    if (from === to) assert.equal(fare, undefined);
+    else {
+      assert.ok(fare && fare >= 20 && fare <= 55 && fare % 5 === 0);
+      assert.equal(fare, lrtFare(to, from));
+    }
+  }
+  assert.equal(lrtFare('Dr. Santos', 'Fernando Poe Jr.'), 55);
+  assert.equal(lrtFare('Monumento', 'Baclaran'), 40);
+  assert.equal(lrtFare('PITX', 'EDSA'), 25);
+  assert.equal(lrtFare('Unknown', 'EDSA'), undefined);
+});
+test('commute directions keep each selected endpoint intact', () => {
+  const url = new URL(transitUrl('Quiapo & Sta. Cruz', '14.55,121.02'));
+  assert.equal(url.searchParams.get('origin'), 'Quiapo & Sta. Cruz');
+  assert.equal(url.searchParams.get('destination'), '14.55,121.02');
+  assert.equal(url.searchParams.get('travelmode'), 'transit');
+  assert.equal(new URL(transitUrl('A','B',true)).searchParams.get('travelmode'), 'walking');
+  assert.ok(validFare('0.00'));
+  assert.ok(!validFare('') && !validFare('-1') && !validFare('25.119'));
+});
+
+test('nearby LRT-1 pins suggest a directional rail leg and exclude unsuitable endpoints', () => {
+  const south: Point = [14.4853, 120.98956], north: Point = [14.65749, 121.02121];
+  const leg = railConnection(south, north);
+  assert.equal(leg?.boarding.name, 'Dr. Santos');
+  assert.equal(leg?.toward, 'Fernando Poe Jr.');
+  assert.equal(leg?.fare, 55);
+  assert.equal(railConnection(north, south)?.toward, 'Dr. Santos');
+  assert.equal(railConnection(south, south), undefined);
+  assert.equal(railConnection(south, [10.3, 123.9]), undefined);
+  assert.equal(railConnection(undefined, north), undefined);
+});
+
+test('ride fare comparison preserves centavos and leaves missing quotes unknown', () => {
+  assert.equal(compareRideFares('90', '80.50'), 'Grab is ₱9.50 lower for this trip.');
+  assert.equal(compareRideFares('45', '75'), 'Angkas is ₱30 lower for this trip.');
+  assert.equal(compareRideFares('45.00', '45'), 'Both entered fares are equal.');
+  assert.equal(compareRideFares('', '0'), undefined);
 });

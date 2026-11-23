@@ -40,6 +40,10 @@ Planning and memories use a primary work area with a narrower roster, invitation
 
 Lead with the meetup or person’s name and the place search. Offer raw coordinates, fare limits, trip duration, schedule and notes as optional controls. Preserve their values when a section collapses. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
 
+## Trip comparisons
+
+Keep the route, one-way fare and travel time together. Use the mint panel for a possible train connection. Name the boarding and exit stations, direction, rail-only amount and distance to each station. Put the operator and effective date beside the fare lookup. Use a provider name and save time for a ride price entered by a rider. Keep Kits in the welcome and memory screens so travel decisions have room for names, numbers and controls.
+
 ## Asset licensing
 
 Nunito is distributed under the SIL Open Font License 1.1. Feather icons use the MIT license. Kits is original artwork generated for Barkits. Font and icon notices are stored in `assets/licenses/`.

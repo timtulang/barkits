@@ -1,6 +1,7 @@
+import type { FareNote } from './transport-fares';
 import type { Point } from './geo';
 export const origins = ['Caloocan', 'Quezon City', 'Makati', 'Pasig'] as const;
-export const modes = ['Public transport', 'Private car', 'Motorcycle taxi'] as const;
+export const modes = ['Public transport', 'Private car', 'Motorcycle taxi', 'Ride-hailing car', 'Walking', 'Mixed commute'] as const;
 export const rankings = ['Balanced', 'Fairest', 'Fastest', 'Cheapest'] as const;
 export type Mode = typeof modes[number];
 export type Ranking = typeof rankings[number];
@@ -26,7 +27,7 @@ export function demoJourney(venue: Venue, participant: Participant): Journey | u
   switch (participant.mode) {
     case 'Private car': return { minutes: Math.round(minutes * 0.85), fare: Math.round(fare * 1.7) };
     case 'Motorcycle taxi': return { minutes: Math.round(minutes * 0.68), fare: null };
-    default: return { minutes, fare };
+    case 'Public transport': return { minutes, fare };
   }
 }
 export function recommend(participants: Participant[], ranking: Ranking, manualFares: ManualFares = {}, customVenues: Venue[] = [], manualMinutes: ManualFares = {}) {
@@ -68,6 +69,7 @@ export type Meetup = {
   participants: Participant[];
   status: 'Draft' | 'Planning' | 'Decided' | 'Completed' | 'Archived';
   votes: Record<string, string>;
+  fareNotes?: Record<string, Record<string, FareNote>>;
   manualFares?: ManualFares;
   manualMinutes?: ManualFares;
   customVenues?: Venue[];

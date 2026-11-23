@@ -18,7 +18,7 @@ export function activityCategory(activity = ''): Category {
 
 export function discover(friends: LocatedFriend[], category: Category, catalog: VenueRow[]) {
   if (!friends.length) return [];
-  const transitShare = friends.filter(friend => friend.mode === 'Public transport').length / friends.length;
+  const transitShare = friends.filter(friend => (friend.mode === 'Public transport' || friend.mode === 'Mixed commute')).length / friends.length;
   const candidates = catalog.flatMap(([id, name, area, kind, lat, lng, nearBus]) => {
     if (category !== 'All' && kind !== category) return [];
     // latitude alone bounds the minimum possible distance

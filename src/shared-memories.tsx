@@ -2,6 +2,8 @@ import { randomUUID } from 'expo-crypto';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { EditorDialog } from './editor-dialog';
+import type { Point } from './geo';
+import { GoogleMapsLink } from './google-maps-link';
 import { Kits } from './kits';
 import type { Member } from './services/shared-meetups';
 import { rateMeetup, readMemories, writeRecap, type Recap } from './services/shared-memories';
@@ -40,8 +42,8 @@ function RecapEditor({ group, post, close, refresh }: { group: string; post?: Re
   </EditorDialog>;
 }
 
-export function SharedMemories({ id, userId, venue, archived, members, data, refresh, busy, run, archiveAction }: {
-  id: string; userId: string; venue: string; archived: boolean; members: Member[]; data: Awaited<ReturnType<typeof readMemories>>;
+export function SharedMemories({ id, userId, venue, point, archived, members, data, refresh, busy, run, archiveAction }: {
+  id: string; userId: string; venue: string; point?: Point; archived: boolean; members: Member[]; data: Awaited<ReturnType<typeof readMemories>>;
   refresh: () => void; busy: boolean; run: (action: () => Promise<void>) => Promise<boolean>; archiveAction?: React.ReactNode;
 }) {
   const [editor,setEditor] = useState<Recap | 'new'>();
@@ -53,6 +55,7 @@ export function SharedMemories({ id, userId, venue, archived, members, data, ref
       <View style={{ flex: 1 }}><Label size={27} weight="title" heading>Meetup memories</Label><Label>{venue}</Label></View>
       <Kits celebrate={!archived} style={{ width: 84, height: 72 }} />
     </View>
+    {point && <GoogleMapsLink point={point} />}
     <View style={layout.between}><Label size={22} weight="title" heading>Recaps</Label>{!archived && <Button onPress={() => setEditor('new')} icon="edit-3">Write a recap</Button>}</View>
     {!data.recaps.length && <Label color={palette.muted}>No recaps yet.</Label>}
     {data.recaps.map(post => <Panel key={post.id}>

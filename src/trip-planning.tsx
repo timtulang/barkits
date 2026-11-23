@@ -1,4 +1,6 @@
 import type { PlaceResult } from './search-matches';
+import { TripOptions } from './trip-options';
+import { validFare, type RideProvider } from './transport-fares';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { directDistance, parsePoint } from './geo';
@@ -39,7 +41,7 @@ export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }:
       <Label weight="bold">Trip for {participant.name}</Label>
       <View style={layout.wrap}>{places.map(item => <Chip key={item.id} selected={item.id === selected} onPress={() => setSelected(item.id)}>{item.name}</Chip>)}</View>
       {participant.point && venue.point && <Label>{directDistance(participant.point, venue.point).toFixed(1)} km straight-line distance</Label>}
-      <TripFields key={participant.id + ':' + venue.id} participant={participant} meetup={meetup} venue={venue} save={save} />
+      <TripFields key={JSON.stringify([participant.id, venue.id, participant.origin, participant.point, participant.mode])} participant={participant} meetup={meetup} venue={venue} save={save} />
     </>}
   </Panel>;
 }
@@ -47,6 +49,8 @@ export function TripPlanning({ meetup, save, participant, initialVenue, onAdd }:
 function TripFields({ participant, meetup, venue, save }: { participant: Participant; meetup: Meetup; venue: Venue; save: (m: Meetup) => void }) {
   const savedTime = meetup.manualMinutes?.[venue.id]?.[participant.id];
   const savedFare = meetup.manualFares?.[venue.id]?.[participant.id];
+  const note = meetup.fareNotes?.[venue.id]?.[participant.id];
+  const [provider,setProvider] = useState<RideProvider | undefined>(note?.provider);
   const [time, setTime] = useState(savedTime?.toString() ?? '');
   const [fare, setFare] = useState(savedFare?.toString() ?? '');
   const [message, setMessage] = useState('');
@@ -54,20 +58,26 @@ function TripFields({ participant, meetup, venue, save }: { participant: Partici
   function submit() {
     const minutes = time.trim() ? Number(time) : undefined;
     const cost = fare.trim() ? Number(fare) : undefined;
-    if ([minutes, cost].some(value => value !== undefined && (!Number.isFinite(value) || value < 0))) {
-      return setMessage('Enter a nonnegative number or leave the field blank.');
+    if ((fare.trim() && !validFare(fare)) || [minutes, cost].some(value => value !== undefined && (!Number.isFinite(value) || value < 0))) {
+      return setMessage('Enter a nonnegative time and a peso fare with up to two decimal places.');
     }
     const times = { ...meetup.manualMinutes?.[venue.id] };
     const fares = { ...meetup.manualFares?.[venue.id] };
     if (minutes === undefined) delete times[participant.id]; else times[participant.id] = minutes;
     if (cost === undefined) delete fares[participant.id]; else fares[participant.id] = cost;
-    save({ ...meetup, manualMinutes: { ...meetup.manualMinutes, [venue.id]: times }, manualFares: { ...meetup.manualFares, [venue.id]: fares } });
+    const notes = { ...meetup.fareNotes?.[venue.id] };
+    if (provider && cost !== undefined) notes[participant.id] = { provider, savedAt: new Date().toISOString() };
+    else delete notes[participant.id];
+    save({ ...meetup, fareNotes: { ...meetup.fareNotes, [venue.id]: notes }, manualMinutes: { ...meetup.manualMinutes, [venue.id]: times }, manualFares: { ...meetup.manualFares, [venue.id]: fares } });
     setMessage('Trip details saved.');
   }
   return <View style={layout.stack}>
     <Label>{demo ? 'You can replace this demo trip with your own travel figures.' : 'Enter the expected travel time to include this trip in rankings.'}</Label>
+    <TripOptions origin={participant.point?.join(',') ?? participant.origin} destination={venue.point?.join(',') ?? [venue.name,venue.area].filter(Boolean).join(', ')}
+      walking={participant.mode === 'Walking'} currentProvider={provider} currentFare={fare} onUse={(p,f) => { setProvider(p); setFare(f); setMessage(''); }} />
+    {note && <Label size={13}>Saved {note.provider} fare · {new Date(note.savedAt).toLocaleString('en-PH')}</Label>}
     <Field label="Travel time (minutes)" numeric value={time} onChange={value => { setTime(value); setMessage(''); }} />
-    <Field label="Travel fare (₱, optional)" numeric value={fare} onChange={value => { setFare(value); setMessage(''); }} />
+    <Field label="Travel fare (₱, optional)" inputMode="decimal" value={fare} onChange={value => { setFare(value); setProvider(undefined); setMessage(''); }} />
     <Button onPress={submit}>Save trip details</Button>{!!message && <Label>{message}</Label>}
   </View>;
 }

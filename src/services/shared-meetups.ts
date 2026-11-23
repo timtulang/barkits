@@ -1,17 +1,18 @@
+import type { RideProvider } from '../transport-fares';
 import type { Meetup, Participant, Venue } from '../planner';
 import { client, result } from './shared-client';
 import { readMemories } from './shared-memories';
 
 export type SharedSummary = { id: string; owner_id: string; name: string; description: string | null; activity: string | null; starts_at: string | null; status: Lowercase<Meetup['status']> };
 export type SharedPlace = { name: string; latitude: number; longitude: number; catalog_key: string | null };
-export type SharedEstimate = { user_id: string; minutes: number | null; fare_pesos: number | null };
+export type SharedEstimate = { source: string; calculated_at: string; user_id: string; minutes: number | null; fare_pesos: number | null };
 export type Candidate = { venue_id: string; place: SharedPlace; votes: { user_id: string }[]; estimates: SharedEstimate[] };
 type Origin = { user_id: string; label: string; latitude: number | null; longitude: number | null; mode: Participant['mode']; max_fare_pesos: number | null; max_minutes: number | null };
 export type Member = { id: string; name: string; trip?: Participant };
 
 const fields = 'id,owner_id,name,description,activity,starts_at,status';
 const placeFields = 'name,latitude,longitude,catalog_key';
-const decisionFields = fields + ',chosen:venues!meetups_venue_id_fkey(' + placeFields + '),ballot:meetup_candidates(venue_id,place:venues!meetup_candidates_venue_id_fkey(' + placeFields + '),votes:meetup_votes(user_id),estimates:meetup_journeys(user_id,minutes,fare_pesos))';
+const decisionFields = fields + ',chosen:venues!meetups_venue_id_fkey(' + placeFields + '),ballot:meetup_candidates(venue_id,place:venues!meetup_candidates_venue_id_fkey(' + placeFields + '),votes:meetup_votes(user_id),estimates:meetup_journeys(user_id,minutes,fare_pesos,source,calculated_at))';
 export async function listShared() {
   return (await result(client().from('meetups').select(fields).order('created_at', { ascending: false }))) as SharedSummary[];
 }
@@ -56,8 +57,8 @@ export async function shortlistPlace(id: string, venue: Venue) {
 export async function setSharedVote(id: string, candidate: string | null) {
   await result(client().rpc('set_shared_vote', { target: id, candidate }));
 }
-export async function saveEstimate(id: string, candidate: string, minutes: number, fare: number | null) {
-  await result(client().rpc('save_shared_estimate', { target: id, candidate, trip_minutes: minutes, fare }));
+export async function saveEstimate(id: string, candidate: string, minutes: number, fare: number | null, provider?: RideProvider) {
+  await result(client().rpc('save_shared_fare_estimate', { target: id, candidate, trip_minutes: minutes, fare, provider: provider ?? null }));
 }
 export async function finalizeShared(id: string, candidate: string) {
   await result(client().rpc('finalize_shared_venue', { target: id, candidate }));

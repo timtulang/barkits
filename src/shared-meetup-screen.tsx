@@ -100,7 +100,7 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
       {editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}
         saveTrip={async trip => { await saveOwnTrip(id, trip); setEditing(false); refresh(); }} />}
       </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</>} />}
-      {data.memories && <SharedMemories id={id} userId={userId} venue={chosen?.name ?? data.summary.name} members={data.members}
+      {data.memories && <SharedMemories id={id} userId={userId} venue={chosen?.name ?? data.summary.name} point={chosen ? [chosen.latitude,chosen.longitude] : undefined} members={data.members}
         archived={data.summary.status === 'archived'} data={data.memories} refresh={refresh} run={run} busy={acting || loading}
         archiveAction={data.summary.status === 'completed' && data.summary.owner_id === userId ? lifecycle : undefined} />}
     </>}

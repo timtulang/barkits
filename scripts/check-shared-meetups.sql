@@ -60,7 +60,12 @@ select pg_temp.check_result(count(*)=1 and bool_and(venue_id=:'cafe'),'changing 
 select public.set_shared_vote(:'meetup',null);
 select pg_temp.check_result(count(*)=0,'vote withdrawal failed') from public.meetup_votes where meetup_id=:'meetup';
 insert into public.meetup_origins(meetup_id,user_id,label,mode,max_fare_pesos,max_minutes) values(:'meetup',:'friend','Makati','Public transport',50,45);
-select public.save_shared_estimate(:'meetup',:'park',30,45);
+select public.save_shared_fare_estimate(:'meetup',:'park',30,45,'Angkas');
+select pg_temp.check_result(source='User-entered Angkas' and calculated_at is not null and fare_pesos=45,'provider fare lost its source or time')
+  from public.meetup_journeys where meetup_id=:'meetup' and user_id=:'friend' and venue_id=:'park';
+select public.save_shared_fare_estimate(:'meetup',:'park',30,42,null);
+select pg_temp.check_result(source='Participant estimate','manual edit retained a stale provider')
+  from public.meetup_journeys where meetup_id=:'meetup' and user_id=:'friend' and venue_id=:'park';
 update public.meetup_origins set label='Pasig' where meetup_id=:'meetup' and user_id=:'friend';
 select pg_temp.check_result(count(*)=0,'moving an origin must clear the old estimates') from public.meetup_journeys where meetup_id=:'meetup';
 

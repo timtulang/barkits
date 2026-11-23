@@ -48,9 +48,14 @@ export function ParticipantEditor(props: Props) {
       return;
     }
     const { meetup, save } = props;
+    const fareNotes = { ...meetup.fareNotes };
     const manualFares = { ...meetup.manualFares };
     const manualMinutes = { ...meetup.manualMinutes };
     if (participant && (participant.mode !== mode || participant.origin !== friend.origin || participant.point?.join() !== point?.join())) {
+      for (const venueId of Object.keys(fareNotes)) {
+        fareNotes[venueId] = { ...fareNotes[venueId] };
+        delete fareNotes[venueId][participant.id];
+      }
       for (const venueId of Object.keys(manualMinutes)) {
         manualMinutes[venueId] = { ...manualMinutes[venueId] };
         delete manualMinutes[venueId][participant.id];
@@ -63,7 +68,7 @@ export function ParticipantEditor(props: Props) {
     }
     const participants = participant ? meetup.participants.map(item => item.id === participant.id ? friend : item) :
       [...meetup.participants, friend];
-    save({ ...meetup, participants, manualFares, manualMinutes });
+    save({ ...meetup, participants, fareNotes, manualFares, manualMinutes });
   }
   return <EditorDialog title={member ? 'Your starting point' : participant ? 'Edit friend' : 'Add a friend'} close={() => { if (!saving) close(); }}>
     {member ? <Label>Your starting point and travel preferences are visible to members of this meetup.</Label> :

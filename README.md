@@ -24,6 +24,12 @@ For a static web export, run `npm run build:web`. Run `npm start` to use a compa
 
 Open the Saturday catch-up demo to compare four friends' trips, try ranking modes, cast votes, finalize a venue, complete the meetup, and save a recap or optional ratings. A new meetup starts with an empty group.
 
+## Try trip options
+
+Open **Saturday catch-up → Enter trip details**, pick a friend and a venue, then open **Compare ride fares**. Enter the prices shown for the same trip in Angkas and Grab, choose one, and save the trip. In a shared meetup, use **Group shortlist → My trip estimate**. The saved fare shows its provider and when the estimate was saved. Live provider prices require approved access.
+
+With a starting pin and a destination near different LRT-1 stations, **Check your trip** suggests boarding and exit stations, direction and the regular single-journey fare. You can also use **LRT-1 fares** to search any two stations. Enter the full one-way amount when connecting by jeepney, bus or another paid leg. **Transit directions** opens the selected trip in Google Maps without a Google Cloud key.
+
 ## Enable email sign-in
 
 Barkits supports guest planning immediately. When email sign-in is enabled, open the account icon, enter your email, then enter the code from your inbox. On-device meetups are saved separately for guests and each account. Signing out restores the guest list.
@@ -41,7 +47,7 @@ Email sign-in uses Supabase Auth directly.
 
 ### Shared meetups and invite codes
 
-Apply the SQL migrations in `supabase/migrations` in timestamp order to the same Supabase project as Auth. With a linked development project, `supabase db push --dry-run` previews the pending migrations and `supabase db push` applies them. For an existing project, apply only its pending migrations, including the shared decisions migration. Use the publishable key already configured for the app.
+Apply the SQL migrations in `supabase/migrations` in timestamp order to the same Supabase project as Auth. With a linked development project, `supabase db push --dry-run` previews the pending migrations and `supabase db push` applies them. For an existing project, apply only its pending migrations, including the shared decisions, shared memories and fare sources migrations. Use the publishable key already configured for the app.
 
 1. Sign in and choose **Plan a meetup → With friends**. Add a meetup name and the display name your friends will see. Schedule and notes are optional.
 2. Open **Create invite code** and copy the code to send to one friend. It expires after 24 hours. Creating another code replaces any unused one.

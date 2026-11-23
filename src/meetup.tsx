@@ -68,7 +68,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
       <View style={layout.wrap}><Label size={23} weight="title">Your barkada</Label>{canEdit && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
       {meetup.participants.length === 0 && <View style={layout.row}><Kits style={{ width: 85, height: 58, borderRadius: 10 }} /><Label color={palette.muted}>Add friends to compare meetup spots.</Label></View>}
       {meetup.participants.map(friend => <View key={friend.id} style={layout.between}><View style={{ flex: 1 }}><Label><Label weight="bold">{friend.name}</Label> · {friend.origin} · {friend.mode}{friend.budget === undefined ? '' : ` · ₱${friend.budget} limit`}{friend.maxMinutes === undefined ? '' : ` · ${friend.maxMinutes} min limit`}</Label></View>{canEdit && <Chip onPress={() => editFriend(friend)}>Edit {friend.name}</Chip>}</View>)}
-    </Panel>} main={<>
+    </Panel>} main={meetup.status === 'Draft' ? null : <>
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>
         <Label size={28} weight="title">Suggested meeting places</Label>
@@ -96,7 +96,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back }: {
             {index === 0 && <Chip selected>Top match</Chip>}</View>
           {index === 0 && <Label color={palette.muted}>{rankingDescriptions[ranking]}</Label>}
           <Label>{journeys.every(trip => trip.timeEntered) ? 'User-entered time' : journeys.some(trip => trip.timeEntered) ? 'Demo and user-entered times' : 'Demo time'} · {time} min total · {spread} min difference · {cost === null ? 'Total fare unavailable' : `₱${cost} total${journeys.some(journey => journey.manual) ? ' · includes user-entered fares' : ''}`}</Label>
-          {expanded === item.id && journeys.map(({ participant, minutes, fare, manual, timeEntered }) => <Label key={participant.id}>{participant.name} · {participant.mode} · {minutes} min ({timeEntered ? 'user-entered' : 'demo'}) · {fare === null ? 'Fare unavailable' : `₱${fare} ${manual ? 'user-entered fare' : 'demo fare'}`}</Label>)}
+          {expanded === item.id && journeys.map(({ participant, minutes, fare, manual, timeEntered }) => <Label key={participant.id}>{participant.name} · {participant.mode} · {minutes} min ({timeEntered ? 'user-entered' : 'demo'}) · {fare === null ? 'Fare unavailable' : `₱${fare} ${manual ? 'user-entered ' + (meetup.fareNotes?.[item.id]?.[participant.id]?.provider ?? 'fare') : 'demo fare'}`}</Label>)}
           <View style={layout.wrap}>
             <Button secondary onPress={() => setExpanded(expanded === item.id ? '' : item.id)}>{expanded === item.id ? 'Hide trips' : 'View trips'}</Button>
           </View>

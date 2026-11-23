@@ -5,6 +5,7 @@ import { Icon, Label, layout, type IconName } from './ui';
 
 export function WorkspaceColumns({ main, side, sideFirst = false }: { main: ReactNode; side: ReactNode; sideFirst?: boolean }) {
   const wide = useWindowDimensions().width >= 940;
+  if (!main) return <View style={layout.stack}>{side}</View>;
   const primary = <View key="main" style={[layout.stack, { minWidth: 0 }, wide && { flex: 1.85 }]}>{main}</View>;
   const aside = <View key="side" style={[layout.stack, { minWidth: 0 }, wide && { flex: 1 }]}>{side}</View>;
   return <View style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? spacing.section : spacing.lg }}>
