@@ -5,7 +5,7 @@
 - 2026-11-25 [CODE] Now: Phase 0 complete; Phase 1 and 2 implementations complete. Native acceptance remains open; Phase 2 live authenticated checks also unavailable.
 - 2026-11-25 [TOOL] Phase 2 types, 13 tests, web/Android/iOS exports, browser navigation/recovery/responsive checks pass; scoped review says ship for web checkpoint.
 - 2026-11-25 [USER] Open: no native environment available; earlier chat-only requirements UNCONFIRMED. Presentation fixtures do not verify live backend behavior.
-- 2026-11-25 [CODE] Next: commit validated Phase 2, report, STOP. Phase 3A creation/editing/scheduling requires separate authorization.
+- 2026-11-25 [CODE] Next: Phase 2 committed; report and STOP. Phase 3A creation/editing/scheduling requires separate authorization.
 
 ## Decisions
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request; checkpoint and stop. Explicit Phase 2 request supersedes previous lack of authorization, not unavailable native checks.
@@ -44,4 +44,4 @@
 - 2026-11-25 [TOOL] 320/390/1440 home/shared and 600/859/860/1280 home checks pass; enlarged browser text and keyboard row activation pass.
 - 2026-11-25 [TOOL] Detector `[]`; diff whitespace clean; all app/src code modules <300 lines; no lint script exists.
 - 2026-11-25 [TOOL] Known Leaflet asset/tooling warnings remain nonfatal. Tests/types/exports logs in ignored checkpoint artifacts.
-- 2026-11-25 [CODE] Roadmap/handoff/design docs updated. Validated Phase 2 changes not yet committed; no push/deployment.
+- 2026-11-25 [CODE] Roadmap/handoff/design docs updated. Phase 2 committed as `38e826d`; tree clean afterward. Receipt follows in a docs-only commit; no push/deployment.

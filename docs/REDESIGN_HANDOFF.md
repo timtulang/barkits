@@ -45,7 +45,7 @@ Node 24 executable: `/tmp/barkits-runtime/node_modules/node-linux-x64/bin/node`;
 Existing Leaflet CSS asset warnings, tooling color/deprecation warnings and Node module-type warning remain; tests/exports succeed. No new known implementation blocker. Impeccable's previously reported product metadata drift remains outside scope; existing project docs are authoritative.
 
 ## Git checkpoint
-Starting tree was clean at `bcb6722`, following foundation `e2c1d8e`. Phase 2 changes are currently validated but uncommitted; the next action is the scoped checkpoint commit. No push or deployment performed.
+Starting tree was clean at `bcb6722`, following foundation `e2c1d8e`. Phase 2 implementation committed successfully as `38e826d` — `refactor(ui): redesign application shell and meetup home`. Working tree was clean after that commit. This receipt is saved in a following documentation-only commit; verify current status when resuming. No push or deployment performed.
 
 ## Exact next action
-Commit Phase 2 and record the successful commit receipt, then report and STOP. On a later explicit authorization, resume **Phase 3A — meetup creation/editing and scheduling**; preserve completed surfaces. Native and authenticated acceptance remain open, not implied by exports or presentation fixtures. See the master roadmap for phase boundaries.
+Phase 2 is checkpointed. Report and STOP. On a later explicit authorization, resume **Phase 3A — meetup creation/editing and scheduling**; preserve completed surfaces. Native and authenticated acceptance remain open, not implied by exports or presentation fixtures. See the master roadmap for phase boundaries.
