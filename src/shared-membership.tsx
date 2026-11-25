@@ -1,25 +1,12 @@
-import { IconAction } from './form-controls';
 import * as Clipboard from 'expo-clipboard';
 import { useState, useRef } from 'react';
 import { Text, View } from 'react-native';
 import { EditorDialog } from './editor-dialog';
-import { issueCode, joinShared, listShared } from './services/shared-meetups';
+import { issueCode, joinShared } from './services/shared-meetups';
 import { Button, Field, Label, layout, Panel } from './ui';
-import { useSharedData } from './use-shared-data';
 import { font, palette } from './theme';
 
-export function SharedList({ open, join, past }: { past: boolean; open: (id: string) => void; join: () => void }) {
-  const { data, loading, refresh, error } = useSharedData(listShared);
-  const groups = data?.filter(g => ['completed','archived'].includes(g.status) === past);
-  return <View style={layout.stack}><Label weight="title" size={22} heading>Shared meetups</Label>
-    <View style={layout.wrap}><Button secondary icon="users" onPress={join}>Join with code</Button>
-      <IconAction disabled={loading} onPress={refresh} name="refresh-cw" label="Refresh list" /></View>
-    {loading && <Label>Loading shared meetups…</Label>}
-    {!!error && <Label>{error}</Label>}
-    {groups?.map(group => <Button key={group.id} secondary icon="users" onPress={() => open(group.id)}>{group.name}</Button>)}
-    {!loading && !error && !groups?.length && <Label>{past ? 'No past shared meetups yet.' : 'Choose “With friends” when you plan a meetup to invite your group.'}</Label>}
-  </View>;
-}
+export { SharedList } from './shared-meetup-list';
 
 export function JoinDialog({ open, close }: { open: (id: string) => void; close: () => void }) {
   const [code, setCode] = useState('');

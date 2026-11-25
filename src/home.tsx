@@ -1,52 +1,67 @@
-import { useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
+import { MeetupListItem } from './meetup-list-item';
 import { Meetup, venues } from './planner';
-import { palette, radius, spacing } from './theme';
-import { Button, Chip, Icon, Label, layout } from './ui';
-import { StatusMark } from './workspace-layout';
+import { colors, palette, radius, spacing } from './theme';
+import { Button, Chip, EmptyState, Label, layout } from './ui';
 
-export function Home({ wide, meetups, create, open, shared, signedIn }: {
-  shared?: (past: boolean) => ReactNode; signedIn?: boolean; wide: boolean; meetups: Meetup[]; create: () => void; open: (index: number) => void;
+export function Home({ wide, meetups, create, open, shared, signedIn, past, setPast }: {
+  shared?: ReactNode; signedIn: boolean; wide: boolean; meetups: Meetup[]; create: () => void;
+  open: (index: number) => void; past: boolean; setPast: (past: boolean) => void;
 }) {
-  const [past, setPast] = useState(false);
-  const rows = meetups.map((item,index) => ({ item,index })).filter(({ item }) => ['Completed','Archived'].includes(item.status) === past);
-  return <View style={[styles.board, wide && styles.columns]}>
+  const rows = meetups.map((item, index) => ({ item, index }))
+    .filter(({ item }) => ['Completed', 'Archived'].includes(item.status) === past);
+  return <View style={styles.board}>
     <View style={[styles.welcome, wide && styles.welcomeWide]}>
-      <View style={[styles.intro, wide && { padding: 32 }]}>
-        <Label size={wide ? 48 : 31} weight="title" heading>Tara, kita-kits!</Label>
-        <Label size={16}>Find a meeting place that works for the whole barkada.</Label>
-        <Button icon="plus" onPress={create}>Plan a meetup</Button>
+      <View style={styles.intro}>
+        <View style={layout.row}><Label kind={wide ? 'page' : 'section'} heading>Tara, kita-kits!</Label>
+          {!wide && <Kits style={styles.artSmall} />}</View>
+        <Label>Find a meeting place that works for the whole barkada.</Label>
+        <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button></View>
       </View>
-      <Kits style={wide ? styles.artWide : styles.artSmall} />
+      {wide && <Kits style={styles.artWide} />}
     </View>
-    <View style={[styles.plans,wide && { flex: 1.7 }]}>
-      <Label size={wide ? 38 : 29} weight="title" heading>Your meetups</Label>
-      <View style={layout.row}><Chip selected={!past} onPress={() => setPast(false)}>Active plans</Chip>
-        <Chip selected={past} onPress={() => setPast(true)}>Past meetups</Chip></View>
-      <View style={styles.entries}>
-        {signedIn && <Label size={19} weight="title">On this device</Label>}
-        {rows.map(({ item, index }) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={'Open ' + item.name} onPress={() => open(index)}
-          style={({pressed}) => [styles.entry, pressed && { backgroundColor: palette.softMango }]}>
-          <View style={{ flex:1, gap:8 }}><Label kind="item">{item.name}</Label><StatusMark status={item.status} />
-            <Label kind="detail">{item.date || 'Date to be decided'} · {item.participants.length} {item.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
-            {!!item.venue && <Label weight="bold">{[...venues,...item.customVenues ?? []].find(v => v.id === item.venue)?.name}</Label>}
-          </View><Icon name="arrow-right" /></Pressable>)}
-        {!rows.length && <Label color={palette.muted}>{past ? 'Completed meetups and their memories appear here.' : 'Plan a meetup to get started.'}</Label>}
+    <View style={styles.plans}>
+      <View style={[styles.listHeader, wide && styles.listHeaderWide]}>
+        <Label kind="section" heading>Your meetups</Label>
+        <View style={layout.wrap}>
+          <Chip selected={!past} onPress={() => setPast(false)}>Active plans</Chip>
+          <Chip selected={past} onPress={() => setPast(true)}>Past meetups</Chip>
+        </View>
       </View>
-      {shared?.(past)}
+      <View style={[styles.groups, wide && !!shared && styles.columns]}>
+        <View style={[styles.group, wide && !!shared && { flex: 1 }]}>
+          <View style={styles.groupIntro}><Label kind="item" heading>On this device</Label>
+            <Label kind="detail">{signedIn ? 'Kept on this device for your account. Not shared with friends.' : 'Kept in this browser or app. Not shared with friends.'}</Label>
+          </View>
+          {rows.map(({ item, index }) => <MeetupListItem key={index} name={item.name} status={item.status}
+            date={item.date || 'Date to be decided'} detail={`${item.participants.length} ${item.participants.length === 1 ? 'friend' : 'friends'}`}
+            demo={index === 0}
+            venue={item.venue ? [...venues, ...item.customVenues ?? []].find(venue => venue.id === item.venue)?.name : undefined}
+            onPress={() => open(index)} />)}
+          {!rows.length && <EmptyState title={past ? 'No past meetups yet' : 'Your next catch-up starts here'}>
+            {past ? 'Completed and archived plans will appear here, along with their memories.' : 'Choose “Plan a meetup” to bring your barkada together.'}
+          </EmptyState>}
+        </View>
+        {!!shared && <View style={[styles.group, wide && !!shared && { flex: 1 }]}>{shared}</View>}
+      </View>
     </View>
   </View>;
 }
+
 const styles = StyleSheet.create({
   board: { gap: spacing.section },
-  columns: { flexDirection:'row', alignItems:'flex-start', gap:40 },
-  welcome: { backgroundColor:palette.hero,borderRadius:radius.hero,overflow:'hidden',flexDirection:'row',alignItems:'center' },
-  welcomeWide: { flex:1,flexDirection:'column',alignItems:'stretch',paddingBottom:12 },
-  intro: { flex:1,gap:12,padding:20 },
-  artWide: { width:'100%',height:218 },
-  artSmall: { width:'29%',height:115 },
-  plans: { minWidth:0,gap:18 },
-  entries: { gap:12,borderTopWidth:1,borderColor:palette.line,paddingTop:16 },
-  entry: { backgroundColor:palette.paper,borderRadius:radius.card,padding:20,borderWidth:1,borderColor:palette.line,flexDirection:'row',alignItems:'center',gap:12 },
+  welcome: { backgroundColor: palette.hero, borderRadius: radius.hero, flexDirection: 'row', alignItems: 'center', padding: spacing.xl, gap: spacing.sm },
+  welcomeWide: { paddingHorizontal: spacing.section },
+  intro: { flex: 1, minWidth: 0, gap: spacing.md, maxWidth: 620 },
+  artWide: { flex: 1, height: 180, maxWidth: 300 },
+  artSmall: { width: 64, height: 64 },
+  plans: { gap: spacing.xl },
+  listHeader: { gap: spacing.lg },
+  listHeaderWide: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  groups: { gap: spacing.section },
+  columns: { flexDirection: 'row', alignItems: 'flex-start' },
+  group: { minWidth: 0, gap: spacing.md },
+  groupIntro: { gap: spacing.sm, paddingBottom: spacing.sm, borderBottomWidth: 1, borderColor: colors.divider },
 });

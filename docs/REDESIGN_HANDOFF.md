@@ -1,58 +1,51 @@
 # Redesign handoff
 
-Updated: 2026-11-25 · **Phase 1 implementation complete; status PARTIAL because native acceptance is unavailable. STOP before Phase 2.**
+Updated: 2026-11-25 · **Phase 2 implementation complete; acceptance PARTIAL pending native and live authenticated checks. STOP before Phase 3A.**
 
 ## Resume order and authorization
-Read `CONTINUITY.md`, `AGENTS.md`, `docs/REDESIGN_PLAN.md`, this file, and Git status/diff. One request authorizes one phase/subphase. The user's interruption/recovery messages continued Phase 1 only. Do not repeat Phase 0 or start Phase 2 automatically.
+Read `CONTINUITY.md`, `AGENTS.md`, `docs/REDESIGN_PLAN.md`, this file, and Git status/diff. Latest user instruction explicitly authorized Phase 2 after the completed Phase 1 implementation. One request authorizes one phase/subphase. Do not repeat the audit/foundation or start 3A automatically. No native environment is available; that limitation remains open.
 
-## Completed in Phase 1
-- Extended the existing theme with semantic text/surface/control/feedback colors, 48-point control minimum, shared sheet elevation and caption type role. Retained brand palette, fonts, spacing and radii.
-- Split shared controls into small modules behind stable `src/ui.tsx` exports. Existing call sites remain compatible.
-- Added button variants and busy state; disabled/hover/pressed treatments; check-mark chip selection; wrapping action labels; accessible field errors/hints; reusable Feedback, LoadingState and EmptyState.
-- Updated choice/icon controls, status marks, sheet styling and browser focus/selection/caret/scrollbars. Unknown status fails explicitly rather than silently becoming planning.
-- Added explicit web ARIA busy/expanded/pressed states after browser checks showed React Native Web does not translate every native accessibilityState value.
-- Updated design-system documentation and roadmap. No screen composition, domain calculations, storage keys, service contracts, package/lockfile or schemas changed.
+## Completed in Phase 2
+- Paper application header with coral brand mark, home/account actions, responsive New meetup action, shared spacing and footer. Shell presentation extracted; app entry retains navigation and data ownership.
+- Full-width mango welcome with compact Kits on phones; clear Plan a meetup action; active/past plans below. Local/shared scopes have explicit explanations and become two columns at 860px.
+- Common meetup summary rows with status, date and available details; shared plans no longer appear as name-only buttons. No invented member counts, travel metrics or venue data. Existing local demo-label behavior retained.
+- Active/Past selection survives returning home. Creation, join/account entry and map-first planning handlers preserved.
+- Visible font/account/local/shared loading; contextual empty states; local load/save retries and shared refresh recovery. Failed loads do not replace saved data; failed refreshes identify retained summaries.
+- Preserved storage keys/account separation, stored data shape, services, calculations, editor/planner behavior, dependencies and assets.
 
-## Working set
-- Modified: `src/theme.ts`, `src/ui.tsx`, `src/form-controls.tsx`, `src/editor-dialog.tsx`, `src/workspace-layout.tsx`, `global.css`.
-- Added modules: `src/ui-text.tsx`, `src/ui-actions.tsx`, `src/ui-field.tsx`, `src/ui-feedback.tsx`, `src/ui-styles.ts`.
-- Documentation: `docs/DESIGN_SYSTEM.md`, `docs/REDESIGN_PLAN.md`, this handoff, `CONTINUITY.md`.
-- Temporary `app/__foundation.tsx` verification route removed; no incomplete code edits.
+## Files affected
+- Modified: `app/index.tsx`, `app/_layout.tsx`, `src/home.tsx`, `src/shared-membership.tsx` (SharedList extraction only).
+- Added: `src/app-shell.tsx`, `src/meetup-list-item.tsx`, `src/shared-meetup-list.tsx`.
+- Documentation: `docs/DESIGN_SYSTEM.md`, `docs/REDESIGN_PLAN.md`, this file, `CONTINUITY.md`.
+- Temporary `app/__phase2.tsx` removed before exports; no incomplete source edits. Its illustrative fixture is retained only in ignored validation artifacts.
 
 ## Validation receipts
 | Check | Result |
 |---|---|
-| `npx tsc --noEmit` | Passed after web export completed |
-| `npm test` | All 13 domain tests passed after recovery |
-| `npm run build:web` | Passed; generated `dist` is ignored |
-| Expo Android and iOS export | Both passed separately, including DOM/WebView bundles; not device builds or runtime tests |
-| Browser controls | Passed before shutdown: busy/disabled guards, button/chip/select interactions, error/input association, visible keyboard focus, hover/pressed states, 48px targets and no control overflow at 320/390px |
-| Existing browser flow | Passed: home → invalid creation → save draft → participant validation → demo map → details → travel rankings → home |
-| Visual inspection | Desktop control states/planner and phone home/form/error states inspected before shutdown; no material defects found in that bounded pass |
-| Contrast | 14 enabled text/control pairs passed: text at least 4.5:1, boundaries at least 3:1 |
-| Design detector | No findings (`[]`); native accessibility still requires runtime verification |
-| Module size | Every app/src code file remains under 300 lines; new UI modules are 13–63 lines |
-| Lint | No lint script exists; not run |
-| Native/shared backend runtime | Not run; user explicitly confirmed no native environment. No backend behavior changed |
+| `npx tsc --noEmit` | Passed after final exports and fixture removal |
+| `npm test` | All 13 domain tests passed |
+| `npm run build:web` | Passed |
+| Expo Android / iOS exports | Both passed separately, including DOM/WebView bundles; not native runtime validation |
+| Guest browser navigation | Passed account entry, Active/Past, creation validation/save draft, retained filter on return, demo map/details/home |
+| Local storage failures | Malformed saved data remained intact; corrected data loaded on retry. Simulated save failure displayed and retry recovered |
+| Shared presentation fixture | Loading/disabled refresh, error/stale summaries/retry, empty, active/past, open/account callbacks and real join-dialog entry passed; no backend writes |
+| Responsive / keyboard | Home/shared at 320/390/1440; home also 600/859/860/1280. No overflow; controls at least 48px; keyboard row focus/Enter opens map. At 320px, a 160-character name and doubled browser text fit without horizontal text/control overflow; not native font-scaling validation |
+| Scoped visual review | Independent reviewer: **ship** for Phase 2 web presentation/implementation checkpoint; no material UI findings in supplied captures |
+| Source hygiene / detector | `git diff --check` passes; all app/src modules under 300 lines; detector returned `[]` (not native verification) |
+| Lint | No configured lint command; not run |
+| Native / authenticated integration | Unavailable; safe areas, native font scaling/keyboard, VoiceOver/TalkBack and live shared sessions remain unverified |
 
-## Recovery and environment
-The laptop shutdown preserved source, dependencies and handoff, but cleared temporary browser captures/scripts/runtime and lost export processes. Browser results above are recorded receipts, not currently available screenshot artifacts. Recovered Node and reran final types/tests/exports; did not repeat the full audit or redesign.
+First browser pass found a squeezed primary button at 320px; moving mobile Kits beside the title fixed it. Stacked groups now use natural heights rather than equal flex heights. Verification scripts initially used incorrect close labels, disabled-state assertion and CDP injection/key-event setup; these were corrected before the associated checks passed.
 
-Current temporary Node 24.22.3 executable: `/tmp/barkits-runtime/node_modules/node-linux-x64/bin/node`. Prefix commands with `PATH=/tmp/barkits-runtime/node_modules/node-linux-x64/bin:$PATH`. System Node 20 does not support the test runner's type-stripping flag. After another restart, use a proper Node 24 installation; `node_modules` is already installed and the lockfile is unchanged.
+## Recovery and evidence
+Ignored `.expo/redesign/phase2/` contains browser scripts, illustrative fixture, screenshots, detector output, web/Android/iOS/type logs and native export artifacts. These survive ordinary workspace restarts but are not Git checkpoints. Browser check receipts are split across `browser-checks.log`, `browser-rest.log`, `browser-shared.log`, `responsive.log`; early script failures are retained, with final successful checks recorded above. Source and documentation are the durable checkpoint.
 
-Final temporary export logs: `/tmp/barkits-web-export.log`, `/tmp/barkits-android-export.log`, `/tmp/barkits-ios-export.log`; native artifacts in `/tmp/barkits-android-export` and `/tmp/barkits-ios-export`. These may disappear on reboot.
+Node 24 executable: `/tmp/barkits-runtime/node_modules/node-linux-x64/bin/node`; prefix commands with `PATH=/tmp/barkits-runtime/node_modules/node-linux-x64/bin:$PATH`. If `/tmp` is cleared, restore Node 24; system Node 20 cannot run the type-stripping tests. Dependencies remain installed from the unchanged lockfile. Run export and typechecking sequentially because the existing TS include scans generated `dist` files.
 
-Run web export and typechecking sequentially: the existing TS include pattern also scans generated `dist` files, so concurrent export briefly caused TS6053 while a bundle was replaced. Sequential typecheck passed; no source fix was required. Existing Leaflet CSS asset warnings and Node module-type warning remain; exports/tests succeed.
-
-## Decisions and limits
-Use `theme.ts` and the current StyleSheet architecture; no utility-class migration. Keep Feather/Nunito/Kits and stable public imports. New feedback/busy APIs are ready for per-screen adoption; later screen phases still own replacing their inline messages and async presentation. Global CSS mirrors five theme colors and must stay synchronized.
-
-Platform exports do not establish native safe-area, keyboard, font-scaling, VoiceOver/TalkBack or interaction acceptance. This requirement is open, not waived by the user's statement that hardware is unavailable. No claim of whole-app accessibility compliance.
-
-Impeccable reported legacy product metadata and no Platform section; existing project instructions already identify Android/iOS/web. Its metadata repair/init is separate optional work, not performed as a side effect.
+Existing Leaflet CSS asset warnings, tooling color/deprecation warnings and Node module-type warning remain; tests/exports succeed. No new known implementation blocker. Impeccable's previously reported product metadata drift remains outside scope; existing project docs are authoritative.
 
 ## Git checkpoint
-Foundation checkpoint committed successfully as `e2c1d8e` — `refactor(ui): establish shared design system foundation`. Baseline was `423481e`. Git status was clean after the checkpoint; this receipt is stored in a following documentation-only commit. Verify current status when resuming. No push or deployment performed.
+Starting tree was clean at `bcb6722`, following foundation `e2c1d8e`. Phase 2 changes are currently validated but uncommitted; the next action is the scoped checkpoint commit. No push or deployment performed.
 
 ## Exact next action
-Stop after reporting Phase 1 as partial acceptance. Remaining Phase 1 work is native-device validation when available, or an explicit user decision to defer that requirement. Then Phase 2 (shell/home/navigation) requires explicit authorization. Preserve the finished foundation; do not restart implementation or redo passed checks without a relevant change.
+Commit Phase 2 and record the successful commit receipt, then report and STOP. On a later explicit authorization, resume **Phase 3A — meetup creation/editing and scheduling**; preserve completed surfaces. Native and authenticated acceptance remain open, not implied by exports or presentation fixtures. See the master roadmap for phase boundaries.

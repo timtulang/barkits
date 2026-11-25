@@ -1,6 +1,6 @@
 # Barkits redesign plan
 
-Updated: 2026-11-25 · **Phase 0 complete. Phase 1 implemented; acceptance partial pending native-device checks. Phases 2–6 not started.**
+Updated: 2026-11-25 · **Phase 0 complete. Phase 1 implemented; acceptance partial pending native-device checks. Phase 2 implemented; native/live authenticated acceptance partial. Phases 3–6 not started.**
 
 ## Authority and preserved requirements
 
@@ -95,7 +95,7 @@ Every unit requires a scoped diff, applicable type/domain checks, affected-flow 
 |---|---|---|---|
 | **0 — Complete** | Requirements, architecture/journeys, audit, direction, roadmap/handoff/ledger | Documents saved; implemented/absent features mapped; dependencies and criteria defined; baseline/limits recorded; no UI files changed | `423481e` |
 | **1 — Implemented; acceptance partial** | Semantic colors, type/spacing/shape/surface/elevation; `theme.ts`, `ui.tsx`, form controls, shared dialog/status styling, focus CSS, design docs | Implementation, contrast, browser controls/flows, types, 13 tests and web/Android/iOS exports pass. Native device/accessibility/keyboard/safe-area checks remain open; user confirms no native environment. No screen redesign | Authorized, 0 |
-| **2 — Not started** | Shell/home, shared list presentation, headers/navigation; app entry/layout, `home.tsx`, SharedList | Guest/account, active/past, local/shared entry, create/join/account/back work; loading/error states; responsive hierarchy; storage keys/map entry preserved | 1 |
+| **2 — Implemented; acceptance partial** | Shell/home, shared list presentation, headers/navigation; app entry/layout, `home.tsx`, SharedList | Guest/account, active/past, local/shared entry, create/join/account/back work; loading/error states; responsive hierarchy; storage keys/map entry preserved | 1 |
 | **3A — Not started** | Meetup creation/edit, draft/planning/shared creation, schedule; `meetup-editor.tsx`, schedule variants | Clear optional/required fields; validation, async failure/retry, duplicate-submit guard, paired date/time and schedule persistence preserved | 2 |
 | **3B — Not started** | Participant editor, roster readiness, invitations, origin disclosure; `editor.tsx`, roster views, InviteFriend | Empty/partial/ready rosters; local add/edit and shared own-origin save; invitation expiry/replacement/copy; limits/invalidation preserved. Use incumbent place input until 4A | 3A |
 | **3C — Not started** | Planner organization/navigation, vote/shortlist/confirmation; meetup screens, `plan-navigation.tsx`, `venue-decision.tsx`, ballot presentation | Local voter/shared ownership clear; supported vote/change/withdraw; confirmation and limit blockers; draft/planning/decided transitions; map/trip entry intact. Detailed metrics/estimate editor stay with 4B | 3B |
@@ -130,3 +130,6 @@ Historical baseline below. Phase 1 supersedes the runtime blockers: Node 24 depe
 - No lint script. Web/native builds and rendered/accessibility tests not run. No screenshot/golden fixtures found in the repository inventory; no browser tool available in this session.
 - Hosted Supabase configuration, native/test-backend access and earlier external requirements remain UNCONFIRMED. Do not log secrets or assume access.
 - Phase 0 is complete as analysis/documentation. Before Phase 1 implementation: prepare documented Node 24/dependencies, establish baseline tests/types and inspect representative rendered UI. Separate baseline failures from redesign regressions.
+
+### Phase 2 checkpoint — 2026-11-25
+Explicitly authorized after Phase 1. Implemented paper shell, compact full-width welcome, consistent local/shared summaries, retained Active/Past selection, loading/empty/error states and storage/shared-refresh retries. Existing tokens/controls, storage keys, map-first entry and service/domain contracts preserved. Types, 13 tests and web/Android/iOS exports pass. Browser navigation, narrow/wide presentation and failure recovery pass; shared presentation uses illustrative fixtures. Independent review: ship at the scoped web checkpoint. Native runtime and live authenticated acceptance remain open. See `REDESIGN_HANDOFF.md` for receipts and exact Git checkpoint. STOP before separately authorized 3A.

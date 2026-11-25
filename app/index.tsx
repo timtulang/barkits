@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '@supabase/supabase-js';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountDialog } from '../src/account-dialog';
 import { MeetupEditor } from '../src/meetup-editor';
@@ -9,8 +9,8 @@ import { ParticipantEditor } from '../src/editor';
 import { Home } from '../src/home';
 import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
-import { palette, radius } from '../src/theme';
-import { Button, Icon, Label, layout } from '../src/ui';
+import { AppFooter, AppHeader, shellStyles as styles } from '../src/app-shell';
+import { Button, Feedback, Label, LoadingState } from '../src/ui';
 import { JoinDialog, SharedList } from '../src/shared-membership';
 import { SharedMeetupScreen } from '../src/shared-meetup-screen';
 import { createShared } from '../src/services/shared-meetups';
@@ -19,7 +19,7 @@ import { useAccount } from '../src/use-account';
 
 export default function Index() {
   const { ready, user } = useAccount();
-  if (!ready) return <SafeAreaView style={styles.safe}><Label>Loading account…</Label></SafeAreaView>;
+  if (!ready) return <SafeAreaView style={styles.safe}><View style={styles.container}><LoadingState label="Loading your account…" /></View></SafeAreaView>;
   return <Workspace key={user?.id ?? 'guest'} user={user} />;
 }
 
@@ -29,6 +29,7 @@ function Workspace({ user }: { user: User | null }) {
   const [accountOpen, setAccountOpen] = useState(false);
   const [sharedId, setSharedId] = useState<string>();
   const [joining, setJoining] = useState(false);
+  const [past, setPast] = useState(false);
   function navigateLocal(next: number | null) { setSharedId(undefined); setIndex(next); }
   function openShared(id: string) { setIndex(null); setJoining(false); setEditor(null); setSharedId(id); }
   const { width } = useWindowDimensions();
@@ -39,23 +40,26 @@ function Workspace({ user }: { user: User | null }) {
   const [editedFriend, setEditedFriend] = useState<Participant>();
   const [ready, setReady] = useState(false);
   const [storageError, setStorageError] = useState('');
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [saveAttempt, setSaveAttempt] = useState(0);
   useEffect(() => {
     let active = true;
+    setStorageError('');
     AsyncStorage.getItem(storageKey).then(stored => {
       if (!active) return;
       if (stored) setMeetups(JSON.parse(stored));
       setReady(true);
     }).catch(() => {
-      if (active) setStorageError('Couldn’t load saved meetups. Reload to try again.');
+      if (active) setStorageError('Couldn’t load saved meetups. Your saved data has not been replaced.');
     });
     return () => { active = false; };
-  }, [storageKey]);
+  }, [storageKey, loadAttempt]);
   useEffect(() => {
     if (!ready) return;
     AsyncStorage.setItem(storageKey, JSON.stringify(meetups))
       .then(() => setStorageError(''))
       .catch(() => setStorageError('Couldn’t save your changes on this device.'));
-  }, [meetups, ready, storageKey]);
+  }, [meetups, ready, storageKey, saveAttempt]);
 
   function save(meetup: Meetup) {
     setMeetups(current => current.map((item, itemIndex) => itemIndex === index ? meetup : item));
@@ -73,30 +77,18 @@ function Workspace({ user }: { user: User | null }) {
   }
 
   return <SafeAreaView style={styles.safe}>
-    <View style={styles.header}><View style={[styles.container, styles.headerInner]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Barkits home" onPress={() => navigateLocal(null)} style={layout.row}>
-        <View style={styles.logo}><Icon name="map-pin" size={21} /></View>
-        <Label size={width < 350 ? 22 : 26} weight="title" color={palette.cream}>barkits.</Label>
-      </Pressable>
-      <View style={layout.row}>
-        <Pressable accessibilityRole="button" accessibilityLabel={user ? 'Your account' : 'Sign in'} onPress={() => setAccountOpen(true)}
-          style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
-          <Icon name="user" color={palette.cream} />{wide && <Label weight="bold" color={palette.cream}>{user ? 'Account' : 'Sign in'}</Label>}
-        </Pressable>
-        {(selected || sharedId) && <Button secondary disabled={!ready} accessibilityLabel="New meetup" icon={width < 400 ? undefined : 'plus'}
-          onPress={() => setEditor('new')}>{width < 400 ? 'New' : 'New meetup'}</Button>}
-      </View>
-    </View></View>
+    <AppHeader signedIn={!!user} inMeetup={!!selected || !!sharedId} compact={!wide}
+      home={() => navigateLocal(null)} account={() => setAccountOpen(true)} create={() => setEditor('new')} />
     <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
-      {!!storageError && <Label color={palette.plum}>{storageError}</Label>}
+      {!!storageError && <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
+        action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
+      {!ready && !storageError && <LoadingState label="Loading your meetups…" />}
       {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
-        <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user}
-          shared={past => user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
-            <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button> : undefined} />)}
-      <View style={styles.footer}>
-        <View style={layout.row}><Icon name="map-pin" size={14} color={palette.plum} /><Label size={13} weight="bold" color={palette.plum}>Barkits</Label></View>
-        <Label size={13} color={palette.muted}>Made for the barkada.</Label>
-      </View>
+        <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
+          shared={user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
+            <View style={{ gap: 12 }}><Label kind="item" heading>With friends</Label><Label kind="detail">Sign in to create a shared plan or join your barkada with an invite code.</Label>
+              <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button></View> : undefined} />)}
+      <AppFooter />
     </ScrollView>
     {joining && user && <JoinDialog close={() => setJoining(false)} open={openShared} />}
     {accountOpen && <AccountDialog user={user} close={() => setAccountOpen(false)} />}
@@ -107,13 +99,3 @@ function Workspace({ user }: { user: User | null }) {
       close={() => { setEditedFriend(undefined); setEditor(null); }} save={saveEditor} />}
   </SafeAreaView>;
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: palette.cream },
-  container: { width: '100%', maxWidth: 1112, alignSelf: 'center', paddingHorizontal: 20 },
-  header: { backgroundColor: palette.ink, borderBottomWidth: 1, borderColor: palette.line },
-  headerInner: { minHeight: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  logo: { backgroundColor: palette.coral, width: 38, height: 38, borderRadius: radius.control, justifyContent: 'center', alignItems: 'center' },
-  content: { paddingTop: 24, paddingBottom: 32, gap: 24 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 12, borderTopWidth: 1, borderColor: palette.line, paddingTop: 18 },
-});

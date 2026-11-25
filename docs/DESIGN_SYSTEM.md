@@ -52,6 +52,7 @@ Selected states include a check mark; errors include an icon and live text. Stat
 - `ChoiceField`: web uses the native select; native uses the existing expandable labeled choice list. Both support disabled state. `IconAction` has a 48-point target, accessible label and web title, focus, hover and pressed feedback.
 - `Feedback`: info/success/warning/error tone, optional title and action; use actionable error copy. `LoadingState` requires a descriptive label. `EmptyState` requires a title and explanatory content, with an optional next action. Adopt these in each later screen phase rather than rewriting all screens during Phase 1.
 - `Panel` stays a simple task surface. `EditorDialog` retains keyboard avoidance, safe-area padding, compact/wide layouts and busy dismissal guards; it now uses shared surface/elevation and section typography.
+- `MeetupListItem` gives local and shared plans the same summary hierarchy: named status with icon, meetup name, date, available context and an opening arrow. Show the demo label and chosen venue when supplied. Use a paper surface, quiet border, card radius and shared hover/pressed colors; let names wrap. Keep the accessible opening label and summary hint.
 
 Example for later screen adoption:
 
@@ -77,7 +78,9 @@ Use the role scale in `src/theme.ts` with the shared Label. Page titles are 36 p
 
 ## Responsive application layout
 
-Barkits uses a deep-ink navigation bar and a mango welcome panel with Kits. The home view places active and past meetups beside the welcome panel on wide web screens and immediately below it on phones. Shared and on-device plans keep their own labels. Status marks combine text, color and an icon. A completed meetup returns through Past meetups.
+Barkits uses a paper header with the coral brand mark, a home action and account access. The shell is centered at a maximum width of 1112 px with 16-point horizontal padding. A compact, full-width mango welcome panel with Kits and Plan a meetup sits above the plans at every width. At 860 px and above, On this device and With friends use equal columns when shared access is available; below that they stack. Keep their storage-scope explanations visible. The header hides its tagline and shortens New meetup to New on compact screens while retaining the full accessible action name.
+
+Active plans and Past meetups filter both lists, and the selection remains when returning home from a meetup. Completed and archived plans appear under Past meetups. Use labeled loading states for account, local and shared plans, contextual empty states, and actionable load/save/refresh errors with Try again. A failed shared refresh keeps previously loaded plans visible and identifies them as such.
 
 Planning and memories use a primary work area with a narrower roster, invitations or rating column at 940 px and above. On phones the panels stack. On phones, an empty roster leads to Add friend. Once an on-device plan has participants, venue suggestions come first. Nearby places, Travel rankings and Trip details appear as labeled sections. Use a pencil for editing a named item, a circular arrow for refresh, and an × for closing a sheet. Give each icon-only action a descriptive accessible name, a 44-point target and a hover title on web. Keep decisions, prices and permission requests in words. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
 
