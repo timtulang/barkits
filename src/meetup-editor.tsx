@@ -18,6 +18,8 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
   const [description, setDescription] = useState(meetup?.description ?? '');
   const [activity, setActivity] = useState(meetup?.activity ?? '');
   const [schedule, setSchedule] = useState(() => readSchedule(meetup?.date));
+  const [incomplete, setIncomplete] = useState({ date: false, time: false });
+  const [pickerVersion, setPickerVersion] = useState(0);
   const [shared, setShared] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -29,7 +31,13 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
   const errorId = useId();
   const locked = busy || uncertain;
   const { day, time, legacy } = schedule;
-  const issue = scheduleProblem(day, time);
+  const issue = incomplete.date ? { field: 'date' as const, message: 'Finish entering the date or clear the schedule.' } :
+    incomplete.time ? { field: 'time' as const, message: 'Finish entering the time or clear the schedule.' } : scheduleProblem(day, time);
+  function clearSchedule() {
+    setSchedule(readSchedule());
+    setIncomplete({ date: false, time: false });
+    setPickerVersion(value => value + 1);
+  }
   const invalidName = !name.trim() || name.trim().length > 160;
   const invalidMember = shared && !memberName.trim();
   const invalidField = invalidName ? 'meetup name' : invalidMember ? 'display name' : issue?.field;
@@ -80,6 +88,7 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
   return <EditorDialog title={meetup ? 'Edit meetup details' : 'Plan a meetup'} close={close} busy={busy} actions={footer}>
     <Field label="Meetup name" required placeholder="Saturday merienda" value={name} onChange={setName} maxLength={160} disabled={locked}
       error={submitted && invalidName ? 'Enter a meetup name of up to 160 characters.' : undefined} />
+    {!share && !meetup && <Label kind="detail">This plan stays on this device. You’ll add the group’s starting points.</Label>}
     {share && <View style={{ gap: spacing.sm }}>
       <Label kind="label" color={colors.text}>Who’s planning?</Label>
       <View style={layout.wrap}>
@@ -93,18 +102,19 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
       onChange={setMemberName} maxLength={80} disabled={locked}
       error={submitted && invalidMember ? 'Enter the name your friends will see.' : undefined} />}
     <Field label="Activity (optional)" placeholder="Coffee, dinner, a park…" value={activity} onChange={setActivity} disabled={locked} />
+    <Field label="Notes (optional)" placeholder="Anything the group should know?" value={description} onChange={setDescription}
+      multiline disabled={locked} />
     <FormSection title="Schedule">
       <Label kind="detail">Optional. Add a date and time together, or decide later.</Label>
       {!!legacy && !(day && time) && <Label kind="value">Saved schedule · {legacy}</Label>}
-      <ScheduleInput day={day} time={time} disabled={locked} error={submitted ? issue : undefined} errorId={errorId}
+      <ScheduleInput key={pickerVersion} day={day} time={time} disabled={locked} error={submitted ? issue : undefined} errorId={errorId}
+        reportIncomplete={(part, value) => setIncomplete(current => current[part] === value ? current : { ...current, [part]: value })}
         setDay={day => setSchedule(current => ({ ...current, day }))}
         setTime={time => setSchedule(current => ({ ...current, time }))} />
       {submitted && issue && <View nativeID={errorId} accessibilityRole="alert" style={layout.row}>
         <Icon name="alert-circle" size={16} color={colors.error} /><Label kind="detail" color={colors.error}>{issue.message}</Label>
       </View>}
-      {!!(day || time || legacy) && <Button quiet disabled={locked} onPress={() => setSchedule(readSchedule())}>Clear schedule</Button>}
+      {!!(day || time || legacy || incomplete.date || incomplete.time) && <Button quiet disabled={locked} onPress={clearSchedule}>Clear schedule</Button>}
     </FormSection>
-    <Field label="Notes (optional)" placeholder="Anything the group should know?" value={description} onChange={setDescription}
-      multiline disabled={locked} />
   </EditorDialog>;
 }

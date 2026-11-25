@@ -1,11 +1,10 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-26 [USER] Implement Phase 3B on pushed baseline `37dd526`; one named subphase per request. Phase 3A work is absent from this branch.
-- 2026-11-26 [CODE] Now: 3B participant sheet, local/shared roster, invitation states and design docs implemented. Existing place control, permissions, trip invalidation and service contracts retained.
-- 2026-11-26 [TOOL] First implementation pushed at `8036098` on `redesign/phase-3b-participants`. Web guest and local authenticated acceptance passed.
-- 2026-11-26 [USER] Next: stop at the named subphase; reconcile independent 3A work before integrating branches.
-- 2026-11-25 [USER] Native hardware acceptance remains open.
+- 2026-11-26 [USER] Current authorization is Phase 3A, using the repository roadmap and handoff. Supersedes the Phase 3B stop.
+- 2026-11-26 [CODE] Start at the verified 3B checkpoint `e84307e` on the same preview branch.
+- 2026-11-26 [CODE] Now: 3A and 3B implemented on the combined preview branch. Creation, editing, scheduling and shared retries verified on web. Next named unit is 3C; separate authorization required.
+- 2026-11-26 [USER] Native runtime acceptance remains open.
 
 ## Decisions
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request; checkpoint and stop. Explicit Phase 2 request supersedes previous lack of authorization, not unavailable native checks.
@@ -22,11 +21,13 @@
 - 2026-11-26 [CODE] Invites prioritize copy, describe replacement/expiry and surface failures. Web clipboard denial has a manual copy path.
 - 2026-11-26 [TOOL] Integrated and responsive acceptance receipts in the current handoff. Native runtime and hosted acceptance remain open.
 
+- 2026-11-26 [CODE] Phase 3A includes explicit scope, required names, preserved legacy schedules, Philippine-time display and idempotent shared retry.
+
 ## Working set
 - 2026-11-26 [CODE] `docs/REDESIGN_HANDOFF.md`, `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`
-- 2026-11-26 [CODE] `src/participant-roster.tsx`, `src/editor.tsx`, `src/invite-friend.tsx`
-- 2026-11-26 [CODE] `src/meetup.tsx`, `src/shared-meetup-screen.tsx`, `src/shared-membership.tsx`, `src/locate-friends.ts`
-- 2026-11-26 [TOOL] `.expo/redesign/phase3b/`
+- 2026-11-26 [CODE] `src/meetup-editor.tsx`, `src/meetup-schedule.ts`, `src/schedule-input.tsx`, `src/schedule-input.web.tsx`
+- 2026-11-26 [CODE] `src/services/shared-client.ts`, `src/planner.test.mts`
+- 2026-11-26 [TOOL] `.expo/redesign/phase3a/`, `.expo/redesign/phase3b/`
 
 ## Receipts
 - 2026-11-25 [TOOL] Phase 1–2 historical verification and outstanding native checks retained in the handoff.
@@ -39,3 +40,7 @@
 - 2026-11-26 [TOOL] Failed code issuance and failed origin save both recovered on retry. Clipboard denial and simulated 24-hour sharing window tested.
 - 2026-11-26 [TOOL] Local migrated PostgreSQL ran `scripts/check-shared-meetups.sql` through ROLLBACK, including expired invites and group permissions.
 - 2026-11-26 [TOOL] Original external tile service showed its load warning in the shared desktop capture. Tiles and hosted authentication remain unverified.
+- 2026-11-26 [TOOL] 3A first checkpoint `c5c9a9d`. Web, Android and iOS exports, TypeScript and 15 tests passed.
+- 2026-11-26 [TOOL] Browser verified create/edit/draft/start/reload, legacy preservation and replacement, incomplete date/time correction/clear and six viewport widths.
+- 2026-11-26 [TOOL] Local shared integration exercised busy double-submit, 400 rejection and 502 after actual commit; one persisted group opened on retry.
+- 2026-11-26 [TOOL] Los Angeles browser verified the same Philippine schedule in list and details. Native runtime and hosted authenticated testing remain open.

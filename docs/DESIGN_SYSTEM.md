@@ -88,6 +88,14 @@ Planning and memories use a primary work area with a narrower roster, invitation
 
 Lead with the meetup or person’s name and the place search. Show the optional schedule, notes and travel limits directly in the form. Present raw coordinates as a labeled alternative to place search. Use a labeled selector for a single choice such as transportation mode. Keep the close icon in the sheet header and the main creation or save action in the footer. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
 
+## Meetup creation and schedules
+
+Lead the sheet with the required meetup name. Explain who adds the starting points at the scope choice. Ask for the organizer’s display name only when creating a shared plan. Keep activity and notes visible. During local creation, Start planning is the primary action and Save draft is quieter. During an edit, Save changes retains the meetup’s current stage.
+
+Treat the optional schedule as a pair. Show a labeled calendar date and Philippine time, side by side when space permits and stacked on narrow screens. A missing or unfinished part gets an adjacent message and a brief prompt near the save action. Clear schedule removes the pair. Show an older free-text schedule until it is replaced or cleared.
+
+Use the same Philippine date and time in list rows, meetup details and the confirmed map. While a shared creation is pending, keep the entered details visible and prevent further edits. If a response is lost, offer Retry creation with the original details.
+
 ## Participant roster and invitations
 
 Use the same “Your barkada” roster for local and shared plans. Put the mapped count immediately below the heading and the available setup action above the list. Count the places the discovery resolver can actually map. A free-text address may need a map pin. A recognized locality counts toward readiness and carries the “Approximate area center” label. A shared member without an origin has a pending starting point. A mapped roster can still have no matching venues.

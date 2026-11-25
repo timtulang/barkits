@@ -1,6 +1,6 @@
 # Barkits redesign plan
 
-Updated 2026-11-26. **Phase 3B implemented on the user-selected Phase 2 baseline. Browser and local authenticated integration verified. Native runtime acceptance remains open. Phase 3A is absent from this branch.**
+Updated 2026-11-26. **Phases 3A and 3B implemented on the same preview branch. Their web and local authenticated flows are verified. Native runtime acceptance remains open. Phase 3C is next.**
 
 ## Authority and preserved requirements
 
@@ -96,7 +96,7 @@ Every unit requires a scoped diff, applicable type/domain checks, affected-flow 
 | **0 — Complete** | Requirements, architecture/journeys, audit, direction, roadmap/handoff/ledger | Documents saved; implemented/absent features mapped; dependencies and criteria defined; baseline/limits recorded; no UI files changed | `423481e` |
 | **1 — Implemented; acceptance partial** | Semantic colors, type/spacing/shape/surface/elevation; `theme.ts`, `ui.tsx`, form controls, shared dialog/status styling, focus CSS, design docs | Implementation, contrast, browser controls/flows, types, 13 tests and web/Android/iOS exports pass. Native device/accessibility/keyboard/safe-area checks remain open; user confirms no native environment. No screen redesign | Authorized, 0 |
 | **2 — Implemented; acceptance partial** | Shell/home, shared list presentation, headers/navigation; app entry/layout, `home.tsx`, SharedList | Guest/account, active/past, local/shared entry, create/join/account/back work; loading/error states; responsive hierarchy; storage keys/map entry preserved | 1 |
-| **3A — Not started** | Meetup creation/edit, draft/planning/shared creation, schedule; `meetup-editor.tsx`, schedule variants | Clear optional/required fields; validation, async failure/retry, duplicate-submit guard, paired date/time and schedule persistence preserved | 2 |
+| **3A — Implemented; native acceptance open** | Meetup creation/edit, draft/planning/shared creation, schedule; `meetup-editor.tsx`, schedule variants | Clear optional/required fields; validation, async failure/retry, duplicate-submit guard, paired date/time and schedule persistence preserved | 2 |
 | **3B — Implemented; native acceptance open** | Participant editor, roster readiness, invitations, origin disclosure; `editor.tsx`, roster views, InviteFriend | Empty/partial/ready rosters; local add/edit and shared own-origin save; invitation expiry/replacement/copy; limits/invalidation preserved. Use incumbent place input until 4A | 3A in original sequence; user authorized independent 3B on `37dd526` |
 | **3C — Not started** | Planner organization/navigation, vote/shortlist/confirmation; meetup screens, `plan-navigation.tsx`, `venue-decision.tsx`, ballot presentation | Local voter/shared ownership clear; supported vote/change/withdraw; confirmation and limit blockers; draft/planning/decided transitions; map/trip entry intact. Detailed metrics/estimate editor stay with 4B | 3B |
 | **4A — Not started** | Search/input, maps, venue list/sheet, confirmed map, pins and attribution | Search/keyboard selection, ambiguous/no result, coordinates, location denial, map failure; list/pin equivalence; details/home/back and confirmed directions; narrow-screen attribution; no provider changes | 3C |
@@ -138,3 +138,8 @@ Explicitly authorized after Phase 1. Implemented paper shell, compact full-width
 ### Phase 3B checkpoint — 2026-11-26
 
 The user chose the pushed baseline for Phase 3B. This branch adds the participant, roster and invitation changes independently of 3A. Continue to track 3A separately. See the current handoff for browser, backend and native evidence. The scope ends at 3B.
+
+
+### Phase 3A checkpoint — 2026-11-26
+
+Authorized after 3B and implemented on top of `e84307e`. The editor clarifies local/shared participation, protects creation retries and keeps date/time handling consistent across creation, editing and display. Existing local schedules and shared RPC contracts are preserved. See the current handoff for cross-time-zone, browser and integration receipts.

@@ -1,8 +1,27 @@
 # Redesign handoff
 
-Updated 2026-11-26. **Phase 3B is implemented on `redesign/phase-3b-participants` from `37dd526`. Web and local authenticated integration verified. Native runtime acceptance is open.**
+Updated 2026-11-26. **Phases 3A and 3B are implemented together on `redesign/phase-3b-participants`.** The shared preview includes both. The next separately scoped unit is Phase 3C, planner organization and voting.
 
-## Current checkpoint
+## Phase 3A · meetup creation, editing and scheduling
+
+The Phase 2 editor could already create drafts, start planning, edit local details and create authenticated groups. The 3A work began at the verified 3B commit `e84307e`; the first 3A implementation was pushed at `c5c9a9d`.
+
+| Gap in the existing flow | Current behavior |
+|---|---|
+| The scope chips did not explain whose device stores the meetup or who adds origins. | The name leads. The scope choice explains manual entry on this device or invite-code participation. Shared organizers enter their display name. Local drafts, immediate planning and editing retain their original actions. |
+| Schedule errors could be out of view. A partially typed browser date could look filled while its stored value was empty. | Field-level messages and a short footer prompt identify the missing or incomplete date/time. Clear schedule resets both controls, including unfinished browser input. Existing free-text schedules survive unrelated edits and can be explicitly replaced or cleared. |
+| The shared list used device time while details used Philippine time. Native picker defaults depended on the device zone. | Pickers, local summaries and shared lists/details use the Philippine clock. The existing local string and server timestamp formats are preserved. |
+| Only the shared submit button was disabled during creation. A lost response left it unclear whether another attempt would create a second group. | One submission is accepted per attempt. Pending shared requests lock the fields. A definite rejection retains editable inputs. A lost response offers a retry with the same details and request ID, so the original group opens. |
+
+### Phase 3A verification
+
+- TypeScript, all 15 domain tests (including leap dates, legacy schedules and the Philippine midnight boundary), and web, Android and iOS exports passed. The project has no lint script.
+- Guest browser checks covered draft and immediate creation, edits/cancel, promotion to planning, required and optional inputs, date-only/time-only validation, incomplete typed segments, clearing and replacing schedules, and reload. Editing existing plans retained roster and votes.
+- Layout and controls checked at 320, 390, 599, 600, 768 and 1280 px. Browser flows included keyboard entry, a 160-character meetup name and a desktop/phone screenshot review.
+- With a local authenticated PostgreSQL/PostgREST group, the test double-clicked submit during a pending request, recovered from a rejected submission, then simulated a gateway failure *after the real creation committed*. Retry returned one group. The list and detail showed the same Jan 1 Philippine time in a browser set to Los Angeles. The existing rollback-only SQL regression suite passed.
+- Screens and browser scripts are stored in ignored `.expo/redesign/phase3a/`. Native keyboard, safe area, screen readers and OS date-picker interactions require real-device testing. Authenticated tests used local fixture sessions; hosted Supabase remains unverified.
+
+## Historical Phase 3B checkpoint
 
 The user explicitly selected the pushed Phase 2 baseline for 3B. The published baseline contained no 3A implementation. Reconcile any separate creation/scheduling work before combining branches. Only the participant editor, roster and organizer invitation were in scope.
 
@@ -22,7 +41,7 @@ Implementation checkpoint `8036098`. A locality chosen in search retains its app
 - Three independent browser sessions used local PostgreSQL/PostgREST with fixture identities. Organizer-only invites, copying, replacement, invalid and already-used codes, personal origin saves, member refresh, issue/save failure and retry, and opening a ready shared meetup on its full-screen map passed. The rollback-only SQL suite also rejected expired codes and verified backend ownership and invalidation. A browser clock advance verified the 24-hour display cutoff, and a denied clipboard write exposed manual copy.
 - Screenshots and local QA scripts are in ignored `.expo/redesign/phase3b/`. Native safe areas, software keyboards, OS screen readers and a hosted Supabase deployment were not tested. Map tiles returned the app’s existing load warning during the desktop capture; roster checks and map-first reentry did not require external tiles.
 
-## Resume order
+## Resume order recorded after 3B
 
 Read `CONTINUITY.md`, `AGENTS.md`, `docs/REDESIGN_PLAN.md`, this handoff and the current Git diff. This checkpoint closes the authorized 3B work. Phase 3A remains unverified here; the planner and voting composition belong to separately scoped 3C.
 

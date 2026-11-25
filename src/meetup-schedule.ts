@@ -1,14 +1,16 @@
 export const scheduleZone = 'Asia/Manila';
 
-export function scheduleProblem(day: string, time: string) {
+type ScheduleIssue = { field: 'date' | 'time'; message: string };
+
+export function scheduleProblem(day: string, time: string): ScheduleIssue | undefined {
   if (day) {
     const date = new Date(day + 'T00:00:00Z');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || day.startsWith('0000') ||
-        Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day) return { field: 'date', message: 'Choose a valid calendar date.' } as const;
+        Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day) return { field: 'date', message: 'Choose a valid calendar date.' };
   }
-  if (time && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) return { field: 'time', message: 'Choose a valid time.' } as const;
-  if (day && !time) return { field: 'time', message: 'Choose a time or clear the schedule.' } as const;
-  if (time && !day) return { field: 'date', message: 'Choose a date or clear the schedule.' } as const;
+  if (time && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) return { field: 'time', message: 'Choose a valid time.' };
+  if (day && !time) return { field: 'time', message: 'Choose a time or clear the schedule.' };
+  if (time && !day) return { field: 'date', message: 'Choose a date or clear the schedule.' };
 }
 
 export function readSchedule(value?: string | null) {
@@ -40,5 +42,6 @@ export function formatLocalSchedule(value?: string | null) {
 
 export type ScheduleInputProps = {
   day: string; time: string; setDay: (day: string) => void; setTime: (time: string) => void;
-  disabled: boolean; error?: ReturnType<typeof scheduleProblem>; errorId: string;
+  reportIncomplete: (part: 'date' | 'time', incomplete: boolean) => void;
+  disabled: boolean; error?: ScheduleIssue; errorId: string;
 };
