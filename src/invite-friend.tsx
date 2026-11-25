@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Text, View } from 'react-native';
+import { AppState, Platform, Text, View } from 'react-native';
 import { issueCode } from './services/shared-meetups';
 import { colors, font, radius, spacing } from './theme';
 import { Button, Feedback, Label, Panel, layout } from './ui';
@@ -16,13 +16,17 @@ export function InviteFriend({ id }: { id: string }) {
   const request = useRef(0);
   const pending = useRef(false);
 
+  function endSharingWindow() {
+    request.current++;
+    setInvite(undefined);
+    setNotice('The 24-hour sharing window has ended. Create a fresh code.');
+  }
+
   useEffect(() => {
     if (!invite) return;
     function expire() {
       if (!invite || Date.now() < invite.hideAt) return;
-      request.current++;
-      setInvite(undefined);
-      setNotice('The 24-hour sharing window has ended. Create a fresh code.');
+      endSharingWindow();
     }
     const timer = setTimeout(expire, Math.max(0, invite.hideAt - Date.now()));
     const listener = AppState.addEventListener('change', state => { if (state === 'active') expire(); });
@@ -49,15 +53,19 @@ export function InviteFriend({ id }: { id: string }) {
   async function copy() {
     if (!invite || pending.current) return;
     if (Date.now() >= invite.hideAt) {
-      request.current++;
-      setInvite(undefined);
-      setNotice('The 24-hour sharing window has ended. Create a fresh code.');
+      endSharingWindow();
       return;
     }
     const current = request.current;
     let copied = false;
-    try { copied = await Clipboard.setStringAsync(invite.code); }
-    catch { copied = false; }
+    try {
+      if (Platform.OS === 'web') {
+        await navigator.clipboard.writeText(invite.code);
+        copied = true;
+      } else {
+        copied = await Clipboard.setStringAsync(invite.code);
+      }
+    } catch { copied = false; }
     if (current === request.current) setNotice(copied ? 'Code copied.' : 'Select the code and copy it manually.');
   }
 

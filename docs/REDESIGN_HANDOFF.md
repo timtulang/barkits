@@ -1,9 +1,32 @@
 # Redesign handoff
 
-Updated: 2026-11-25 · **Phase 2 implementation complete; acceptance PARTIAL pending native and live authenticated checks. STOP before Phase 3A.**
+Updated 2026-11-26. **Phase 3B is implemented on `redesign/phase-3b-participants` from `37dd526`. Web and local authenticated integration verified. Native runtime acceptance is open.**
 
-## Resume order and authorization
-Read `CONTINUITY.md`, `AGENTS.md`, `docs/REDESIGN_PLAN.md`, this file, and Git status/diff. Latest user instruction explicitly authorized Phase 2 after the completed Phase 1 implementation. One request authorizes one phase/subphase. Do not repeat the audit/foundation or start 3A automatically. No native environment is available; that limitation remains open.
+## Current checkpoint
+
+The user explicitly selected the pushed Phase 2 baseline for 3B. The published baseline contained no 3A implementation. Reconcile any separate creation/scheduling work before combining branches. Only the participant editor, roster and organizer invitation were in scope.
+
+| Finding | Change |
+|---|---|
+| A roster entry looked complete even when discovery could not locate it. | Both meetup types now use the existing resolver for the mapped count. Rows distinguish a pending origin, a label needing a pin, and an approximate locality center. |
+| Name, transport, location and optional constraints competed for attention. A generic Save action obscured which change was being made. | A single sheet leads with identity or shared visibility, followed by the existing place control, transport and smaller one-way limit fields. A persistent, named save action points to invalid fields. Changing the trip explains the effect on entered estimates. |
+| A generated invite, the replacement action and clipboard feedback had similar emphasis. | The organizer sees single-use and expiry rules before issue. The selectable code leads to Copy code; replacement is secondary. Copy denial, issuance failure and the end of the sharing window each have a recovery path. |
+
+Implementation checkpoint `8036098`. A locality chosen in search retains its approximate-center label when its saved coordinates match the named catalog center. Moving its pin removes the label. The clipboard follow-up uses the web Clipboard API so a denied write reliably offers manual copy. Native uses Expo Clipboard. The existing services, invitation expiry enforcement, permissions, stored shapes, location input and map-first venue flow remain the source of behavior. No migration, new dependency, API key or hosted service is required by this change.
+
+## Phase 3B evidence
+
+- TypeScript and all 13 existing domain tests passed. Web, Android and iOS bundles exported. The repo has no lint command.
+- Guest browser flow covered empty, partial and mapped rosters, invalid coordinates, name and limit feedback, zero fare, setting and editing a pin, persisted limits and per-person estimate invalidation. Changing only a limit retained estimates; changing transport cleared that person’s entered minutes, fares and provider notes.
+- Browser checks covered widths 320, 390, 599, 600, 768, 939, 940 and 1280 px, long names, an eight-person roster, 48 px controls and keyboard opening/return. Doubled browser text fit the narrow roster. Selecting a locality result and moving its pin exercised both precision labels.
+- Three independent browser sessions used local PostgreSQL/PostgREST with fixture identities. Organizer-only invites, copying, replacement, invalid and already-used codes, personal origin saves, member refresh, issue/save failure and retry, and opening a ready shared meetup on its full-screen map passed. The rollback-only SQL suite also rejected expired codes and verified backend ownership and invalidation. A browser clock advance verified the 24-hour display cutoff, and a denied clipboard write exposed manual copy.
+- Screenshots and local QA scripts are in ignored `.expo/redesign/phase3b/`. Native safe areas, software keyboards, OS screen readers and a hosted Supabase deployment were not tested. Map tiles returned the app’s existing load warning during the desktop capture; roster checks and map-first reentry did not require external tiles.
+
+## Resume order
+
+Read `CONTINUITY.md`, `AGENTS.md`, `docs/REDESIGN_PLAN.md`, this handoff and the current Git diff. This checkpoint closes the authorized 3B work. Phase 3A remains unverified here; the planner and voting composition belong to separately scoped 3C.
+
+## Historical Phase 2 checkpoint
 
 ## Completed in Phase 2
 - Paper application header with coral brand mark, home/account actions, responsive New meetup action, shared spacing and footer. Shell presentation extracted; app entry retains navigation and data ownership.
@@ -47,5 +70,5 @@ Existing Leaflet CSS asset warnings, tooling color/deprecation warnings and Node
 ## Git checkpoint
 Starting tree was clean at `bcb6722`, following foundation `e2c1d8e`. Phase 2 implementation committed successfully as `38e826d` — `refactor(ui): redesign application shell and meetup home`. Working tree was clean after that commit. This receipt is saved in a following documentation-only commit; verify current status when resuming. No push or deployment performed.
 
-## Exact next action
-Phase 2 is checkpointed. Report and STOP. On a later explicit authorization, resume **Phase 3A — meetup creation/editing and scheduling**; preserve completed surfaces. Native and authenticated acceptance remain open, not implied by exports or presentation fixtures. See the master roadmap for phase boundaries.
+## Historical next action after Phase 2
+Phase 2 was checkpointed. Report and STOP. On a later explicit authorization, resume **Phase 3A — meetup creation/editing and scheduling**; preserve completed surfaces. Native and authenticated acceptance remain open, not implied by exports or presentation fixtures. See the master roadmap for phase boundaries.

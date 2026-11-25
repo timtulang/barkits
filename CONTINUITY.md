@@ -1,11 +1,11 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-25 [USER] Goal: phased UI redesign; latest authorization is Phase 2 only. STOP before Phase 3A.
-- 2026-11-25 [CODE] Now: Phase 0 complete; Phase 1 and 2 implementations complete. Native acceptance remains open; Phase 2 live authenticated checks also unavailable.
-- 2026-11-25 [TOOL] Phase 2 types, 13 tests, web/Android/iOS exports, browser navigation/recovery/responsive checks pass; scoped review says ship for web checkpoint.
-- 2026-11-25 [USER] Open: no native environment available; earlier chat-only requirements UNCONFIRMED. Presentation fixtures do not verify live backend behavior.
-- 2026-11-25 [CODE] Next: Phase 2 committed; report and STOP. Phase 3A creation/editing/scheduling requires separate authorization.
+- 2026-11-26 [USER] Implement Phase 3B on pushed baseline `37dd526`; one named subphase per request. Phase 3A work is absent from this branch.
+- 2026-11-26 [CODE] Now: 3B participant sheet, local/shared roster, invitation states and design docs implemented. Existing place control, permissions, trip invalidation and service contracts retained.
+- 2026-11-26 [TOOL] First implementation pushed at `8036098` on `redesign/phase-3b-participants`. Web guest and local authenticated acceptance passed.
+- 2026-11-26 [USER] Next: stop at the named subphase; reconcile independent 3A work before integrating branches.
+- 2026-11-25 [USER] Native hardware acceptance remains open.
 
 ## Decisions
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request; checkpoint and stop. Explicit Phase 2 request supersedes previous lack of authorization, not unavailable native checks.
@@ -16,32 +16,26 @@
 - 2026-11-25 [CODE] D006 ACTIVE: Phase 2 paper header, compact full-width welcome, consistent scope-labeled summaries, retained filter and explicit retries; navigation/data ownership stays in entrypoint.
 
 ## Done (recent)
-- 2026-11-25 [CODE] Phase 0 audit and Phase 1 tokens/controls committed; historical receipts in `bcb6722` handoff and `e2c1d8e` foundation.
-- 2026-11-25 [CODE] Phase 2 shell/home/list composition and loading/error recovery implemented; no planner/editor/domain/schema/service/package changes.
-- 2026-11-25 [TOOL] Browser guest creation/account/filter/back/map entry and storage failure/retry pass; shared fixture states/callbacks/join entry pass.
-- 2026-11-25 [TOOL] Phone/wide/breakpoint checks, >=48px targets, keyboard focus/Enter and doubled browser text with 160-character name pass.
-- 2026-11-25 [TOOL] Independent scoped review: ship for web presentation/checkpoint. Design docs reconciled. Native/live backend limits remain explicit.
+- 2026-11-25 [CODE] Prior milestones: Phase 0 audit; Phase 1 foundation `e2c1d8e`; Phase 2 shell/home `38e826d` and handoff `37dd526`.
+- 2026-11-26 [CODE] 3B roster uses mapped starting points, per-person state, group roles and role-specific editing. Counter and approximate labels use existing catalog and coordinates.
+- 2026-11-26 [CODE] Editor names its action, explains shared visibility and invalidation, and groups optional one-way limits.
+- 2026-11-26 [CODE] Invites prioritize copy, describe replacement/expiry and surface failures. Web clipboard denial has a manual copy path.
+- 2026-11-26 [TOOL] Integrated and responsive acceptance receipts in the current handoff. Native runtime and hosted acceptance remain open.
 
 ## Working set
-- 2026-11-25 [USER] `AGENTS.md`
-- 2026-11-25 [CODE] `docs/REDESIGN_PLAN.md`
-- 2026-11-25 [CODE] `docs/REDESIGN_HANDOFF.md`
-- 2026-11-25 [CODE] `docs/DESIGN_SYSTEM.md`
-- 2026-11-25 [CODE] `app/index.tsx`, `app/_layout.tsx`
-- 2026-11-25 [CODE] `src/app-shell.tsx`
-- 2026-11-25 [CODE] `src/home.tsx`
-- 2026-11-25 [CODE] `src/meetup-list-item.tsx`
-- 2026-11-25 [CODE] `src/shared-meetup-list.tsx`, `src/shared-membership.tsx`
-- 2026-11-25 [TOOL] `.expo/redesign/phase2/` ignored browser scripts/fixtures/captures/check/export logs
+- 2026-11-26 [CODE] `docs/REDESIGN_HANDOFF.md`, `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`
+- 2026-11-26 [CODE] `src/participant-roster.tsx`, `src/editor.tsx`, `src/invite-friend.tsx`
+- 2026-11-26 [CODE] `src/meetup.tsx`, `src/shared-meetup-screen.tsx`, `src/shared-membership.tsx`, `src/locate-friends.ts`
+- 2026-11-26 [TOOL] `.expo/redesign/phase3b/`
 
 ## Receipts
-- 2026-11-25 [TOOL] Phase 2 clean baseline `bcb6722`; foundation `e2c1d8e`; original `423481e`.
-- 2026-11-25 [TOOL] Node24 path `/tmp/barkits-runtime/node_modules/node-linux-x64/bin`; restore if temporary files disappear. Existing lockfile installation preserved.
-- 2026-11-25 [TOOL] `npm test`: 13/13 pass. Final `npx tsc --noEmit` passes after sequential exports.
-- 2026-11-25 [TOOL] Web/Android/iOS exports all pass; native exports do not verify native runtime.
-- 2026-11-25 [TOOL] Browser malformed-load test retained data; retry recovered. Injected save failure surfaced and retry recovered.
-- 2026-11-25 [TOOL] Shared fixture verifies presentation/callbacks only; no authenticated backend writes performed. Temporary route removed before export.
-- 2026-11-25 [TOOL] 320/390/1440 home/shared and 600/859/860/1280 home checks pass; enlarged browser text and keyboard row activation pass.
-- 2026-11-25 [TOOL] Detector `[]`; diff whitespace clean; all app/src code modules <300 lines; no lint script exists.
-- 2026-11-25 [TOOL] Known Leaflet asset/tooling warnings remain nonfatal. Tests/types/exports logs in ignored checkpoint artifacts.
-- 2026-11-25 [CODE] Roadmap/handoff/design docs updated. Phase 2 committed as `38e826d`; tree clean afterward. Receipt follows in a docs-only commit; no push/deployment.
+- 2026-11-25 [TOOL] Phase 1–2 historical verification and outstanding native checks retained in the handoff.
+- 2026-11-26 [USER] Selected Phase 2 baseline for independent 3B; no 3A present on visible Git refs.
+- 2026-11-26 [TOOL] Node 24; existing lockfile and installed dependencies. TypeScript and 13 domain tests passed; no lint script configured.
+- 2026-11-26 [TOOL] Web, Android and iOS exports passed. Mobile exports are bundle checks only.
+- 2026-11-26 [TOOL] Browser checked local empty/partial/ready and persisted name/origin/mode/limit updates, invalid inputs, estimate retention/invalidation per member.
+- 2026-11-26 [TOOL] Tested 320–1280 px, long names, eight-person roster, 48 px targets and keyboard return to the edit action.
+- 2026-11-26 [TOOL] Three local PostgREST sessions verified personal origin edits, invitation copying/replacement, consumed-code rejection and map-first reentry.
+- 2026-11-26 [TOOL] Failed code issuance and failed origin save both recovered on retry. Clipboard denial and simulated 24-hour sharing window tested.
+- 2026-11-26 [TOOL] Local migrated PostgreSQL ran `scripts/check-shared-meetups.sql` through ROLLBACK, including expired invites and group permissions.
+- 2026-11-26 [TOOL] Original external tile service showed its load warning in the shared desktop capture. Tiles and hosted authentication remain unverified.
