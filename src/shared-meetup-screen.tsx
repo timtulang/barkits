@@ -1,3 +1,4 @@
+import { ParticipantRoster } from './participant-roster';
 import { SuggestedPlaces } from './suggested-places';
 import { IconAction, ChoiceField } from './form-controls';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -13,7 +14,7 @@ import { finishMeetup } from './services/shared-memories';
 import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { SharedBallot } from './shared-ballot';
 import { ConfirmedPlaceMap } from './confirmed-place-map';
-import { InviteFriend } from './shared-membership';
+import { InviteFriend } from './invite-friend';
 import { Button, Label, layout, Panel } from './ui';
 import { useSharedData } from './use-shared-data';
 import { catalog } from './venue-catalog';
@@ -80,12 +81,10 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
         {(fullMap ?? openMapOnEntry) && <ConfirmedPlaceMap name={chosen.name} point={[chosen.latitude, chosen.longitude]} schedule={schedule}
           navigation={{ title: data.summary.name, expanded: true, setExpanded: setFullMap, back }} />}
       </Panel>}
-      {!data.memories && <WorkspaceColumns sideFirst={planning && !mine?.trip} side={<>
-      <Panel><Label kind="item" heading>Friends ({data.members.length})</Label>
-        {data.members.map(m => <View key={m.id}><Label weight="bold">{m.name}{m.id === userId ? ' (you)' : ''}{m.id === data.summary.owner_id ? ' · Organizer' : ''}</Label>
-          <Label kind="detail">{m.trip ? m.trip.origin + ' · ' + m.trip.mode : 'Starting point pending'}</Label></View>)}
-        {planning && mine && <Button onPress={() => setEditing(true)} icon="map-pin">{mine.trip ? 'Edit my starting point' : 'Add my starting point'}</Button>}
-      </Panel>
+      {!data.memories && <WorkspaceColumns sideFirst={planning && !origins.some(friend => friend.id === userId)} side={<>
+      <ParticipantRoster members={data.members} located={origins} myId={userId} ownerId={data.summary.owner_id}
+        action={planning && mine && <Button secondary={!!mine.trip && origins.some(friend => friend.id === userId)}
+          onPress={() => setEditing(true)} icon="map-pin">{mine.trip ? 'Edit my starting point' : 'Add my starting point'}</Button>} />
       {planning && data.summary.owner_id === userId && <InviteFriend id={id} />}
       </>} main={<>{planning && <>
       <Panel><Label kind="section" heading>Nearby places</Label>
@@ -98,7 +97,7 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
           } />
           <Label kind="detail">Ranked by straight-line distance from the group’s starting points.{limited ? ' Travel time and fare limits still need a route estimate.' : ''}</Label>
           {!!suggestions.length && <Label size={13}>Venue data © OpenStreetMap contributors</Label>}
-        </> : <Label>Choose a place from search or drop a pin for everyone to get suggestions. {origins.length} of {data.members.length} starting points ready.</Label>}
+        </> : <Label>Nearby suggestions appear once each member has a starting point on the map.</Label>}
       </Panel>
       <SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId} owner={data.summary.owner_id === userId}
         busy={acting || loading} run={run} refresh={refresh} />

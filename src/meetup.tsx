@@ -1,3 +1,4 @@
+import { ParticipantRoster } from './participant-roster';
 import { RankingFigures } from './venue-summary';
 import { ChoiceField, IconAction } from './form-controls';
 import { PlanNavigation, type PlanSection } from './plan-navigation';
@@ -74,18 +75,11 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       {!!meetup.description && <Label>{meetup.description}</Label>}
     </View>
     {meetup.status === 'Draft' && <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Start planning</Button>}
-    <WorkspaceColumns sideFirst={!meetup.participants.length} side={<Panel>
-      <View style={layout.wrap}><Label kind="item" heading>Your barkada</Label>{canEdit && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
-      {meetup.participants.length === 0 && <View style={layout.row}><Kits style={{ width: 85, height: 58, borderRadius: 10 }} /><Label color={palette.muted}>Add friends to compare meetup spots.</Label></View>}
-      {meetup.participants.map(friend => <View key={friend.id} style={layout.between}>
-        <View style={{ flex: 1 }}>
-          <Label kind="value">{friend.name}</Label>
-          <Label kind="detail">{friend.origin} · {friend.mode}</Label>
-          {(friend.budget !== undefined || friend.maxMinutes !== undefined) && <Label kind="detail">Limit · {[friend.budget !== undefined ? '₱' + friend.budget : '', friend.maxMinutes !== undefined ? friend.maxMinutes + ' min' : ''].filter(Boolean).join(' · ')}</Label>}
-        </View>
-        {canEdit && <IconAction name="edit-2" label={'Edit ' + friend.name} onPress={() => editFriend(friend)} />}
-      </View>)}
-    </Panel>} main={meetup.status === 'Draft' ? null : <>
+    <WorkspaceColumns sideFirst={!meetup.participants.length} side={<ParticipantRoster
+      members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located}
+      edit={canEdit ? editFriend : undefined} action={canEdit &&
+        <Button secondary={!!meetup.participants.length} icon="user-plus" onPress={() => editFriend()}>Add friend</Button>} />}
+      main={meetup.status === 'Draft' ? null : <>
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>
         <View style={layout.between}>
