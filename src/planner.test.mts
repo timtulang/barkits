@@ -1,3 +1,4 @@
+import { formatLocalSchedule, formatSharedSchedule, pickerFields, readSchedule, scheduleInstant, scheduleProblem } from './meetup-schedule.ts';
 import { railConnection } from './rail-connection.ts';
 import { compareRideFares, lrtFare, lrtStations, transitUrl, validFare } from './transport-fares.ts';
 import { indexPlace, matchPlaces } from './search-matches.ts';
@@ -133,4 +134,29 @@ test('ride fare comparison preserves centavos and leaves missing quotes unknown'
   assert.equal(compareRideFares('45', '75'), 'Angkas is ₱30 lower for this trip.');
   assert.equal(compareRideFares('45.00', '45'), 'Both entered fares are equal.');
   assert.equal(compareRideFares('', '0'), undefined);
+});
+
+test('keeps optional and legacy schedules while validating complete calendar dates', () => {
+  assert.equal(scheduleProblem('', ''), undefined);
+  assert.equal(scheduleProblem('', '15:30')?.field, 'date');
+  assert.equal(scheduleProblem('2028-02-29', '')?.field, 'time');
+  assert.equal(scheduleProblem('2027-02-29', '15:30')?.field, 'date');
+  assert.equal(scheduleProblem('2028-02-29', '24:05')?.field, 'time');
+  assert.equal(scheduleProblem('2028-02-29', '00:00'), undefined);
+  assert.deepEqual(readSchedule('2028-02-29 00:00'), { day: '2028-02-29', time: '00:00', legacy: '' });
+  for (const saved of ['Next Saturday', '2027-02-30 19:15']) {
+    assert.equal(readSchedule(saved).legacy, saved);
+    assert.equal(formatLocalSchedule(saved), saved);
+  }
+  assert.equal(formatLocalSchedule(null), '');
+});
+
+test('uses the same Philippine wall time for the picker, local plans and shared timestamps', () => {
+  const instant = new Date(scheduleInstant('2027-01-01', '00:15'));
+  assert.equal(instant.toISOString(), '2026-12-31T16:15:00.000Z');
+  assert.deepEqual(pickerFields(instant), { day: '2027-01-01', time: '00:15' });
+  const display = formatSharedSchedule(instant.toISOString());
+  assert.match(display, /2027/);
+  assert.match(display, /Philippine time/);
+  assert.equal(formatLocalSchedule('2027-01-01 00:15'), display);
 });

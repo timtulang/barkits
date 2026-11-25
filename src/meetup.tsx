@@ -1,3 +1,4 @@
+import { formatLocalSchedule } from './meetup-schedule';
 import { ParticipantRoster } from './participant-roster';
 import { RankingFigures } from './venue-summary';
 import { ChoiceField, IconAction } from './form-controls';
@@ -70,7 +71,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
         {canEdit && <IconAction name="edit-2" label="Edit meetup details" onPress={editDetails} />}
       </View>
       <View style={layout.wrap}><Label kind="page" heading>{meetup.name}</Label><StatusMark status={meetup.status} /></View>
-      <Label kind="detail">{meetup.date || 'Date to be decided'} · Saved on this device</Label>
+      <Label kind="detail">{formatLocalSchedule(meetup.date) || 'Date to be decided'} · Saved on this device</Label>
       {!!meetup.activity && <Label weight="bold">Activity · {meetup.activity}</Label>}
       {!!meetup.description && <Label>{meetup.description}</Label>}
     </View>
@@ -136,7 +137,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
           <GoogleMapsLink point={venue.point} /></>}
         {meetup.status === 'Decided' && <Button onPress={() => save({ ...meetup, status: 'Completed' })} icon="check">Mark completed</Button>}
       </View>
-      {fullMap && venue.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={meetup.date}
+      {fullMap && venue.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={formatLocalSchedule(meetup.date)}
         navigation={{ title: meetup.name, expanded: true, setExpanded: setFullMap, back }} />}
     </Panel>}
     {meetup.status === 'Archived' && <Panel>

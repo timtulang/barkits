@@ -1,3 +1,4 @@
+import { formatLocalSchedule } from './meetup-schedule';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
@@ -36,7 +37,7 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
             <Label kind="detail">{signedIn ? 'Kept on this device for your account. Not shared with friends.' : 'Kept in this browser or app. Not shared with friends.'}</Label>
           </View>
           {rows.map(({ item, index }) => <MeetupListItem key={index} name={item.name} status={item.status}
-            date={item.date || 'Date to be decided'} detail={`${item.participants.length} ${item.participants.length === 1 ? 'friend' : 'friends'}`}
+            date={formatLocalSchedule(item.date) || 'Date to be decided'} detail={`${item.participants.length} ${item.participants.length === 1 ? 'friend' : 'friends'}`}
             demo={index === 0}
             venue={item.venue ? [...venues, ...item.customVenues ?? []].find(venue => venue.id === item.venue)?.name : undefined}
             onPress={() => open(index)} />)}

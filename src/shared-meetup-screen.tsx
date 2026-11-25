@@ -1,3 +1,4 @@
+import { formatSharedSchedule } from './meetup-schedule';
 import { ParticipantRoster } from './participant-roster';
 import { SuggestedPlaces } from './suggested-places';
 import { IconAction, ChoiceField } from './form-controls';
@@ -53,7 +54,7 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
     if (data && fullMap === undefined) setFullMap(openMapOnEntry);
   }, [data, fullMap, openMapOnEntry]);
   const startTime = data?.summary.starts_at;
-  const schedule = startTime ? new Date(startTime).toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }) + ' · Philippine time' : undefined;
+  const schedule = startTime ? formatSharedSchedule(startTime) : undefined;
   const limited = data?.members.some(m => m.trip?.budget !== undefined || m.trip?.maxMinutes !== undefined);
   const archiving = data?.summary.status === 'completed';
   const lifecycle = <View style={layout.stack}>

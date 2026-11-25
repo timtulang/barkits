@@ -1,14 +1,24 @@
 import { View } from 'react-native';
-import { Label, layout } from './ui';
-import { palette, radius } from './theme';
+import type { ScheduleInputProps } from './meetup-schedule';
+import { colors, control, font, radius, spacing } from './theme';
+import { Label } from './ui';
 
-type Props = { day: string; time: string; setDay: (value: string) => void; setTime: (value: string) => void };
-export function ScheduleInput({ day, time, setDay, setTime }: Props) {
-  return <View style={layout.wrap}>{(['date', 'time'] as const).map(kind =>
-    <label key={kind} style={{ display: 'grid', gap: 4 }}>
-      <Label weight="bold" size={14}>{kind === 'date' ? 'Date' : 'Time (Philippines)'}</Label>
-      <input type={kind} aria-label={kind === 'date' ? 'Date' : 'Time (Philippines)'} value={kind === 'date' ? day : time}
-        onChange={e => (kind === 'date' ? setDay : setTime)(e.target.value)}
-        style={{ minHeight: 44, font: 'inherit', padding: '0 10px', borderRadius: radius.control, border: '1px solid ' + palette.line, background: palette.white, color: palette.ink }} />
-    </label>)}</View>;
+export function ScheduleInput({ day, time, setDay, setTime, disabled, error, errorId }: ScheduleInputProps) {
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+    {(['date', 'time'] as const).map(kind => {
+      const isDate = kind === 'date';
+      const label = isDate ? 'Date' : 'Time (Philippines)';
+      const invalid = error?.field === kind;
+      return <label key={kind} style={{ display: 'grid', flex: '1 1 145px', minWidth: 0, gap: spacing.xs }}>
+        <Label kind="label" color={colors.text}>{label}</Label>
+        <input type={kind} aria-label={label} value={isDate ? day : time} disabled={disabled}
+          aria-invalid={invalid} aria-describedby={invalid ? errorId : undefined}
+          onChange={event => (isDate ? setDay : setTime)(event.target.value)}
+          style={{ width: '100%', minWidth: 0, boxSizing: 'border-box', minHeight: control.minimum,
+            fontFamily: font.regular, fontSize: 16, padding: '0 12px', borderRadius: radius.control,
+            border: '1px solid ' + (invalid ? colors.error : colors.outline),
+            color: disabled ? colors.onDisabled : colors.text, background: disabled ? colors.disabled : colors.input }} />
+      </label>;
+    })}
+  </View>;
 }
