@@ -5,7 +5,7 @@
 - 2026-11-25 [CODE] Now: Phase 1 foundation implemented and documented; Phase 0 complete. Acceptance PARTIAL pending native runtime checks.
 - 2026-11-25 [TOOL] Types, 13 tests, web/Android/iOS exports, browser control/flow checks and 14 contrast pairs pass. Temporary fixture removed.
 - 2026-11-25 [USER] Open: no native environment available; native acceptance not waived. Earlier chat-only requirements remain UNCONFIRMED.
-- 2026-11-25 [USER] Next: finish scoped Git checkpoint/report and STOP. Future native validation or explicit deferral, then separately authorize Phase 2.
+- 2026-11-25 [USER] Next: STOP after report. Future native validation or explicit deferral, then separately authorize Phase 2.
 
 ## Decisions
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request, checkpoint and stop; “continue” resumes next incomplete unit only.
@@ -43,3 +43,4 @@
 - 2026-11-25 [TOOL] Design detector returned `[]`; no lint script configured; native device/screen-reader/shared backend runtime checks not run.
 - 2026-11-25 [USER] No native environment available; acceptance remains partial.
 - 2026-11-25 [TOOL] Temporary runtime now `/tmp/barkits-runtime/node_modules/node-linux-x64/bin/node`; logs/artifacts under `/tmp` may not survive restart.
+- 2026-11-25 [TOOL] Foundation committed as `e2c1d8e`; status clean afterward. Receipt saved in subsequent docs-only commit. Nothing pushed or deployed.

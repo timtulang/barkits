@@ -52,7 +52,7 @@ Platform exports do not establish native safe-area, keyboard, font-scaling, Voic
 Impeccable reported legacy product metadata and no Platform section; existing project instructions already identify Android/iOS/web. Its metadata repair/init is separate optional work, not performed as a side effect.
 
 ## Git checkpoint
-Baseline was clean at `423481e`; prior Phase 0 docs were untracked. All current edits belong to the authorized redesign. A scoped checkpoint commit is being created; exact hash and final status will be recorded after it succeeds. No push or deployment requested or performed.
+Foundation checkpoint committed successfully as `e2c1d8e` — `refactor(ui): establish shared design system foundation`. Baseline was `423481e`. Git status was clean after the checkpoint; this receipt is stored in a following documentation-only commit. Verify current status when resuming. No push or deployment performed.
 
 ## Exact next action
 Stop after reporting Phase 1 as partial acceptance. Remaining Phase 1 work is native-device validation when available, or an explicit user decision to defer that requirement. Then Phase 2 (shell/home/navigation) requires explicit authorization. Preserve the finished foundation; do not restart implementation or redo passed checks without a relevant change.
