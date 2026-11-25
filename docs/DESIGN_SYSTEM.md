@@ -8,7 +8,7 @@ Kits is an original, waving coral location pin with a cream face, deep-ink outli
 
 ## Tokens
 
-`src/theme.ts` defines the shared palette, type weights, spacing, and radii. Update the tokens and artwork together when rebranding.
+`src/theme.ts` defines the shared palette, semantic colors, type weights, spacing, radii, control dimensions and sheet elevation. The original palette remains available for existing screens; new shared controls use semantic `colors` roles. Update the tokens and artwork together when rebranding.
 
 | Token | Value | Use |
 |---|---|---|
@@ -21,11 +21,52 @@ Kits is an original, waving coral location pin with a cream face, deep-ink outli
 | Muted ink | `#62566C` | Supporting copy |
 | Lavender and mint | `#F1E5FA`, `#DDF2E5` | Light background accents |
 
-Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 20-point radius, and buttons and fields use 12. `src/ui.tsx` contains the shared labels, buttons, chips, fields, panels, and Feather icon wrapper. Product state and ranking logic live outside that layer.
+Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 20-point radius, buttons/fields use 12, hero surfaces use 28, and small choice chips use the pill radius. Shared controls have a 48-point minimum target. Panels use a quiet border; only modal sheets use the shared soft elevation (8-point downward offset, 24-point blur, 0.16 opacity; Android elevation 8).
+
+`src/ui.tsx` is the stable public entrypoint. Implementation is split into `ui-text.tsx`, `ui-actions.tsx`, `ui-field.tsx`, `ui-feedback.tsx`, and `ui-styles.ts`. Choice fields and icon actions remain in `form-controls.tsx`. Product state and ranking logic remain outside this layer. This extends the existing React Native styling architecture without replacing NativeWind configuration.
+
+### Semantic color roles
+
+| Role | Foreground / surface | Purpose |
+|---|---|---|
+| Canvas / surface / input | `#FFF9EF` / `#FFFDFA` / `#FFFFFF` | Page, grouped task, editable control |
+| Text / supporting text | `#291D32` / `#62566C` | Main content and explanations |
+| Control outline / divider | `#8D8194` / `#EAE1D7` | Visible control boundaries versus decorative separators |
+| Primary | White on `#291D32` | Main action; hover `#3C2B47`, pressed `#4C285C` |
+| Selection / information | `#4C285C` on `#F1E5FA` | Selected option or informational feedback |
+| Error / danger | `#A12C38` on `#FCECEE` | Validation/failure; danger button reverses to white on red |
+| Success | `#245D3D` on `#DDF2E5` | Confirmed successful action |
+| Warning | `#745014` on `#FFF0B9` | Missing prerequisite or caution |
+| Disabled | `#746A7B` on `#EEE8E1` | Unavailable controls; not opacity on live content |
+| Focus | `#4C285C` with cream separation | Web keyboard outline; focused native field border |
+
+Selected states include a check mark; errors include an icon and live text. Status marks retain their named icon and label. Unknown meetup statuses throw rather than silently appearing as planning. Fourteen enabled text/control contrast pairs were checked in Phase 1: text pairs exceed 4.5:1 and control boundaries exceed 3:1. This is token verification, not whole-app accessibility certification.
+
+`global.css` mirrors the theme's focus, canvas, ink, muted and mango colors for browser focus, selection, caret and scrollbars. Keep these five variables synchronized with `theme.ts`; this is the existing web CSS boundary, not a second theme.
+
+### Shared component contracts
+
+- `Button`: existing `secondary`/`quiet` props remain supported. New `variant` selects primary, secondary, quiet or danger and takes precedence over those legacy flags. `busy` disables interaction and exposes busy state; optional `busyLabel` supplies action-specific progress text. Keep async guards in the calling workflow. Labels wrap beside icons.
+- `Chip`: selected controls show a check mark, native selection state and web `aria-pressed`; disabled controls cannot activate. Omitting `onPress` creates a static badge rather than an interactive control.
+- `Field`: `error` renders red text/icon, a web invalid state and an associated description; native exposes the error as an accessibility hint. Optional `hint` appears when there is no error. `disabled` makes the input noneditable and exposes its state. Inputs preserve their values on validation failure.
+- `ChoiceField`: web uses the native select; native uses the existing expandable labeled choice list. Both support disabled state. `IconAction` has a 48-point target, accessible label and web title, focus, hover and pressed feedback.
+- `Feedback`: info/success/warning/error tone, optional title and action; use actionable error copy. `LoadingState` requires a descriptive label. `EmptyState` requires a title and explanatory content, with an optional next action. Adopt these in each later screen phase rather than rewriting all screens during Phase 1.
+- `Panel` stays a simple task surface. `EditorDialog` retains keyboard avoidance, safe-area padding, compact/wide layouts and busy dismissal guards; it now uses shared surface/elevation and section typography.
+
+Example for later screen adoption:
+
+```tsx
+<Button busy={saving} busyLabel="Saving trip…" onPress={saveTrip}>Save trip</Button>
+<Feedback tone="error" action={<Button secondary onPress={retry}>Try again</Button>}>
+  Couldn’t load this meetup. Check your connection and try again.
+</Feedback>
+```
+
+Use explicit ARIA state props where needed on web: the installed React Native Web version does not translate all `accessibilityState` entries. Keep native state props too. Keyboard focus uses a three-pixel outline with light separation so it remains visible on dark surfaces.
 
 ## Text hierarchy
 
-Use the role scale in `src/theme.ts` with the shared Label. Page titles are 36 points, major sections 28 and venue or item titles 22. Body and numeric values are 16. Field labels and supporting details are 14. Nunito’s heaviest weight leads the page, bold identifies a name or value, and muted ink carries location, provenance and context. Keep a venue name close to its location. Align people and distance values across a row and state a shared approximation once. Travel rankings group total minutes, time gap and cost under their own labels. Allow long names to wrap and let figures reflow before they collide.
+Use the role scale in `src/theme.ts` with the shared Label. Page titles are 36 points, major sections 28 and venue or item titles 22. Body and numeric values are 16. Field labels and supporting details are 14; captions are 13. Line height is 1.2 for title weight and 1.45 for other text, rounded up. Native font scaling remains enabled. Nunito’s heaviest weight leads the page, bold identifies a name or value, and muted ink carries location, provenance and context. Keep a venue name close to its location. Align people and distance values across a row and state a shared approximation once. Travel rankings group total minutes, time gap and cost under their own labels. Allow long names to wrap and let figures reflow before they collide.
 
 ## Voice and access
 

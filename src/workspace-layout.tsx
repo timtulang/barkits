@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { palette, spacing } from './theme';
+import { colors, radius, spacing } from './theme';
 import { Icon, Label, layout, type IconName } from './ui';
 
 export function WorkspaceColumns({ main, side, sideFirst = false }: { main: ReactNode; side: ReactNode; sideFirst?: boolean }) {
@@ -14,10 +14,16 @@ export function WorkspaceColumns({ main, side, sideFirst = false }: { main: Reac
 }
 
 export function StatusMark({ status }: { status: string }) {
-  const marks: Record<string, [IconName,string]> = { draft: ['edit-3',palette.softMango], planning: ['users',palette.softMango],
-    decided: ['map-pin',palette.lavender], completed: ['check-circle',palette.mint], archived: ['archive',palette.line] };
-  const [icon, bg] = marks[status.toLowerCase()] ?? marks.planning;
-  return <View style={{ flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 6, backgroundColor: bg, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 }}>
-    <Icon name={icon} size={14}/><Label size={13} weight="bold">{status[0].toUpperCase() + status.slice(1).toLowerCase()}</Label>
+  const marks: Record<string, [IconName, string, string]> = {
+    draft: ['edit-3', colors.warningSurface, colors.warning], planning: ['users', colors.warningSurface, colors.warning],
+    decided: ['map-pin', colors.infoSurface, colors.info], completed: ['check-circle', colors.successSurface, colors.success],
+    archived: ['archive', colors.disabled, colors.textMuted],
+  };
+  const mark = marks[status.toLowerCase()];
+  if (!mark) throw new Error('Unknown meetup status: ' + status);
+  const [icon, background, foreground] = mark;
+  return <View style={{ flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: spacing.sm,
+    maxWidth: '100%', backgroundColor: background, paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.control }}>
+    <Icon name={icon} size={14} color={foreground}/><Label kind="label" color={foreground}>{status[0].toUpperCase() + status.slice(1).toLowerCase()}</Label>
   </View>;
 }

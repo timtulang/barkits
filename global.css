@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-:focus-visible { outline: 3px solid #985531; outline-offset: 3px; }
-::selection { background: #ffda62; color: #291d32; }
-input, textarea { caret-color: #4c285c; }
+:root {
+  --barkits-focus: #4c285c;
+  --barkits-canvas: #fff9ef;
+  --barkits-ink: #291d32;
+  --barkits-muted: #62566c;
+  --barkits-mango: #ffda62;
+}
+:focus-visible { outline: 3px solid var(--barkits-focus); outline-offset: 3px; box-shadow: 0 0 0 3px var(--barkits-canvas); }
+::selection { background: var(--barkits-mango); color: var(--barkits-ink); }
+input, textarea { caret-color: var(--barkits-focus); }
+* { scrollbar-color: var(--barkits-muted) var(--barkits-canvas); }
