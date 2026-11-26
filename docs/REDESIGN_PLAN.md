@@ -1,6 +1,21 @@
 # Barkits redesign plan
 
-Updated 2026-11-26. **Phases 3A, 3B and 3C are merged into `barkits-prototype`. Phase 4A is implemented with verification in progress. Native runtime acceptance remains open. Phase 4B is the next separately authorized unit after the 4A checkpoint.**
+Updated 2026-11-26. **Original roadmap paused by user direction. Phase 4.5A reconstructs the primary planning path; 4.5B–D are separate requests. Phases 5 and 6 are blocked until Phase 4.5 passes its UX acceptance criteria. Phase 4B is paused.**
+
+## Priority override: Phase 4.5 — Planning UX Reconstruction
+
+User direction on 2026-11-26 supersedes the previous next-phase order and map-first entry requirement. Task clarity > information hierarchy > interaction efficiency > visual consistency > decoration. Reopen relevant Phase 3/4 surfaces; retain implemented features, storage, calculations, permissions and external contracts. Checkpoint before substantial changes: `214e732` (`feat: phase 4`).
+
+| Subphase | Scope | Status / stop boundary |
+|---|---|---|
+| **4.5A** | Audit primary journey; cohesive Who / When / Where / Review navigation, readiness, required/optional hierarchy, explicit next actions, saved state | Implemented and validated for local web; native/authenticated shared acceptance open. This request authorizes only A. |
+| **4.5B** | Integrate discovery and supported transportation comparisons into the journey; explain evidence and tradeoffs | Await explicit request; existing tools retained under Where. |
+| **4.5C** | Review, corrections, confirmation and supported group-decision states | Await explicit request; A provides basic summary/navigation only. |
+| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Await explicit request; close all acceptance criteria before resuming the original roadmap. |
+
+Overall 4.5 acceptance: first-time start is obvious; sequence/current stage/purpose/action are clear; required and optional inputs differ; relevant features are discoverable; locations and trips can be compared efficiently; earlier decisions can change without unnecessary loss; incomplete/unconfirmed status is explicit; narrow mobile layouts remain understandable; required functionality is preserved. A establishes the path, but does **not** certify all ten criteria or replace B–D.
+
+Focused A audit and evidence are in `REDESIGN_HANDOFF.md`. The original phase table below records historical scope, not current authorization. Phases 5/6 remain blocked; 4B is paused pending the reconstruction.
 
 ## Authority and preserved requirements
 

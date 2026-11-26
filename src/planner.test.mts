@@ -7,7 +7,20 @@ import type { Point } from './geo.ts';
 import { parsePoint, directDistance } from './geo.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { initialPlanningStage, peopleProgress } from './planning-progress.ts';
 import { example, recommend, ratingSummary, venues } from './planner.ts';
+
+test('planning opens at missing setup or the supported decision stage', () => {
+  assert.equal(initialPlanningStage('Planning', 0, 0), 'who');
+  assert.equal(initialPlanningStage('planning', 3, 2), 'who');
+  assert.equal(initialPlanningStage('Draft', 3, 3), 'who');
+  assert.equal(initialPlanningStage('planning', 3, 3), 'where');
+  assert.equal(initialPlanningStage('Decided', 3, 3), 'review');
+  assert.equal(initialPlanningStage('archived', 0, 0), 'review');
+  assert.equal(peopleProgress(0, 0), 'Add friends');
+  assert.equal(peopleProgress(3, 1), '2 starting points needed');
+  assert.equal(peopleProgress(1, 1), '1 friend ready');
+});
 
 test('ranks Metro Manila candidates deterministically for four friends', () => {
   assert.equal(recommend(example.participants, 'Balanced')[0].venue.id, 'cub');

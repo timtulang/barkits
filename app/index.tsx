@@ -42,6 +42,7 @@ function Workspace({ user }: { user: User | null }) {
   const [storageError, setStorageError] = useState('');
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [saveAttempt, setSaveAttempt] = useState(0);
+  const [savedMeetups, setSavedMeetups] = useState<Meetup[]>();
   useEffect(() => {
     let active = true;
     setStorageError('');
@@ -56,10 +57,14 @@ function Workspace({ user }: { user: User | null }) {
   }, [storageKey, loadAttempt]);
   useEffect(() => {
     if (!ready) return;
+    let active = true;
     AsyncStorage.setItem(storageKey, JSON.stringify(meetups))
-      .then(() => setStorageError(''))
-      .catch(() => setStorageError('Couldn’t save your changes on this device.'));
+      .then(() => { if (active) { setStorageError(''); setSavedMeetups(meetups); } })
+      .catch(() => { if (active) setStorageError('Couldn’t save your changes on this device.'); });
+    return () => { active = false; };
   }, [meetups, ready, storageKey, saveAttempt]);
+  const saveStatus = storageError ? 'Changes are not saved. Use Try again above.' : savedMeetups === meetups ?
+    'Plan saved on this device. Save any form edits before leaving.' : 'Saving changes on this device…';
 
   function save(meetup: Meetup) {
     setMeetups(current => current.map((item, itemIndex) => itemIndex === index ? meetup : item));
@@ -83,7 +88,7 @@ function Workspace({ user }: { user: User | null }) {
       {!!storageError && <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
         action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
       {!ready && !storageError && <LoadingState label="Loading your meetups…" />}
-      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
+      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} saveStatus={saveStatus} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
         <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
           shared={user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
             <View style={{ gap: 12 }}><Label kind="item" heading>With friends</Label><Label kind="detail">Sign in to create a shared plan or join your barkada with an invite code.</Label>

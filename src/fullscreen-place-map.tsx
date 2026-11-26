@@ -20,7 +20,7 @@ export function FullscreenPlaceMap({ navigation, pins, select, children, detail,
           <IconAction name="arrow-left" label="Back to meetups" onPress={navigation.back} />
           <View style={{ flex: 1, minWidth: 0 }}><Label kind="value" heading numberOfLines={2}>{navigation.title}</Label></View>
           </View>
-          <Button quiet onPress={() => navigation.setExpanded(false)}>Meetup details</Button>
+          <Button quiet onPress={() => navigation.setExpanded(false)}>Back to planning</Button>
         </View>
       <View style={{ flex: 1, minHeight: 0 }} onLayout={event => setMapHeight(Math.round(event.nativeEvent.layout.height))}>
         {mapHeight > 0 && <PlaceMap mapLabel={mapLabel} viewportHeight={mapHeight} pins={pins} onSelectVenue={select}

@@ -3,9 +3,9 @@ import { colors, control, radius, spacing } from './theme';
 import { Label } from './ui';
 
 export const localSections = [
-  { id: 'nearby', label: 'Nearby places' },
-  { id: 'trips', label: 'Travel rankings' },
-  { id: 'details', label: 'Trip details' },
+  { id: 'nearby', label: 'Explore places' },
+  { id: 'trips', label: 'Compare trips & vote' },
+  { id: 'details', label: 'Enter trip estimates' },
 ] as const;
 export type PlanSection = typeof localSections[number]['id'];
 

@@ -1,15 +1,16 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-26 [USER] Initialize from verified repository evidence, check optional integrations, then continue redesign Phase 4; no application edits during initialization, no provider changes or unnecessary dependencies.
-- 2026-11-26 [TOOL] Initialization complete at clean `fc383ff` on `barkits-prototype`; supersedes combined-preview branch as current working branch. Phase 3C checkpoint `634d1fd` and handoff `0b0da8e` are in history.
-- 2026-11-26 [CODE] Goal/Now: Phase 4A search and maps, the next incomplete named subphase. Preserve business rules, storage, permissions, providers, branding and existing architecture; code ≤300 lines.
-- 2026-11-26 [USER] Next: implement and verify 4A only, update handoff, then stop before 4B. Report unrelated inconsistencies without fixing them.
-- 2026-11-26 [TOOL] Open: native runtime and hosted authenticated acceptance; `docs/DATABASE.md` absent, no lint script. This checkout lacks historical ignored screenshot/test fixtures and installed dependencies; shell Node 20 differs from required Node 24.
+- 2026-11-26 [USER] Goal: Phase 4.5A Planning UX Reconstruction only; original roadmap paused. Task clarity > hierarchy > efficiency > consistency > decoration. Phases 5/6 blocked until all 4.5 UX criteria pass.
+- 2026-11-26 [TOOL] Safe pre-reconstruction checkpoint: `214e732` (`feat: phase 4`), clean baseline on `barkits-prototype`; Phase 3A–3C and 4A retained.
+- 2026-11-26 [CODE] Now: A implemented: Who/When/Where/Review, contextual readiness, optional inline scheduling, explicit map entry, reversible stage navigation and actual local save status. Preserve business rules, permissions, storage, providers and branding; code ≤300 lines.
+- 2026-11-26 [TOOL] Validation: TypeScript, 16 tests, three platform exports and local Chromium planning/error/resume scenarios pass. Native runtime and authenticated shared acceptance remain open; do not claim all 4.5 criteria passed.
+- 2026-11-26 [USER] Next: checkpoint A and STOP. Await explicit 4.5B request; C is detailed review/correction, D is full UX validation. Phase 4B remains paused.
+- 2026-11-26 [TOOL] Open: no lint script or `docs/DATABASE.md`; no schema changes. Original shell Node 20; temporary Node 24.15.0 and existing lockfile dependencies restored. Graphify indexing paused/incomplete for urgent UX work.
 
 ## Integrations and initialization
-- 2026-11-26 [TOOL] Ponytail bundled skill read and active; Impeccable available and context command succeeded using `docs/PRODUCT.md`. Existing `docs/DESIGN_SYSTEM.md` is visual authority; no `DESIGN.md`, no design hook.
-- 2026-11-26 [TOOL] Graphify CLI/graph and OmniRoute executable absent; uv available. No gateway started, provider settings changed, or optional tools installed; external routing configuration UNCONFIRMED.
+- 2026-11-26 [TOOL] Ponytail/Impeccable skills read; context succeeded using `docs/PRODUCT.md`. Existing `docs/DESIGN_SYSTEM.md` remains visual authority. Supersedes initial no-hook observation: later UI edits received automatic design-hook reports. Latest AGENTS makes optional tools targeted, not mandatory initialization.
+- 2026-11-26 [TOOL] Supersedes initial availability: Graphify 0.9.120 skill and CLI appeared at `~/.local/bin/graphify`; user explicitly invoked indexing. Local extraction started; SQL parser/CSS coverage incomplete. Paused for urgent 4.5A; final graph status UNCONFIRMED. OmniRoute absent; no routing/provider changes.
 - 2026-11-26 [TOOL] Native session skill discovery available; `.agents/` and `.codex/` exist but are empty/read-only. No repository-scoped Agent Skills or `ai-agent-skills` executable found; no duplicate collection installed.
 - 2026-11-26 [CODE] Expo 54 / React Native 0.81 / Expo Router / strict TypeScript verified in package/config. Supabase operations live in `src/services/`; actual UI uses theme/StyleSheet with NativeWind configured (D003 preserves this variance). No initialization changes to application code.
 
@@ -20,30 +21,22 @@
 - 2026-11-25 [USER] D004 ACTIVE: accepted warm task-focused direction preserving Kits/Nunito/brand colors.
 - 2026-11-25 [CODE] D005 ACTIVE: 3A/3B/3C, 4A/4B and 5A/5B are separate boundaries; see roadmap.
 - 2026-11-25 [CODE] D006 ACTIVE: Phase 2 paper header, compact full-width welcome, consistent scope-labeled summaries, retained filter and explicit retries; navigation/data ownership stays in entrypoint.
+- 2026-11-26 [USER] D007 ACTIVE: 4.5A primary path, 4.5B locations/transport, 4.5C review/correction/confirmation, 4.5D realistic UX validation are separate requests; reopen relevant 3/4 surfaces, preserve functionality.
 
 ## Done (recent)
-- 2026-11-25 [CODE] Prior milestones: Phase 0 audit; Phase 1 foundation `e2c1d8e`; Phase 2 shell/home `38e826d` and handoff `37dd526`.
-- 2026-11-26 [CODE] 3B roster uses mapped starting points, per-person state, group roles and role-specific editing. Counter and approximate labels use existing catalog and coordinates.
-- 2026-11-26 [CODE] Editor names its action, explains shared visibility and invalidation, and groups optional one-way limits.
-- 2026-11-26 [CODE] Invites prioritize copy, describe replacement/expiry and surface failures. Web clipboard denial has a manual copy path.
-- 2026-11-26 [TOOL] Integrated and responsive acceptance receipts in the current handoff. Native runtime and hosted acceptance remain open.
-
-- 2026-11-26 [CODE] Phase 3A includes explicit scope, required names, preserved legacy schedules, Philippine-time display and idempotent shared retry.
-
-- 2026-11-26 [CODE] 3C planner navigation, map-to-shortlist, local/own voting, explicit confirmation, per-member limit feedback and inline pin click fix.
+- 2026-11-26 [CODE] Earlier redesign milestones preserved: Phase 1 `e2c1d8e`, Phase 2 `38e826d`/`37dd526`, 3A `c5c9a9d`, 3B/3C merged, 4A checkpoint `214e732`; see handoff for exact flows and historical receipts.
+- 2026-11-26 [CODE] 4.5A replaces map-first planning entry with state-aware Who/When/Where/Review; keeps map, voting, invitations, trip/ride/LRT tools and lifecycle capabilities.
+- 2026-11-26 [CODE] Optional creation details disclosed; local When schedule and trip fields persist across stage/tool navigation; only explicitly saved form data survives leaving/reload. Shared schedule edit remains unsupported and disclosed.
+- 2026-11-26 [CODE] Actual local storage acknowledgment controls saved/saving/error messages; existing retry preserves failed changes. Roadmap, product/design docs and README reflect the corrected path.
 
 ## Working set
-- 2026-11-26 [CODE] `docs/REDESIGN_HANDOFF.md`, `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`
-- 2026-11-26 [CODE] `src/decision-actions.tsx`, `src/venue-decision.tsx`, `src/plan-navigation.tsx`, `src/nearby-places.tsx`
-- 2026-11-26 [CODE] `src/shared-ballot.tsx`, `src/shared-meetup-screen.tsx`, `src/map-markers.ts`, `src/meetup.tsx`
-- 2026-11-26 [TOOL] `.expo/redesign/phase3c/`
+- 2026-11-26 [CODE] `docs/REDESIGN_PLAN.md`, `docs/REDESIGN_HANDOFF.md`, `docs/DESIGN_SYSTEM.md`
+- 2026-11-26 [CODE] `src/meetup.tsx`, `src/shared-meetup-screen.tsx`, `app/index.tsx`
+- 2026-11-26 [CODE] `src/planning-journey.tsx`, `src/planning-schedule.tsx`, `src/planning-progress.ts`
+- 2026-11-26 [CODE] `src/meetup-editor.tsx`, `src/plan-navigation.tsx`
+- 2026-11-26 [TOOL] `.expo/redesign/phase45a/`
 
 ## Receipts
-- 2026-11-25 [TOOL] Phase 1–2 historical verification and outstanding native checks retained in the handoff.
-- 2026-11-26 [USER] Selected Phase 2 baseline for independent 3B; no 3A present on visible Git refs.
-- 2026-11-26 [TOOL] Node 24; existing lockfile and installed dependencies. TypeScript and 13 domain tests passed; no lint script configured.
-- 2026-11-26 [TOOL] Web, Android and iOS exports passed. Mobile exports are bundle checks only.
-- 2026-11-26 [TOOL] Browser checked local empty/partial/ready and persisted name/origin/mode/limit updates, invalid inputs, estimate retention/invalidation per member.
 - 2026-11-26 [TOOL] Tested 320–1280 px, long names, eight-person roster, 48 px targets and keyboard return to the edit action.
 - 2026-11-26 [TOOL] Three local PostgREST sessions verified personal origin edits, invitation copying/replacement, consumed-code rejection and map-first reentry.
 - 2026-11-26 [TOOL] Failed code issuance and failed origin save both recovered on retry. Clipboard denial and simulated 24-hour sharing window tested.
@@ -56,3 +49,8 @@
 - 2026-11-26 [TOOL] 3C types, 15 unit tests, local rollback SQL and all three platform exports passed.
 - 2026-11-26 [TOOL] Browser checked map/voter/trip and persisted destination; shared organizer/member votes and bounded estimates passed against local PostgREST.
 - 2026-11-26 [TOOL] Reproduced inline map focus moving on mouse-down. After fixing marker handling, both full-screen and inline pin-to-decision paths passed.
+- 2026-11-26 [TOOL] 4.5A: npx tsc --noEmit and 16 domain/readiness tests pass; Expo web/Android/iOS exports pass. No lint script; native exports are not device tests.
+- 2026-11-26 [TOOL] Chromium: new-name validation, empty/ready Who, optional/incomplete schedule correction, retained unsaved schedule/trips across stages/tabs, persisted estimates, home/reload resume passed.
+- 2026-11-26 [TOOL] Chromium: storage rejection/retry, explicit map/back, confirmation to Review, confirmed map/back, draft-to-planning, partial origins and empty remote discovery passed.
+- 2026-11-26 [TOOL] Responsive 320/390/768/1440 px stage navigation passed with no page overflow. Two batched visual inspections; mobile task controls now visible earlier. Screenshots/logs in ignored .expo/redesign/phase45a/.
+- 2026-11-26 [USER] Existing commit authorization persists: checkpoint A only; no push/deployment or work on 4.5B/5/6.

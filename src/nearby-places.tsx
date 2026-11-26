@@ -22,7 +22,7 @@ export function NearbyPlaces({ meetup, voter, friends, suggestions, category, ed
         <View style={layout.wrap}>{missing.map(friend => <Button key={friend.id} secondary onPress={() => edit(friend)}>Locate {friend.name}</Button>)}</View></Panel> :
       !suggestions.length ? <Label>No mapped {category === 'All' ? 'places' : category.toLowerCase() + ' venues'} in this catalog are within 50 km of every starting point. Try another category or suggest your own place.</Label> : null}
     <SuggestedPlaces navigation={navigation} suggestions={suggestions} friends={friends} actions={venue => <>
-      {hasLimits && <Label kind="detail">Compare trips, then choose a place that meets everyone’s limits in Travel rankings.</Label>}
+      {hasLimits && <Label kind="detail">Enter trip estimates, then choose a place that meets everyone’s limits in Compare trips &amp; vote.</Label>}
       {!hasLimits && voter && <>
         {meetup.participants.length > 1 && <ChoiceField label="Record vote for" value={voter.id} change={selectVoter}
           options={meetup.participants.map(friend => ({ value: friend.id, label: friend.name }))} />}

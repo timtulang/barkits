@@ -1,6 +1,32 @@
 # Redesign handoff
 
-Updated 2026-11-26. **Phase 4A is implemented on `barkits-prototype`, based on `fc383ff`, with verification in progress.** Phase 3A–3C are merged. Stop after the 4A checkpoint; Phase 4B requires a separate request.
+Updated 2026-11-26. **Original roadmap paused. Phase 4.5A primary planning path is implemented and validated for local web; native/authenticated shared acceptance remains open. Stop before 4.5B. Phases 5/6 are blocked until all Phase 4.5 acceptance criteria pass.**
+
+## Phase 4.5A · reconstruct the primary planning path
+
+Safe baseline: `214e732` (`feat: phase 4`) on `barkits-prototype`. This correction deliberately reopens Phase 3/4 interfaces; visual polish was not evidence that planning was understandable.
+
+### Focused journey audit
+
+| Problem in the actual path | Evidence at baseline | Bounded A repair |
+|---|---|---|
+| Ready plans immediately open a full-screen map, hiding planning context | `meetup.tsx` fullMap initializer; shared entry effect | Open the planning workspace at missing setup or Where; map becomes an explicit tool with Back to planning. |
+| Component tabs explain tools rather than the whole task | Nearby places / Travel rankings / Trip details, roster alongside, schedule hidden in the pencil action | One Who / When / Where / Review structure for local/shared plans; named current step, readiness and freely revisitable stages. |
+| Creation asks optional details before the group exists | Activity, multiline notes and schedule occupy the creation form | Name/scope lead; optional details disclosed explicitly; Create meetup & add friends says where the action goes. Save draft remains. |
+| Setup and scheduling have no obvious continuation | Roster and details editor are disconnected from comparing | Who explains required origins/optional limits; Review meetup time leads to optional inline When, then Choose meeting places. |
+| Navigation can discard unsaved trip fields | Conditional TripPlanning mount by tab | Retain schedule and trip components across planning-stage/tool navigation; saved records retain their original contracts. |
+| Saved state is asserted before storage succeeds | Static Saved on this device label | Track local persistence acknowledgment; distinguish saving, saved plan/form edits and failed save with existing retry. |
+| People cannot see what is still undecided | Chosen-place and roster information are separate | Basic Review summary reports people/mapped origins, optional time and unconfirmed destination; links back to stages. Detailed correction/confirmation belongs to C. |
+
+A keeps existing transport selectors, limits, map search, rankings, trip entry, ride/LRT tools, voter ownership, shared invitations, shortlist, confirmation and lifecycle controls. Shared members still edit only their own origin. Shared schedule editing is unsupported in the existing services and is stated plainly; no new API or schema was introduced. Earlier origin/mode changes retain the existing per-person estimate invalidation rules. Confirmed plans are read-only where existing rules require it.
+
+Initial stages derive from real state: empty/partial origins or a draft → Who; ready planning → Where; decided → Review. Scheduling is optional and is not a gate to comparison. The step sequence is navigation, not a forced wizard. Unsaved schedule/trip fields survive stage/tool changes within an open meetup; only explicitly saved data survives leaving/reload. Optional creation details and invitations retain state while collapsed or on another stage.
+
+### Phase 4.5A verification and next action
+
+TypeScript, 16 domain/readiness tests and web/Android/iOS Expo exports pass for this checkpoint. Chromium has verified creation validation, empty/ready setup, incomplete schedule recovery, schedule/trip draft retention across stages and tool tabs, persisted estimates, four widths (320/390/768/1440), and home/reload resume. Inspection found excessive mobile header height; compact stage navigation and contextual metadata now keep the task/action nearer the first viewport. Final checks after correction passed responsive stage navigation, actual storage rejection/retry, explicit map/back, confirmation to Review, confirmed map/back, draft-to-planning, partial origins and no-catalog-match recovery. No page overflow occurred at 320, 390, 768 or 1440 px. These are browser scenario checks, not a usability study or whole-4.5 acceptance.
+
+Receipt files: ignored `.expo/redesign/phase45a/`. No lint script is configured. Native-device and authenticated shared acceptance are open; platform bundles and source inspection do not close those checks. Remaining B/C/D work: cohesive transportation comparison, fuller review/corrections and realistic end-to-end acceptance. STOP after A; no 4.5B, 5 or 6 work is authorized.
 
 ## Phase 4A · place search and maps
 
@@ -12,7 +38,7 @@ OpenStreetMap tile failures expose Retry map. Browser testing caught missing mar
 
 ### Phase 4A verification
 
-Node 24.15.0 was provisioned in a temporary cache and existing lockfile dependencies restored. TypeScript, the 15 domain tests, and web/Android/iOS exports pass. No lint script is configured. Browser acceptance is in progress; receipts live under ignored `.expo/redesign/phase4a/`. Native device and hosted authenticated acceptance remain open. No commit, push or deployment has been performed.
+Node 24.15.0 was provisioned in a temporary cache and existing lockfile dependencies restored. TypeScript, the 15 domain tests, and web/Android/iOS exports pass. No lint script is configured. Browser acceptance is in progress; receipts live under ignored `.expo/redesign/phase4a/`. Native device and hosted authenticated acceptance remain open. Implementation checkpoint: `214e732`; no push or deployment performed by this session.
 
 ## Phase 3C · planner navigation, voting and confirmation
 

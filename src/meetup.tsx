@@ -3,6 +3,9 @@ import { ParticipantRoster } from './participant-roster';
 import { RankingFigures } from './venue-summary';
 import { ChoiceField, IconAction } from './form-controls';
 import { PlanNavigation, localSections, type PlanSection } from './plan-navigation';
+import { PlanningJourney, PlanningReview } from './planning-journey';
+import { PlanningSchedule } from './planning-schedule';
+import { initialPlanningStage, peopleProgress, type PlanningStage } from './planning-progress';
 import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { activityCategory, categories, Category, discover } from './discovery';
 import { catalog } from './venue-catalog';
@@ -12,7 +15,7 @@ import { VenueDecision } from './venue-decision';
 import { PlanningMap } from './planning-map';
 import { TripPlanning } from './trip-planning';
 import { ConfirmedPlaceMap } from './confirmed-place-map';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { GoogleMapsLink } from './google-maps-link';
 import { Kits } from './kits';
@@ -27,7 +30,8 @@ const rankingDescriptions: Record<Ranking, string> = {
   Cheapest: 'Prioritizes the lowest combined fare when all fares are available.',
 };
 
-export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop }: {
+export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus }: {
+  saveStatus: string;
   scrollToTop: () => void; meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
   const [tab, setTab] = useState<PlanSection>('nearby');
@@ -38,7 +42,14 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
     discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
   const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
-  const [fullMap, setFullMap] = useState(() => suggestions.length > 0 || (meetup.status === 'Decided' && !!venue?.point));
+  const [fullMap, setFullMap] = useState(false);
+  const [stage, setStage] = useState<PlanningStage>(() => initialPlanningStage(meetup.status, meetup.participants.length, located.length));
+  function changeStage(next: PlanningStage) {
+    setStage(next); setFullMap(false); requestAnimationFrame(scrollToTop);
+  }
+  useEffect(() => {
+    if (meetup.status === 'Decided') { setStage('review'); setFullMap(false); requestAnimationFrame(scrollToTop); }
+  }, [meetup.status]);
   const [ranking, setRanking] = useState<Ranking>('Balanced');
   const [expanded, setExpanded] = useState('');
   const [voter, setVoter] = useState('');
@@ -55,6 +66,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
     setFullMap(false);
     setTripTarget(id);
     setTab('details');
+    setStage('where');
     requestAnimationFrame(scrollToTop);
   }
   function rate(value: number | null) {
@@ -70,22 +82,45 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
         <Button quiet onPress={back} icon="arrow-left">Back to meetups</Button>
         {canEdit && <IconAction name="edit-2" label="Edit meetup details" onPress={editDetails} />}
       </View>
-      <View style={layout.wrap}><Label kind="page" heading>{meetup.name}</Label><StatusMark status={meetup.status} /></View>
-      <Label kind="detail">{formatLocalSchedule(meetup.date) || 'Date to be decided'} · Saved on this device</Label>
-      {!!meetup.activity && <Label weight="bold">Activity · {meetup.activity}</Label>}
-      {!!meetup.description && <Label>{meetup.description}</Label>}
+      <View style={layout.wrap}><View style={{ flexGrow: 1, flexBasis: 180 }}><Label kind={canEdit || meetup.status === 'Decided' ? 'item' : 'page'} heading>{meetup.name}</Label></View><StatusMark status={meetup.status} /></View>
+      {(!canEdit || stage === 'review') && <Label kind="detail">{formatLocalSchedule(meetup.date) || 'Date and time undecided (optional)'} · On this device</Label>}
+      {!!meetup.activity && stage === 'review' && <Label weight="bold">Activity · {meetup.activity}</Label>}
+      {!!meetup.description && stage === 'review' && <Label>{meetup.description}</Label>}
     </View>
-    {meetup.status === 'Draft' && <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Start planning</Button>}
-    <WorkspaceColumns sideFirst={!meetup.participants.length} side={<ParticipantRoster
+    {(canEdit || meetup.status === 'Decided') && <>
+    <PlanningJourney current={stage} change={changeStage} people={peopleProgress(meetup.participants.length, located.length)}
+      scheduled={!!meetup.date} destination={!!venue} saved={saveStatus} />
+    {stage === 'who' && <>
+      <Label kind="detail">Required for suggestions: at least one friend with a mapped starting point. Each friend can choose transport; fare and time limits are optional.</Label>
+      {!canEdit && <Label>The destination is confirmed. The roster is read-only.</Label>}
+      <ParticipantRoster
       members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located}
-      edit={canEdit ? editFriend : undefined} action={canEdit &&
-        <Button secondary={!!meetup.participants.length} icon="user-plus" onPress={() => editFriend()}>Add friend</Button>} />}
-      main={meetup.status === 'Draft' ? null : <>
+      edit={canEdit ? editFriend : undefined} action={canEdit && <View style={layout.wrap}>
+        {!!meetup.participants.length && <Button onPress={() => changeStage('when')}>Review meetup time</Button>}
+        <Button secondary={!!meetup.participants.length} icon="user-plus" onPress={() => editFriend()}>Add friend</Button></View>} />
+      {!!meetup.participants.length && <Label kind="detail">Changing a starting point or transport clears only that friend’s saved trip estimates. Existing votes and suggested places stay.</Label>}
+    </>}
+    <View style={{ display: stage === 'when' ? 'flex' : 'none' }}>
+      {canEdit ? <PlanningSchedule key={meetup.date} date={meetup.date} save={date => save({ ...meetup, date })}
+        continuePlanning={() => changeStage('where')} /> : <Panel><Label>{formatLocalSchedule(meetup.date) || 'Date and time undecided'}</Label>
+          <Label kind="detail">The confirmed plan is read-only.</Label><Button onPress={() => changeStage('review')}>Review confirmed plan</Button></Panel>}
+    </View>
+    {stage === 'review' && <PlanningReview people={meetup.participants.length} mapped={located.length}
+      schedule={formatLocalSchedule(meetup.date)} destination={venue?.name} change={changeStage} canEdit={canEdit} />}
+    {meetup.status === 'Draft' && stage === 'where' && <Panel>
+      <Label kind="item" heading>Ready to compare places?</Label><Label>This is a draft. Open place suggestions and voting when you’re ready. You can still change friends and time.</Label>
+      <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Find meeting places</Button>
+    </Panel>}
+    <View style={{ display: stage === 'where' ? 'flex' : 'none', gap: 16 }}>
     {meetup.status === 'Planning' && <>
+      {located.length < meetup.participants.length || !meetup.participants.length ? <Panel>
+        <Label>Add a mapped starting point for every friend to find nearby places.</Label>
+        <Button onPress={() => changeStage('who')}>Complete starting points</Button>
+      </Panel> : null}
       <View style={layout.stack}>
         <PlanNavigation sections={localSections} current={tab} change={setTab} />
         <View style={layout.between}>
-          <View style={{ flex: 1 }}><Label kind="section" heading>{tab === 'nearby' ? 'Suggested meeting places' : tab === 'trips' ? 'Travel rankings' : 'Trip details'}</Label></View>
+          <View style={{ flex: 1 }}><Label kind="item" heading>{tab === 'nearby' ? 'Explore meeting places' : tab === 'trips' ? 'Compare trips & vote' : 'Enter trip estimates'}</Label></View>
           {tab === 'nearby' && <IconAction name="search" label="Search another meeting place" onPress={() => openTrip('new-place')} />}
         </View>
         {!!currentVoter && <View style={layout.wrap}>
@@ -99,15 +134,15 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
           </View>}
         </View>}
       </View>
-      {tab === 'details' && <TripPlanning destinationId={tripTarget} meetup={meetup} save={save} participant={currentVoter}
-        selectDestination={setTripTarget} />}
+      <View style={{ display: tab === 'details' ? 'flex' : 'none' }}><TripPlanning destinationId={tripTarget} meetup={meetup} save={save} participant={currentVoter}
+        selectDestination={setTripTarget} /></View>
       {tab === 'nearby' && <NearbyPlaces navigation={{ title: meetup.name, expanded: fullMap, setExpanded: setFullMap, back }} meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
         category={category} edit={editFriend} selectVoter={setVoter} save={save}
         compare={spot => { save(retainPlace(meetup, spot)); openTrip(spot.id); }} />}
       {tab === 'trips' && <>
         <Label kind="detail">Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
         <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
-      {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label><Button secondary onPress={() => setTab('details')}>Enter trip details</Button></Panel>}
+      {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label><Button secondary onPress={() => setTab('details')}>Enter trip estimates</Button></Panel>}
       {candidates.map(({ venue: item, journeys, time, spread, cost }, index) => {
         return <Panel key={item.id}>
           <View style={layout.between}><View style={[layout.row, { flex: 1 }]}><View style={{ backgroundColor: palette[item.color], padding: 10, borderRadius: 12 }}><Icon name={item.icon} /></View>
@@ -130,8 +165,13 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       </Panel>)}
       </>}
       {(tab === 'trips' || (tab === 'nearby' && !suggestions.length)) && <PlanningMap meetup={meetup} origins={located} places={tab === 'nearby' ? suggestions.map(item => item.venue) : candidates.map(item => item.venue)} />}
+      <Button secondary onPress={() => changeStage('review')}>Review plan & what’s missing</Button>
     </>}
-    {!!venue && <Panel><Label kind="item" heading>Meet at {venue.name}</Label><Label>{venue.area}</Label>
+    </View>
+    </>}
+    <WorkspaceColumns side={meetup.status === 'Completed' || meetup.status === 'Archived' ? <ParticipantRoster
+      members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located} /> : null} main={<>
+    {!!venue && (!canEdit && meetup.status !== 'Decided' || stage === 'review' || stage === 'where') && <Panel><Label kind="item" heading>Meet at {venue.name}</Label><Label>{venue.area}</Label>
       <View style={layout.wrap}>
         {venue.point && <><Button secondary onPress={() => setFullMap(true)} icon="map">View venue map</Button>
           <GoogleMapsLink point={venue.point} /></>}

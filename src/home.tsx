@@ -18,7 +18,7 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
       <View style={styles.intro}>
         <View style={layout.row}><Label kind={wide ? 'page' : 'section'} heading>Tara, kita-kits!</Label>
           {!wide && <Kits style={styles.artSmall} />}</View>
-        <Label>Find a meeting place that works for the whole barkada.</Label>
+        <Label>Add friends, decide when to meet, compare places and review your plan.</Label>
         <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button></View>
       </View>
       {wide && <Kits style={styles.artWide} />}

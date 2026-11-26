@@ -82,7 +82,7 @@ Barkits uses a paper header with the coral brand mark, a home action and account
 
 Active plans and Past meetups filter both lists, and the selection remains when returning home from a meetup. Completed and archived plans appear under Past meetups. Use labeled loading states for account, local and shared plans, contextual empty states, and actionable load/save/refresh errors with Try again. A failed shared refresh keeps previously loaded plans visible and identifies them as such.
 
-Planning and memories use a primary work area with a narrower roster, invitations or rating column at 940 px and above. On phones the panels stack. On phones, an empty roster leads to Add friend. Once an on-device plan has participants, venue suggestions come first. Nearby places, Travel rankings and Trip details appear as labeled sections. Use a pencil for editing a named item, a circular arrow for refresh, and an × for closing a sheet. Give each icon-only action a descriptive accessible name, a 44-point target and a hover title on web. Keep decisions, prices and permission requests in words. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
+Planning uses a single Who / When / Where / Review workspace. A compact stage indicator always identifies the current stage and exposes earlier choices. Put the roster and invitations in Who, the optional schedule in When, existing place/trip/voting tools in Where, and the plan summary in Review. Ready plans open at Where; incomplete starting points open at Who; confirmed plans open at Review. Full-screen maps open only on request. Memories retain the existing primary work area and rating column at 940 px and above. Use a pencil for editing a named item, a circular arrow for refresh, and an × for closing a sheet. Give each icon-only action a descriptive accessible name, a 44-point target and a hover title on web. Keep decisions, prices and permission requests in words. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
 
 ## Forms
 
@@ -90,7 +90,7 @@ Lead with the meetup or person’s name and the place search. Show the optional 
 
 ## Meetup creation and schedules
 
-Lead the sheet with the required meetup name. Explain who adds the starting points at the scope choice. Ask for the organizer’s display name only when creating a shared plan. Keep activity and notes visible. During local creation, Start planning is the primary action and Save draft is quieter. During an edit, Save changes retains the meetup’s current stage.
+Lead the sheet with the required meetup name. Explain who adds the starting points at the scope choice. Ask for the organizer’s display name only when creating a shared plan. Disclose activity, notes and the optional schedule under a named optional-details control during creation. Create meetup & add friends is the primary local action and Save draft is quieter. When is available later as an inline schedule stage; incomplete date/time values remain visible with an actionable error. During an edit, Save changes retains the meetup’s current stage.
 
 Treat the optional schedule as a pair. Show a labeled calendar date and Philippine time, side by side when space permits and stacked on narrow screens. A missing or unfinished part gets an adjacent message and a brief prompt near the save action. Clear schedule removes the pair. Show an older free-text schedule until it is replaced or cleared.
 
@@ -108,7 +108,7 @@ Only organizers see the invitation panel. Explain the one-person, 24-hour and re
 
 ## Suggested place pins
 
-Open ready planning meetups on an edge-to-edge map. Keep the meetup name and navigation in a paper header above the map, allowing controls to wrap on narrow screens without covering pins or zoom. Keep the place list in a collapsible tray below the map attribution and start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
+Open a ready plan in the planning workspace. Offer an explicit full-screen map from Where, keeping the inline place list available. Keep the meetup name and navigation in a paper header above the map, allowing controls to wrap on narrow screens without covering pins or zoom. Keep the place list in a collapsible tray below the map attribution and start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
 
 Map controls and origin markers have at least 44-point targets. Keep provider attribution in its own wrapping strip, visible alongside loading or failure feedback. Retry map restores the map and its pins without switching providers. DOM map colors come from the shared theme through CSS variables; keep provider attribution artwork intact.
 
@@ -120,7 +120,7 @@ Show selected coordinates below the place field. Keep manual coordinates optiona
 
 ## Voting and choosing a destination
 
-Use labeled section controls for the planner. On-device plans have Nearby places, Travel rankings and Trip details. Shared plans have Nearby places and a Shortlist with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
+Use labeled section controls for the planner. Within Where, on-device plans have Explore places, Compare trips & vote and Enter trip estimates. Shared plans have Explore places and Shortlist & vote with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
 
 Tie the vote action to its owner. On this device, name the selected friend in the action and let the organizer switch voters in the eligible place sheet. In shared plans, use “my vote” for the signed-in member. Show the tally as text and distinguish moving an existing vote from withdrawing it.
 

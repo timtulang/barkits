@@ -21,6 +21,7 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
   const [incomplete, setIncomplete] = useState({ date: false, time: false });
   const [pickerVersion, setPickerVersion] = useState(0);
   const [shared, setShared] = useState(false);
+  const [showOptional, setShowOptional] = useState(!!meetup);
   const [memberName, setMemberName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -45,7 +46,7 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
   async function submit(status: Meetup['status']) {
     if (pending.current) return;
     setSubmitted(true);
-    if (invalidField) return;
+    if (invalidField) { if (issue) setShowOptional(true); return; }
     pending.current = true;
     const value: Meetup = { ...(meetup ?? { participants: [], votes: {}, ratings: {} }), status,
       name: name.trim(), activity: activity.trim(), description: description.trim(), date: day ? day + ' ' + time : legacy };
@@ -80,12 +81,13 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
         <Button busy={busy} busyLabel="Creating…" onPress={() => submit('Planning')}>
           {error ? 'Retry creation' : 'Create shared meetup'}
         </Button> : <>
-          <Button onPress={() => submit('Planning')}>Start planning</Button>
+          <Button onPress={() => submit('Planning')}>Create meetup & add friends</Button>
           <Button quiet onPress={() => submit('Draft')}>Save draft</Button>
         </>}
     </View>
   </View>;
   return <EditorDialog title={meetup ? 'Edit meetup details' : 'Plan a meetup'} close={close} busy={busy} actions={footer}>
+    {!meetup && <Label kind="detail">Name your meetup to begin. Then add friends, decide when to meet, compare places and review the plan. {shared ? 'Shared plans also need your display name.' : 'Only the meetup name is required now.'}</Label>}
     <Field label="Meetup name" required placeholder="Saturday merienda" value={name} onChange={setName} maxLength={160} disabled={locked}
       error={submitted && invalidName ? 'Enter a meetup name of up to 160 characters.' : undefined} />
     {!share && !meetup && <Label kind="detail">This plan stays on this device. You’ll add the group’s starting points.</Label>}
@@ -101,6 +103,10 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
     {shared && <Field label="Your display name" required placeholder="What your friends call you" value={memberName}
       onChange={setMemberName} maxLength={80} disabled={locked}
       error={submitted && invalidMember ? 'Enter the name your friends will see.' : undefined} />}
+    {!meetup && <Button quiet expanded={showOptional} disabled={locked} onPress={() => setShowOptional(!showOptional)}>
+      {showOptional ? 'Hide optional details' : 'Add activity, notes or time (optional)'}
+    </Button>}
+    <View style={[layout.stack, { display: showOptional ? 'flex' : 'none' }]}>
     <Field label="Activity (optional)" placeholder="Coffee, dinner, a park…" value={activity} onChange={setActivity} disabled={locked} />
     <Field label="Notes (optional)" placeholder="Anything the group should know?" value={description} onChange={setDescription}
       multiline disabled={locked} />
@@ -116,5 +122,6 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
       </View>}
       {!!(day || time || legacy || incomplete.date || incomplete.time) && <Button quiet disabled={locked} onPress={clearSchedule}>Clear schedule</Button>}
     </FormSection>
+    </View>
   </EditorDialog>;
 }
