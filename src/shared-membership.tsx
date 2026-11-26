@@ -1,10 +1,8 @@
-import * as Clipboard from 'expo-clipboard';
 import { useState, useRef } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { EditorDialog } from './editor-dialog';
-import { issueCode, joinShared } from './services/shared-meetups';
-import { Button, Field, Label, layout, Panel } from './ui';
-import { font, palette } from './theme';
+import { joinShared } from './services/shared-meetups';
+import { Button, Field, Label, layout } from './ui';
 
 export { SharedList } from './shared-meetup-list';
 
@@ -35,32 +33,4 @@ export function JoinDialog({ open, close }: { open: (id: string) => void; close:
     {!!error && <View accessibilityRole="alert"><Label>{error}</Label></View>}
     <View style={layout.wrap}><Button disabled={busy} onPress={join}>{busy ? 'Joining…' : 'Join meetup'}</Button></View>
   </EditorDialog>;
-}
-
-export function InviteFriend({ id }: { id: string }) {
-  const [code, setCode] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-  const pending = useRef(false);
-  async function generate() {
-    if (pending.current) return;
-    pending.current = true;
-    setCode('');
-    setBusy(true);
-    setMessage('');
-    try { setCode((await issueCode(id)).match(/.{4}/g)!.join('-')); }
-    catch (e) { setMessage(e instanceof Error ? e.message : 'Couldn’t create the code. Try again.'); }
-    finally { pending.current = false; setBusy(false); }
-  }
-  async function copy() {
-    try { setMessage(await Clipboard.setStringAsync(code) ? 'Code copied.' : 'Select the code to copy it.'); }
-    catch { setMessage('Select the code to copy it.'); }
-  }
-  return <Panel><Label size={19} weight="title">Invite a friend</Label>
-    <Label>Each code lets one friend join within 24 hours. A new code replaces the previous unused code.</Label>
-    {!!code && <Text selectable style={{ fontFamily: font.bold, color: palette.ink, fontSize: 19 }}>{code}</Text>}
-    <View style={layout.wrap}>{!!code && <Button icon="copy" onPress={copy}>Copy code</Button>}
-      <Button secondary disabled={busy} onPress={generate}>{busy ? 'Creating…' : code ? 'Replace code' : 'Create invite code'}</Button></View>
-    {!!message && <Label>{message}</Label>}
-  </Panel>;
 }

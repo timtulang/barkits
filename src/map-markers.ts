@@ -37,6 +37,7 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
     marker.getElement()?.setAttribute('aria-label', pin.label);
     const id = pin.venueId;
     if (id !== undefined) {
+      marker.getElement()?.addEventListener('mousedown', event => event.stopPropagation());
       numbered.push({ marker, point: pin.point });
       marker.on('click', () => select(id));
       marker.on('keydown', (event: Leaflet.LeafletKeyboardEvent) => {

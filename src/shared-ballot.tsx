@@ -1,3 +1,5 @@
+import { DecisionActions } from './decision-actions';
+import { colors, spacing } from './theme';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { TripOptions } from './trip-options';
@@ -44,36 +46,53 @@ function EstimateEditor({ candidate, current, trip, save, close }: {
   </EditorDialog>;
 }
 
-function unmetLimit(member: Member, estimate?: SharedEstimate) {
-  const trip = member.trip;
-  if (trip?.maxMinutes !== undefined && (estimate?.minutes == null || estimate.minutes > trip.maxMinutes)) return true;
-  return trip?.budget !== undefined && (estimate?.fare_pesos == null || estimate.fare_pesos > trip.budget);
+function limitIssues(member: Member, estimate?: SharedEstimate) {
+  const { budget, maxMinutes } = member.trip ?? {};
+  const issues = [];
+  if (maxMinutes !== undefined && (estimate?.minutes == null || estimate.minutes > maxMinutes)) {
+    issues.push(estimate?.minutes == null ? 'needs a travel time' : `${estimate.minutes} min exceeds the ${maxMinutes} min limit`);
+  }
+  if (budget !== undefined && (estimate?.fare_pesos == null || estimate.fare_pesos > budget)) {
+    issues.push(estimate?.fare_pesos == null ? 'needs a fare' : `₱${estimate.fare_pesos} exceeds the ₱${budget} limit`);
+  }
+  return issues.length ? member.name + ' · ' + issues.join(', ') : undefined;
 }
 
-export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh }: Props & { refresh: () => void }) {
+export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse }: Props & {
+  refresh: () => void; browse: () => void;
+}) {
   const [confirm, setConfirm] = useState('');
   const [editing, setEditing] = useState<Candidate>();
   const myTrip = members.find(m => m.id === userId)?.trip;
+  const myChoice = ballot.find(c => c.votes.some(v => v.user_id === userId));
   const sorted = [...ballot].sort((a,b) => b.votes.length - a.votes.length || a.place.name.localeCompare(b.place.name) || a.venue_id.localeCompare(b.venue_id));
-  return <Panel><Label kind="section" heading>Group shortlist</Label>
-    <Label kind="detail">{ballot.length ? 'Each friend has one vote. You can change yours until the organizer confirms a place.' : 'Add a nearby place for the group to vote on.'}</Label>
+  return <Panel>
+    <View style={{ gap: spacing.xs }}>
+      <Label kind="section" heading>Group shortlist</Label>
+      <Label kind="detail">{ballot.length ?
+        (owner ? 'Each member has one vote. As organizer, you confirm the destination.' : 'You have one vote. The organizer confirms the destination.') :
+        'Choose a nearby place and add it here so the group can vote.'}</Label>
+    </View>
+    {!ballot.length && <Button secondary icon="map" onPress={browse}>Browse nearby places</Button>}
+    {myChoice && <Label kind="value">Your vote · {myChoice.place.name}</Label>}
     {sorted.map(c => {
-      const voted = c.votes.some(v => v.user_id === userId);
-      const blockers = members.filter(m => unmetLimit(m, c.estimates.find(e => e.user_id === m.id)));
-      return <View key={c.venue_id} style={layout.stack}>
+      const voted = c.venue_id === myChoice?.venue_id;
+      const blockers = members.map(m => limitIssues(m, c.estimates.find(e => e.user_id === m.id))).filter(Boolean);
+      return <View key={c.venue_id} style={{ gap: spacing.md, paddingTop: spacing.lg, borderTopWidth: 1, borderColor: colors.divider }}>
         <Label kind="item" heading>{c.place.name}</Label>
-        <Label kind="label">{c.votes.length} {c.votes.length === 1 ? 'vote' : 'votes'}{voted ? ' · includes your vote' : ''}</Label>
-        {c.estimates.map(e => <Label key={e.user_id}>{members.find(m => m.id === e.user_id)?.name} · Estimated {e.minutes ?? '—'} min · {e.fare_pesos === null ? 'Fare unknown' : '₱' + e.fare_pesos}{e.source.startsWith('User-entered ') ? ' · ' + e.source + ' · ' + new Date(e.calculated_at).toLocaleString('en-PH') : ''}</Label>)}
-        {!!blockers.length && <Label>Needs an estimate within the travel limits for {blockers.map(m => m.name).join(', ')}.</Label>}
+        {!!blockers.length && <View style={{ gap: spacing.xs }}>
+          <Label kind="label" color={colors.warning}>Travel limits to resolve</Label>
+          {blockers.map((reason, index) => <Label key={index} kind="detail">{reason}</Label>)}
+        </View>}
+        <DecisionActions place={c.place.name} count={c.votes.length} votedHere={voted} hasVote={!!myChoice}
+          vote={() => run(() => setSharedVote(id, voted ? null : c.venue_id))} busy={busy} blocked={!!blockers.length}
+          confirming={confirm === c.venue_id} review={open => setConfirm(open ? c.venue_id : '')}
+          confirm={owner ? async () => { if (await run(() => finalizeShared(id, c.venue_id))) setConfirm(''); } : undefined} />
+        {c.estimates.map(e => <Label key={e.user_id} kind="detail">{members.find(m => m.id === e.user_id)?.name} · Estimated {e.minutes ?? '—'} min · {e.fare_pesos === null ? 'Fare unknown' : '₱' + e.fare_pesos}{e.source.startsWith('User-entered ') ? ' · ' + e.source + ' · ' + new Date(e.calculated_at).toLocaleString('en-PH') : ''}</Label>)}
         <View style={layout.wrap}>
-          <Button disabled={busy} secondary={voted} onPress={() => run(() => setSharedVote(id, voted ? null : c.venue_id))}>{voted ? 'Remove my vote' : 'Vote for this place'}</Button>
           {myTrip && <Button secondary disabled={busy} onPress={() => setEditing(c)}>My trip estimate</Button>}
           <GoogleMapsLink point={[c.place.latitude,c.place.longitude]} />
-          {owner && <Button secondary disabled={busy || !!blockers.length} onPress={() => setConfirm(c.venue_id)}>Choose this spot</Button>}
         </View>
-        {owner && confirm === c.venue_id && <><Label weight="bold">Meet at {c.place.name}? Confirming closes voting for everyone.</Label>
-          <View style={layout.wrap}><Button disabled={busy || !!blockers.length} onPress={async () => { if (await run(() => finalizeShared(id, c.venue_id))) setConfirm(''); }}>Finalize location</Button>
-            <Button secondary disabled={busy} onPress={() => setConfirm('')}>Cancel</Button></View></>}
       </View>;
     })}
     {editing && myTrip && <EstimateEditor trip={myTrip} candidate={editing} current={editing.estimates.find(e => e.user_id === userId)}

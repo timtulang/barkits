@@ -6,7 +6,7 @@ export function useSharedData<T>(load: () => Promise<T>) {
   const [data, setData] = useState<T>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  function refresh() { setVersion(value => value + 1); }
+  function refresh() { setLoading(true); setVersion(value => value + 1); }
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => { if (state === 'active') refresh(); });
     return () => subscription.remove();

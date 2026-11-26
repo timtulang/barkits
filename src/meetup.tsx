@@ -1,6 +1,8 @@
+import { formatLocalSchedule } from './meetup-schedule';
+import { ParticipantRoster } from './participant-roster';
 import { RankingFigures } from './venue-summary';
 import { ChoiceField, IconAction } from './form-controls';
-import { PlanNavigation, type PlanSection } from './plan-navigation';
+import { PlanNavigation, localSections, type PlanSection } from './plan-navigation';
 import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { activityCategory, categories, Category, discover } from './discovery';
 import { catalog } from './venue-catalog';
@@ -69,30 +71,23 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
         {canEdit && <IconAction name="edit-2" label="Edit meetup details" onPress={editDetails} />}
       </View>
       <View style={layout.wrap}><Label kind="page" heading>{meetup.name}</Label><StatusMark status={meetup.status} /></View>
-      <Label kind="detail">{meetup.date || 'Date to be decided'} · Saved on this device</Label>
+      <Label kind="detail">{formatLocalSchedule(meetup.date) || 'Date to be decided'} · Saved on this device</Label>
       {!!meetup.activity && <Label weight="bold">Activity · {meetup.activity}</Label>}
       {!!meetup.description && <Label>{meetup.description}</Label>}
     </View>
     {meetup.status === 'Draft' && <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Start planning</Button>}
-    <WorkspaceColumns sideFirst={!meetup.participants.length} side={<Panel>
-      <View style={layout.wrap}><Label kind="item" heading>Your barkada</Label>{canEdit && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
-      {meetup.participants.length === 0 && <View style={layout.row}><Kits style={{ width: 85, height: 58, borderRadius: 10 }} /><Label color={palette.muted}>Add friends to compare meetup spots.</Label></View>}
-      {meetup.participants.map(friend => <View key={friend.id} style={layout.between}>
-        <View style={{ flex: 1 }}>
-          <Label kind="value">{friend.name}</Label>
-          <Label kind="detail">{friend.origin} · {friend.mode}</Label>
-          {(friend.budget !== undefined || friend.maxMinutes !== undefined) && <Label kind="detail">Limit · {[friend.budget !== undefined ? '₱' + friend.budget : '', friend.maxMinutes !== undefined ? friend.maxMinutes + ' min' : ''].filter(Boolean).join(' · ')}</Label>}
-        </View>
-        {canEdit && <IconAction name="edit-2" label={'Edit ' + friend.name} onPress={() => editFriend(friend)} />}
-      </View>)}
-    </Panel>} main={meetup.status === 'Draft' ? null : <>
+    <WorkspaceColumns sideFirst={!meetup.participants.length} side={<ParticipantRoster
+      members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located}
+      edit={canEdit ? editFriend : undefined} action={canEdit &&
+        <Button secondary={!!meetup.participants.length} icon="user-plus" onPress={() => editFriend()}>Add friend</Button>} />}
+      main={meetup.status === 'Draft' ? null : <>
     {meetup.status === 'Planning' && <>
       <View style={layout.stack}>
+        <PlanNavigation sections={localSections} current={tab} change={setTab} />
         <View style={layout.between}>
           <View style={{ flex: 1 }}><Label kind="section" heading>{tab === 'nearby' ? 'Suggested meeting places' : tab === 'trips' ? 'Travel rankings' : 'Trip details'}</Label></View>
           {tab === 'nearby' && <IconAction name="search" label="Search another meeting place" onPress={() => openTrip('new-place')} />}
         </View>
-        <PlanNavigation current={tab} change={setTab} />
         {!!currentVoter && <View style={layout.wrap}>
           <View style={{ flexGrow: 1, flexBasis: 145, minWidth: 0 }}>
             <ChoiceField label="Plan and vote as" value={currentVoter.id} change={value => value === 'add-friend' ? editFriend() : setVoter(value)}
@@ -107,12 +102,12 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       {tab === 'details' && <TripPlanning destinationId={tripTarget} meetup={meetup} save={save} participant={currentVoter}
         selectDestination={setTripTarget} />}
       {tab === 'nearby' && <NearbyPlaces navigation={{ title: meetup.name, expanded: fullMap, setExpanded: setFullMap, back }} meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
-        category={category} edit={editFriend} save={save}
+        category={category} edit={editFriend} selectVoter={setVoter} save={save}
         compare={spot => { save(retainPlace(meetup, spot)); openTrip(spot.id); }} />}
       {tab === 'trips' && <>
         <Label kind="detail">Rankings use demo trips or travel figures you enter. Live routes and fares are unavailable.</Label>
         <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
-      {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label></Panel>}
+      {!!meetup.participants.length && !candidates.length && <Panel><Label>No places qualify yet. Enter travel times for every friend to the same place. Add fares for budget limits or the Cheapest ranking.</Label><Button secondary onPress={() => setTab('details')}>Enter trip details</Button></Panel>}
       {candidates.map(({ venue: item, journeys, time, spread, cost }, index) => {
         return <Panel key={item.id}>
           <View style={layout.between}><View style={[layout.row, { flex: 1 }]}><View style={{ backgroundColor: palette[item.color], padding: 10, borderRadius: 12 }}><Icon name={item.icon} /></View>
@@ -142,7 +137,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
           <GoogleMapsLink point={venue.point} /></>}
         {meetup.status === 'Decided' && <Button onPress={() => save({ ...meetup, status: 'Completed' })} icon="check">Mark completed</Button>}
       </View>
-      {fullMap && venue.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={meetup.date}
+      {fullMap && venue.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={formatLocalSchedule(meetup.date)}
         navigation={{ title: meetup.name, expanded: true, setExpanded: setFullMap, back }} />}
     </Panel>}
     {meetup.status === 'Archived' && <Panel>

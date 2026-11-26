@@ -88,9 +88,35 @@ Planning and memories use a primary work area with a narrower roster, invitation
 
 Lead with the meetup or person’s name and the place search. Show the optional schedule, notes and travel limits directly in the form. Present raw coordinates as a labeled alternative to place search. Use a labeled selector for a single choice such as transportation mode. Keep the close icon in the sheet header and the main creation or save action in the footer. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
 
+## Meetup creation and schedules
+
+Lead the sheet with the required meetup name. Explain who adds the starting points at the scope choice. Ask for the organizer’s display name only when creating a shared plan. Keep activity and notes visible. During local creation, Start planning is the primary action and Save draft is quieter. During an edit, Save changes retains the meetup’s current stage.
+
+Treat the optional schedule as a pair. Show a labeled calendar date and Philippine time, side by side when space permits and stacked on narrow screens. A missing or unfinished part gets an adjacent message and a brief prompt near the save action. Clear schedule removes the pair. Show an older free-text schedule until it is replaced or cleared.
+
+Use the same Philippine date and time in list rows, meetup details and the confirmed map. While a shared creation is pending, keep the entered details visible and prevent further edits. If a response is lost, offer Retry creation with the original details.
+
+## Participant roster and invitations
+
+Use the same “Your barkada” roster for local and shared plans. Put the mapped count immediately below the heading and the available setup action above the list. Count the places the discovery resolver can actually map. A free-text address may need a map pin. A recognized locality counts toward readiness and carries the “Approximate area center” label. A shared member without an origin has a pending starting point. A mapped roster can still have no matching venues.
+
+Lead each row with the person’s name. Place ownership (“You”, “Organizer”) next to the identity, then show the origin, location caveat, transport, and any one-way limits. A zero-peso limit is meaningful. The on-device roster can offer a named edit action per person. Shared plans have one personal starting-point action. Kits appears in the empty roster.
+
+In the participant sheet, show shared visibility before location entry. Leave the optional fare and time fields visible with units; use two columns only when both fit. Keep the save action visible as the sheet scrolls. Explain the loss of entered estimates when a changed origin or mode would invalidate them.
+
+Only organizers see the invitation panel. Explain the one-person, 24-hour and replacement rules before issuing a code. Once issued, give the selectable code and Copy code more prominence than Replace code. Announce the clipboard result and provide a manual copy path when needed. The server determines redemption and expiry; the client stops displaying a code after its local sharing window.
+
 ## Suggested place pins
 
 Open ready planning meetups on an edge-to-edge map. Float the meetup name and navigation above it and keep the place list in a collapsible tray below the map attribution. Start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
+
+## Voting and choosing a destination
+
+Use labeled section controls for the planner. On-device plans have Nearby places, Travel rankings and Trip details. Shared plans have Nearby places and a Shortlist with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
+
+Tie the vote action to its owner. On this device, name the selected friend in the action and let the organizer switch voters in the eligible place sheet. In shared plans, use “my vote” for the signed-in member. Show the tally as text and distinguish moving an existing vote from withdrawing it.
+
+Give confirmation its own review step with the place name, the consequence for voting, and Cancel. In a shared plan, only the organizer gets this action. If limits block confirmation, name the member and show the missing value or the estimate alongside the limit. Keep personal estimates and directions available alongside the decision.
 
 ## Trip comparisons
 
