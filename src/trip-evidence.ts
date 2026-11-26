@@ -49,6 +49,7 @@ export function summarizeTrips(rows: TripEvidence[]) {
     ready: timed.length, count: rows.length,
     time: rows.length > 0 && timed.length === rows.length ? timed.reduce((sum, row) => sum + row.minutes!, 0) : null,
     longest: rows.length > 0 && timed.length === rows.length ? Math.max(...timed.map(row => row.minutes!)) : null,
+    gap: rows.length > 0 && timed.length === rows.length ? Math.max(...timed.map(row => row.minutes!)) - Math.min(...timed.map(row => row.minutes!)) : null,
     fare: rows.length > 0 && rows.every(row => row.fare !== null) ? rows.reduce((sum, row) => sum + row.fare!, 0) : null,
     blocked: rows.some(row => row.issues.length > 0),
   };

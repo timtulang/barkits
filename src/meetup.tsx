@@ -27,8 +27,8 @@ import { Meetup, Participant, Ranking, ratingSummary, venues, retainPlace } from
 import { palette } from './theme';
 import { Button, Chip, Field, Label, layout, Panel } from './ui';
 
-export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus, saveReady }: {
-  saveStatus: string; saveReady: boolean;
+export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus, saveReady, reportDirty }: {
+  saveStatus: string; saveReady: boolean; reportDirty: (dirty: boolean) => void;
   scrollToTop: () => void; meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
   const [tab, setTab] = useState<PlanSection>('nearby');
@@ -56,6 +56,8 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const [tripEditorOpen, setTripEditorOpen] = useState(false);
   const [scheduleDirty, setScheduleDirty] = useState(false);
   const [tripDirty, setTripDirty] = useState(false);
+  useEffect(() => reportDirty(scheduleDirty || tripDirty), [scheduleDirty, tripDirty, reportDirty]);
+  useEffect(() => () => reportDirty(false), [reportDirty]);
   const [voter, setVoter] = useState('');
   const [caption, setCaption] = useState(meetup.recap ?? '');
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
@@ -160,6 +162,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
         compare={spot => { save(retainPlace(meetup, spot)); setTripTarget(spot.id); setTab('trips'); setFullMap(false); requestAnimationFrame(scrollToTop); }} />}
       {tab === 'trips' && !tripEditorOpen && <LocalPlaceComparison meetup={meetup} ranking={ranking} setRanking={setRanking}
         voter={currentVoter} selected={tripTarget} editTrip={openTrip} editPerson={editFriend} save={save} review={reviewDestination} />}
+      {tab === 'trips' && !tripEditorOpen && <PlanningMap meetup={meetup} origins={located} places={venues} />}
       {tab === 'nearby' && !suggestions.length && <PlanningMap meetup={meetup} origins={located} places={[]} />}
       <Button secondary onPress={() => changeStage('review')}>Review plan & what’s missing</Button>
     </>}

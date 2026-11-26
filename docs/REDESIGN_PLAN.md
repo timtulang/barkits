@@ -1,6 +1,6 @@
 # Barkits redesign plan
 
-Updated 2026-11-26. **Original roadmap paused by user direction. Phase 4.5A reconstructs the primary planning path; 4.5B–D are separately committed checkpoints in the current authorized request. Phases 5 and 6 are blocked until Phase 4.5 passes its UX acceptance criteria. Phase 4B is paused.**
+Updated 2026-11-26. **Phase 4.5A–C are implemented; 4.5D browser validation is checkpointed with native and live shared acceptance still open. Original roadmap remains paused. Phases 5/6 remain blocked until those checks close; Phase 4B remains paused.**
 
 ## Priority override: Phase 4.5 — Planning UX Reconstruction
 
@@ -11,7 +11,7 @@ User direction on 2026-11-26 supersedes the previous next-phase order and map-fi
 | **4.5A** | Audit primary journey; cohesive Who / When / Where / Review navigation, readiness, required/optional hierarchy, explicit next actions, saved state | Implemented and validated for local web; native/authenticated shared acceptance open. Historical A boundary; subsequent user authorization covers B, C and D with separate commits. |
 | **4.5B** | Integrate discovery and supported transportation comparisons into the journey; explain evidence and tradeoffs | Implemented; local browser and evidence tests pass. Native/authenticated shared acceptance open. |
 | **4.5C** | Review, corrections, confirmation and supported group-decision states | Implemented; local review/correction/confirmation browser checks pass; shared/native acceptance remains open. |
-| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Authorized; validate combined journeys and record evidence plus remaining environment blockers. |
+| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Browser acceptance and repeatable scripts complete; native/runtime and live authenticated backend acceptance remain OPEN. Do not declare whole-4.5 acceptance or resume 5/6 yet. |
 
 Overall 4.5 acceptance: first-time start is obvious; sequence/current stage/purpose/action are clear; required and optional inputs differ; relevant features are discoverable; locations and trips can be compared efficiently; earlier decisions can change without unnecessary loss; incomplete/unconfirmed status is explicit; narrow mobile layouts remain understandable; required functionality is preserved. A establishes the path, but does **not** certify all ten criteria or replace B–D.
 
@@ -120,7 +120,7 @@ Every unit requires a scoped diff, applicable type/domain checks, affected-flow 
 | **5B — Not started** | Decided summary/lifecycle, local/shared completion, recaps, ratings/archive | Audience/publication/withdrawal/deletion correct; optional ratings/archive restrictions; empty/success/failure states; no old styling on completed surfaces | 5A |
 | **6 — Not started** | Cross-app consistency/accessibility/responsive QA, obsolete-style cleanup, final docs | Journey/state checks closed or explicitly blocking acceptance; types/tests/web export pass; native/shared acceptance verified; docs match code; no unrelated logic/features | All above |
 
-3A/3B/3C, 4A/4B and 5A/5B are **separate authorization boundaries**. Phase 3 is complete only after all its subphases. If another unit proves too large, record a smaller boundary before implementation and finish only that increment.
+Historical 3A/3B/3C, 4A/4B and 5A/5B are separate boundaries. User explicitly authorized sequential 4.5B/C/D with a commit at each boundary; this supersedes the earlier one-unit limit for this request only. Phase 3 is complete only after all its subphases. If another unit proves too large, record a smaller boundary before implementation and finish only that increment.
 
 ## Dependency and verification strategy
 

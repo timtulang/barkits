@@ -80,3 +80,27 @@ Barkits uses Leaflet for the pin picker, group map and final venue map. Web buil
 3. Create a browser API key. Apply **Websites** restrictions for your exact Vercel branch alias (for example, `https://your-preview.example.com/*`) and **API** restrictions for **Map Tiles API** only. Use the allowed alias when testing. The browser key is public by design.
 4. In Vercel → Project Settings → Environment Variables, add `EXPO_PUBLIC_GOOGLE_MAP_TILES_KEY` for **Preview**, scoped to `barkits-prototype`. Redeploy using `npm run build:web`. For a local web build, use a key restricted to your localhost origin in `.env.local`.
 5. Open **Saturday catch-up** to see the full-screen map. Look for the Google Maps credit, zoom or pan, and select a numbered pin to open the venue details. Select **Show starting points** to include the group. In **Add friend → Choose on map**, tapping a location should update the coordinates. A rejected key or exhausted quota shows an error with a retry action. Manual coordinate entry and the offline directory remain available.
+
+## Verify the planning journey
+
+Use Node 24 and the installed project dependencies for `npx tsc --noEmit` and `npm test`. Browser acceptance scripts use Python’s standard library plus an installed Chromium/Chrome and matching ChromeDriver; they do not install browser packages.
+
+Export the normal app, serve the directory, and run ChromeDriver in separate terminals:
+
+```sh
+EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform all --clear --output-dir .expo/redesign/check/guest
+python3 -m http.server 5179 --bind 127.0.0.1 --directory .expo/redesign/check/guest
+chromedriver --port=9515 --allowed-ips=127.0.0.1
+```
+
+Then run `python3 scripts/check-planning-browser.py guest --app http://127.0.0.1:5179/`. Each run creates an isolated temporary browser profile. Screenshots go to ignored `.expo/redesign/phase45d/`. This checks setup, scheduling, place/trip comparison, corrections, confirmation, resume, save failure/retry, unsaved-edit protection and small/wide layouts.
+
+For synthetic shared-role UI checks, export a separate fixture build. `--clear` is required when switching these build-time public environment values, because Metro can retain inlined values:
+
+```sh
+EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:5180 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_fixture_only EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform web --clear --output-dir .expo/redesign/check/shared
+python3 scripts/planning-fixture.py
+python3 -m http.server 5178 --bind 127.0.0.1 --directory .expo/redesign/check/shared
+```
+
+Keep the fixture API and static server running in separate terminals, then run `python3 scripts/check-planning-browser.py shared --app http://127.0.0.1:5178/`. These are explicitly synthetic accounts/data. The script checks organizer/member presentation, own-trip editing, missing/at-limit estimates, votes and failed confirmation/retry. It sends no emails and does not validate real Supabase authentication, database policies or hosted behavior. Build the normal app again with its intended environment and `--clear` after switching away from fixtures. Actual Android/iOS and authorized Supabase acceptance remain separate checks.

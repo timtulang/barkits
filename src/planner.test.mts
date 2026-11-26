@@ -178,10 +178,11 @@ test('comparison evidence keeps missing fares unknown and exposes incomplete and
   const { localTripRows, sharedTripRows, summarizeTrips } = await import('./trip-evidence.ts');
   const person = { ...example.participants[0], point: [14, 121] as Point, budget: 0 };
   const plan = { ...example, participants: [person] };
-  assert.deepEqual(summarizeTrips(localTripRows(plan, venues[0])), { ready: 0, count: 1, time: null, longest: null, fare: null, blocked: true });
+  assert.deepEqual(summarizeTrips(localTripRows(plan, venues[0])), { ready: 0, count: 1, time: null, longest: null, gap: null, fare: null, blocked: true });
   const saved = { ...plan, manualMinutes: { meg: { [person.id]: 0 } }, manualFares: { meg: { [person.id]: 0 } } };
   assert.equal(summarizeTrips(localTripRows(saved, venues[0])).fare, 0);
   assert.equal(summarizeTrips(localTripRows(saved, venues[0])).blocked, false);
+  assert.equal(summarizeTrips(localTripRows(example, venues[0])).gap, 35);
   assert.equal(localTripRows(plan, venues[0])[0].timeSource, 'Not entered');
   assert.equal(localTripRows(example, venues[0])[0].timeSource, 'Demo time');
   const shared = sharedTripRows([{ id: 'me', name: 'Me', trip: { ...person, maxMinutes: 10 } }, { id: 'other', name: 'Other' }], [

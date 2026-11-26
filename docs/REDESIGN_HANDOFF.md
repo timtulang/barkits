@@ -1,6 +1,37 @@
 # Redesign handoff
 
-Updated 2026-11-26. **Original roadmap paused. Phase 4.5A primary planning path is implemented and validated for local web; native/authenticated shared acceptance remains open. User subsequently authorized 4.5B, C and D with separate commits. Phases 5/6 are blocked until all Phase 4.5 acceptance criteria pass.**
+Updated 2026-11-26. **4.5B committed `74c04b6`; 4.5C committed `4fce554`; 4.5D browser validation and preservation fixes are checkpointed below. Native and live shared acceptance remain open; Phases 5/6 and original 4B stay paused.**
+
+## Phase 4.5D · realistic validation and preservation fixes
+
+The repeatable browser checks are `scripts/check-planning-browser.py`, its standard-library WebDriver helper and the clearly synthetic `scripts/planning-fixture.py` API. Setup commands are in README. No new runtime/test dependencies, real emails, external providers or schema changes were introduced.
+
+D restored two presentation capabilities that B had omitted: the optional group map of compared/custom venues and the longest-to-shortest trip gap. The gap is derived only when every time is available; original ranking scores are unchanged. D also protects unsaved schedule/trip forms when leaving via the meetup back action or application home: Keep planning retains the drafts; explicit discard leaves the saved meetup intact.
+
+### Acceptance evidence
+
+| User criterion | Actual checked scenario | Status / limits |
+|---|---|---|
+| 1. Start planning is obvious | Home → Plan a meetup → required-name validation → add friends | PASS local Chromium scenario |
+| 2. Sequence/current stage is clear | Who/When/Where/Review and one current step at 320/390/768/1440 px | PASS web; native pending |
+| 3. Purpose/action per stage | Empty Who recovery, optional When continuation, discover/compare, pending Review/confirm | PASS guest and synthetic shared UI |
+| 4. Required/optional inputs differ | Required name/origins, optional schedule pair, optional fare with hard-limit handling | PASS UI + exact-boundary domain checks |
+| 5. Relevant details are discoverable | Person/venue editor, ride fare selection/clearing, LRT lookup controls, trip-specific directions, group map | PASS local browser; external route availability not asserted |
+| 6. Places/trips compare coherently | Map/list place → retained comparison → each person’s one-way figures/sources; missing fare stays unknown, zero stays zero | PASS guest; shared cards use synthetic estimates, not live fares |
+| 7. Earlier decisions can change safely | Per-person/place unsaved drafts, schedule recovery, leaving guard, changed-limit rejection, correction and reload of saved plan | PASS local web; confirmed edits remain restricted by existing product rules |
+| 8. Incomplete/unconfirmed states are clear | Missing origins, missing times/fares, pending review, votes, cancellation, failed save/finalize retry, confirmed reopen | PASS guest + synthetic two-session shared UI |
+| 9. Small screens remain understandable | Four widths, no page overflow, stage transitions, inspected mobile/wide screenshots | PASS responsive web scenario; actual native/font-scaling/accessibility runtime pending |
+| 10. Required functionality remains | Four rankings/domain tests, voting, member-only trip actions, map/back, explicit confirmation, resume and completion | PASS checked web/domain paths; real database permissions and native acceptance remain OPEN |
+
+The synthetic organizer/member sessions tested missing estimates and named limit blockers, member-only trip editing, exact 60-minute/₱100 limits, voting/moving/withdrawing, organizer review, an injected 503 before finalization, retry, and the confirmed place visible after member refresh. These fixtures verify UI transitions and request ownership only; they do not establish that a hosted backend or its RLS is correct. The existing rollback SQL suite was not run here: local PostgreSQL responds but the current OS user has no matching database role. No roles, databases or schemas were provisioned.
+
+Types, 18 domain/readiness/evidence/eligibility tests, Python syntax checks, and Expo web/Android/iOS exports pass. No lint script exists. Browser logs/screenshots are in ignored `.expo/redesign/phase45d/`. The detector found no deterministic issues on the final planning surfaces. This is scenario-based developer validation, not an independent first-time-user usability study.
+
+### Exact next steps / release gates
+
+1. Run real Android/iOS flows with safe areas, keyboard, enlarged text and accessibility focus; exports are bundle checks only. No adb/emulator/xcrun executable was available on PATH.
+2. Against an authorized migrated Supabase development project, repeat organizer/member flows on independent accounts and run `scripts/check-shared-meetups.sql`; verify server rejection of unauthorized or stale finalization and estimate invalidation.
+3. Keep Phases 5/6 and original 4B paused until the open Phase 4.5 acceptance checks are closed or the user explicitly changes the gate. No further roadmap implementation is authorized by this request.
 
 ## Phase 4.5C · review, corrections and confirmation
 

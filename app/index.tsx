@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountDialog } from '../src/account-dialog';
+import { EditorDialog } from '../src/editor-dialog';
 import { MeetupEditor } from '../src/meetup-editor';
 import { ParticipantEditor } from '../src/editor';
 import { Home } from '../src/home';
@@ -30,7 +31,10 @@ function Workspace({ user }: { user: User | null }) {
   const [sharedId, setSharedId] = useState<string>();
   const [joining, setJoining] = useState(false);
   const [past, setPast] = useState(false);
-  function navigateLocal(next: number | null) { setSharedId(undefined); setIndex(next); }
+  function navigateLocal(next: number | null) {
+    if (planningDirty && next !== index) { setPendingLocal(next); return; }
+    setSharedId(undefined); setIndex(next);
+  }
   function openShared(id: string) { setIndex(null); setJoining(false); setEditor(null); setSharedId(id); }
   const { width } = useWindowDimensions();
   const wide = width >= 860;
@@ -43,6 +47,8 @@ function Workspace({ user }: { user: User | null }) {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [saveAttempt, setSaveAttempt] = useState(0);
   const [savedMeetups, setSavedMeetups] = useState<Meetup[]>();
+  const [planningDirty, setPlanningDirty] = useState(false);
+  const [pendingLocal, setPendingLocal] = useState<number | null>();
   useEffect(() => {
     let active = true;
     setStorageError('');
@@ -88,13 +94,21 @@ function Workspace({ user }: { user: User | null }) {
       {!!storageError && <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
         action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
       {!ready && !storageError && <LoadingState label="Loading your meetups…" />}
-      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} saveReady={savedMeetups === meetups && !storageError} saveStatus={saveStatus} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
+      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} reportDirty={setPlanningDirty} saveReady={savedMeetups === meetups && !storageError} saveStatus={saveStatus} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
         <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
           shared={user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
             <View style={{ gap: 12 }}><Label kind="item" heading>With friends</Label><Label kind="detail">Sign in to create a shared plan or join your barkada with an invite code.</Label>
               <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button></View> : undefined} />)}
       <AppFooter />
     </ScrollView>
+    {pendingLocal !== undefined && <EditorDialog title="Unsaved planning edits" close={() => setPendingLocal(undefined)} actions={<>
+      <Button onPress={() => setPendingLocal(undefined)}>Keep planning</Button>
+      <Button secondary onPress={() => {
+        setPlanningDirty(false); setSharedId(undefined); setIndex(pendingLocal); setPendingLocal(undefined);
+      }}>Discard unsaved edits &amp; leave</Button>
+    </>}>
+      <Label>Save or clear your schedule and trip edits before leaving. Your saved plan, votes and estimates will stay on this device.</Label>
+    </EditorDialog>}
     {joining && user && <JoinDialog close={() => setJoining(false)} open={openShared} />}
     {accountOpen && <AccountDialog user={user} close={() => setAccountOpen(false)} />}
     {(editor === 'new' || editor === 'details') && <MeetupEditor key={editor} meetup={editor === 'details' && selected ? selected : undefined}

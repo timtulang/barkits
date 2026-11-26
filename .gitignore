@@ -7,3 +7,5 @@ expo-env.d.ts
 .env.*.local
 supabase/.temp/
 supabase/.branches/
+
+__pycache__/

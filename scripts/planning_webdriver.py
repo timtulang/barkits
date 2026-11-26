@@ -1,0 +1,84 @@
+"""minimal standard-library webdriver client for local acceptance scripts."""
+import base64
+import json
+import tempfile
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+class Browser:
+    def __init__(self, driver, artifacts, name):
+        self.driver = driver.rstrip('/')
+        self.artifacts = Path(artifacts)
+        self.artifacts.mkdir(parents=True, exist_ok=True)
+        result = self.request('POST', '/session', {'capabilities': {'alwaysMatch': {'browserName': 'chrome', 'goog:chromeOptions': {
+            'args': ['--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--user-data-dir=' + tempfile.mkdtemp(prefix='barkits-' + name)]}}}})
+        self.session = result['sessionId']
+        self.viewport(390)
+
+    def request(self, method, path, data=None):
+        req = urllib.request.Request(self.driver + path, data=None if data is None else json.dumps(data).encode(),
+                                     headers={'Content-Type': 'application/json'}, method=method)
+        try:
+            with urllib.request.urlopen(req, timeout=45) as response:
+                return json.load(response)['value']
+        except urllib.error.HTTPError as error:
+            raise RuntimeError(error.read().decode()) from error
+
+    def command(self, path, data=None, method='POST'):
+        return self.request(method, '/session/' + self.session + path, data)
+
+    def js(self, source, *args):
+        return self.command('/execute/sync', {'script': source, 'args': list(args)})
+
+    def wait(self, predicate):
+        for _ in range(100):
+            value = predicate()
+            if value:
+                return value
+            time.sleep(.1)
+        raise AssertionError('Timed out; current interface:\n' + self.body()[-2500:])
+
+    def body(self):
+        return self.js('return document.body.innerText')
+
+    def visible(self, selector):
+        return self.js('return [...document.querySelectorAll(arguments[0])].find(e=>e.getBoundingClientRect().width)', selector)
+
+    def click_element(self, element):
+        assert element, 'No visible element'
+        self.command('/element/' + element['element-6066-11e4-a52e-4f735466cecf'] + '/click', {})
+
+    def click(self, selector):
+        self.click_element(self.wait(lambda: self.visible(selector)))
+
+    def tap(self, label):
+        self.click_element(self.wait(lambda: self.js('const root=[...document.querySelectorAll("[aria-modal=true]")].filter(e=>e.getBoundingClientRect().width).at(-1)||document;return [...root.querySelectorAll("[role=button],button")].find(e=>e.getBoundingClientRect().width && e.innerText.trim().split("\\n").at(-1)===arguments[0])', label)))
+
+    def fill(self, label, text):
+        element = self.wait(lambda: self.visible('input[aria-label=' + json.dumps(label, ensure_ascii=False) + ']'))
+        self.command('/element/' + element['element-6066-11e4-a52e-4f735466cecf'] + '/value', {'text': '\ue009a\ue000\ue003' + text})
+
+    def stage(self, name):
+        self.click('[aria-label^=' + json.dumps({'who': '1. Who.', 'when': '2. When.', 'where': '3. Where.', 'review': '4. Review.'}[name]) + ']')
+
+    def open(self, url):
+        self.command('/url', {'url': url})
+
+    def viewport(self, width):
+        self.cdp('Emulation.setDeviceMetricsOverride', {'width': width, 'height': 850, 'deviceScaleFactor': 1, 'mobile': False})
+
+    def cdp(self, name, params):
+        return self.command('/goog/cdp/execute', {'cmd': name, 'params': params})
+
+    def select(self, label, value):
+        self.js('const e=document.querySelector(arguments[0]);e.value=arguments[1];e.dispatchEvent(new Event("change",{bubbles:true}));',
+                'select[aria-label=' + json.dumps(label, ensure_ascii=False) + ']', value)
+
+    def snapshot(self, name):
+        self.js('for(const e of document.querySelectorAll("*")) {if(e.scrollHeight>e.clientHeight && getComputedStyle(e).overflowY.match(/auto|scroll/))e.scrollTop=0}')
+        self.artifacts.joinpath(name + '.png').write_bytes(base64.b64decode(self.command('/screenshot', method='GET')))
+
+    def close(self):
+        self.request('DELETE', '/session/' + self.session)

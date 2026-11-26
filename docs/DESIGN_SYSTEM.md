@@ -141,3 +141,5 @@ Use the same group-time, longest-trip and one-way-fare layout for every compared
 ## Review and confirmation
 
 Review destination opens the Review stage with the proposed place still unconfirmed. Present the people/time summary, travel evidence and outstanding votes before explicit confirmation. Keep correction links beside the summary. Pending form edits, failed persistence and current travel-limit blockers must be visible; do not confirm against stale figures. Shared finalization belongs only to the organizer. Cancel returns to places while preserving saved progress. Read-only confirmed plans retain map/directions and supported lifecycle actions.
+
+When leaving a local plan with unsaved schedule or trip forms, protect those edits with Keep planning or explicit discard. Preserve all saved records when discarding form drafts. Keep the group map available from comparisons, and present the longest–shortest trip gap beside other group figures when all times are known.

@@ -12,6 +12,7 @@ export function TripComparison({ rows, edit, editableIds, changeTransport }: {
   const figures = [
     ['Group travel time', totals.time === null ? 'Time incomplete' : totals.time + ' min'],
     ['Longest one-way trip', totals.longest === null ? 'Time incomplete' : totals.longest + ' min'],
+    ['Longest–shortest trip gap', totals.gap === null ? 'Time incomplete' : totals.gap + ' min'],
     ['Group one-way fare', totals.fare === null ? 'Fare unavailable' : '₱' + totals.fare.toLocaleString('en-PH')],
   ];
   return <View style={{ gap: spacing.md }}>
