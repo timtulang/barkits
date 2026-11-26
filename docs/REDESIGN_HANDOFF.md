@@ -1,6 +1,6 @@
 # Redesign handoff
 
-Updated 2026-11-26. **4.5B committed `74c04b6`; 4.5C committed `4fce554`; 4.5D browser validation and preservation fixes are checkpointed below. Native and live shared acceptance remain open; Phases 5/6 and original 4B stay paused.**
+Updated 2026-11-26. **4.5B committed `74c04b6`; 4.5C committed `4fce554`; 4.5D browser validation and preservation fixes committed `0958b7a`. Native and live shared acceptance remain open; Phases 5/6 and original 4B stay paused.**
 
 ## Phase 4.5D · realistic validation and preservation fixes
 
@@ -75,7 +75,7 @@ Initial stages derive from real state: empty/partial origins or a draft → Who;
 
 TypeScript, 16 domain/readiness tests and web/Android/iOS Expo exports pass for this checkpoint. Chromium has verified creation validation, empty/ready setup, incomplete schedule recovery, schedule/trip draft retention across stages and tool tabs, persisted estimates, four widths (320/390/768/1440), and home/reload resume. Inspection found excessive mobile header height; compact stage navigation and contextual metadata now keep the task/action nearer the first viewport. Final checks after correction passed responsive stage navigation, actual storage rejection/retry, explicit map/back, confirmation to Review, confirmed map/back, draft-to-planning, partial origins and no-catalog-match recovery. No page overflow occurred at 320, 390, 768 or 1440 px. These are browser scenario checks, not a usability study or whole-4.5 acceptance.
 
-Receipt files: ignored `.expo/redesign/phase45a/`. No lint script is configured. Native-device and authenticated shared acceptance are open; platform bundles and source inspection do not close those checks. Remaining B/C/D work: cohesive transportation comparison, fuller review/corrections and realistic end-to-end acceptance. STOP after A; no 4.5B, 5 or 6 work is authorized.
+Receipt files: ignored `.expo/redesign/phase45a/`. No lint script is configured. Native-device and authenticated shared acceptance are open; platform bundles and source inspection do not close those checks. Historical A boundary: B/C/D were pending at this checkpoint. Later user authorization superseded the A stop; current results and open gates are in the D section above.
 
 ## Phase 4A · place search and maps
 

@@ -2,7 +2,7 @@
 
 ## Snapshot
 - 2026-11-26 [USER] Current request explicitly authorizes sequential 4.5B/C/D with a commit at each boundary; original roadmap remains paused. Task clarity leads hierarchy, efficiency, consistency and decoration.
-- 2026-11-26 [TOOL] Checkpoints: pre-reconstruction `214e732`, A `96a7366`, B `74c04b6`, C `4fce554`; D preservation fixes and repeatable browser validation are complete for checkpointing.
+- 2026-11-26 [TOOL] Checkpoints: pre-reconstruction `214e732`, A `96a7366`, B `74c04b6`, C `4fce554`; D checkpoint `0958b7a` contains preservation fixes and repeatable browser validation.
 - 2026-11-26 [CODE] B integrates place/person travel comparisons; C connects pending review, votes, corrections and explicit confirmation; D restores group-map/time-gap visibility and guards leaving unsaved forms. Business rules, service/storage contracts, providers and brand preserved; no new dependencies.
 - 2026-11-26 [TOOL] Types, 18 tests, Python syntax, final design scan, web/Android/iOS exports, guest browser journeys and synthetic organizer/member UI sessions pass. Four widths: 320/390/768/1440 px.
 - 2026-11-26 [USER] Next: commit D and STOP. Phases 5/6 and original 4B remain paused until open Phase 4.5 acceptance is closed or explicitly changed by the user.
@@ -59,3 +59,4 @@
 - 2026-11-26 [TOOL] D synthetic shared sessions passed: own-member editing, missing/at-limit estimates, vote/move/withdraw, organizer review, injected 503 before finalization/retry and confirmed venue visible after member refresh. Not hosted auth/RLS validation.
 - 2026-11-26 [TOOL] D final types, 18 tests, Python syntax, all platform exports and final planning-surface detector pass. Native CLIs absent from PATH; local SQL suite unavailable (no current-user DB role).
 - 2026-11-26 [TOOL] Ignored receipts: .expo/redesign/phase45b/, phase45c/, phase45d/. Metro required --clear to switch embedded fixture env; normal final export contains no fixture environment. No external model/provider changes.
+- 2026-11-26 [TOOL] D committed `0958b7a`; B `74c04b6`, C `4fce554`. Final normal export excludes fixture configuration. Stop at documented native/live-backend acceptance gates; no Phase 5/6 work or deployment.
