@@ -3,6 +3,8 @@ import { colors, spacing } from './theme';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { TripOptions } from './trip-options';
+import { TripComparison } from './trip-comparison';
+import { sharedTripRows } from './trip-evidence';
 import { rideProviders, validFare as validPesoAmount, type RideProvider } from './transport-fares';
 import type { Participant } from './planner';
 import { EditorDialog } from './editor-dialog';
@@ -58,8 +60,8 @@ function limitIssues(member: Member, estimate?: SharedEstimate) {
   return issues.length ? member.name + ' · ' + issues.join(', ') : undefined;
 }
 
-export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse }: Props & {
-  refresh: () => void; browse: () => void;
+export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse, editStartingPoint }: Props & {
+  refresh: () => void; browse: () => void; editStartingPoint: () => void;
 }) {
   const [confirm, setConfirm] = useState('');
   const [editing, setEditing] = useState<Candidate>();
@@ -80,6 +82,8 @@ export function SharedBallot({ id, ballot, members, userId, owner, busy, run, re
       const blockers = members.map(m => limitIssues(m, c.estimates.find(e => e.user_id === m.id))).filter(Boolean);
       return <View key={c.venue_id} style={{ gap: spacing.md, paddingTop: spacing.lg, borderTopWidth: 1, borderColor: colors.divider }}>
         <Label kind="item" heading>{c.place.name}</Label>
+        <TripComparison rows={sharedTripRows(members, c.estimates)} editableIds={myTrip && !busy ? [userId] : []}
+          edit={() => setEditing(c)} changeTransport={editStartingPoint} />
         {!!blockers.length && <View style={{ gap: spacing.xs }}>
           <Label kind="label" color={colors.warning}>Travel limits to resolve</Label>
           {blockers.map((reason, index) => <Label key={index} kind="detail">{reason}</Label>)}
@@ -88,9 +92,9 @@ export function SharedBallot({ id, ballot, members, userId, owner, busy, run, re
           vote={() => run(() => setSharedVote(id, voted ? null : c.venue_id))} busy={busy} blocked={!!blockers.length}
           confirming={confirm === c.venue_id} review={open => setConfirm(open ? c.venue_id : '')}
           confirm={owner ? async () => { if (await run(() => finalizeShared(id, c.venue_id))) setConfirm(''); } : undefined} />
-        {c.estimates.map(e => <Label key={e.user_id} kind="detail">{members.find(m => m.id === e.user_id)?.name} · Estimated {e.minutes ?? '—'} min · {e.fare_pesos === null ? 'Fare unknown' : '₱' + e.fare_pesos}{e.source.startsWith('User-entered ') ? ' · ' + e.source + ' · ' + new Date(e.calculated_at).toLocaleString('en-PH') : ''}</Label>)}
         <View style={layout.wrap}>
           {myTrip && <Button secondary disabled={busy} onPress={() => setEditing(c)}>My trip estimate</Button>}
+          {!myTrip && <Button secondary disabled={busy} onPress={editStartingPoint}>Add my starting point for trip estimates</Button>}
           <GoogleMapsLink point={[c.place.latitude,c.place.longitude]} />
         </View>
       </View>;

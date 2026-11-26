@@ -120,7 +120,7 @@ Show selected coordinates below the place field. Keep manual coordinates optiona
 
 ## Voting and choosing a destination
 
-Use labeled section controls for the planner. Within Where, on-device plans have Explore places, Compare trips & vote and Enter trip estimates. Shared plans have Explore places and Shortlist & vote with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
+Use labeled section controls for the planner. Within Where, on-device plans have Explore places and Compare places & vote; person/destination trip editing opens within comparisons. Shared plans have Explore places and Shortlist & vote with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
 
 Tie the vote action to its owner. On this device, name the selected friend in the action and let the organizer switch voters in the eligible place sheet. In shared plans, use “my vote” for the signed-in member. Show the tally as text and distinguish moving an existing vote from withdrawing it.
 
@@ -133,3 +133,7 @@ Keep the route, one-way fare and travel time together. Use the mint panel for a 
 ## Asset licensing
 
 Nunito is distributed under the SIL Open Font License 1.1. Feather icons use the MIT license. Kits is original artwork generated for Barkits. Font and icon notices are stored in `assets/licenses/`.
+
+## Place and transportation comparisons
+
+Use the same group-time, longest-trip and one-way-fare layout for every compared place. Keep incomplete or over-limit places visible, identify missing estimates, and distinguish demo data from user estimates with provider timestamps where available. Expand to each person’s origin, transport, one-way time/fare and limits. Put trip editing and starting-point/transport changes next to that person. Shared members edit only their own trip. Do not imply live quotes or turn missing values into zero.

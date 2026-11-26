@@ -23,7 +23,7 @@ export function RankingFigures({ time, spread, cost }: { time: number; spread: n
   const figures = [
     { label: 'Total travel time', value: time + ' min' },
     { label: 'Trip time gap', value: spread + ' min' },
-    { label: 'Combined fare', value: cost === null ? 'Unknown' : '₱' + cost },
+    { label: 'Combined fare', value: cost === null ? 'Fare unavailable' : '₱' + cost },
   ];
   return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
     {figures.map(figure => <View key={figure.label} style={{ flexGrow: 1, flexBasis: 90, gap: spacing.xs }}>

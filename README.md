@@ -28,7 +28,7 @@ Once a venue is confirmed, reopen the meetup at Review and choose View venue map
 
 ## Try trip options
 
-Open **Saturday catch-up → Where → Enter trip estimates**, pick a friend and a venue, then open **Compare ride fares**. Enter the prices shown for the same trip in Angkas and Grab, choose one, and save the trip. In a shared meetup, use **Where → Shortlist & vote → My trip estimate**. The saved fare shows its provider and when the estimate was saved. Live provider prices require approved access.
+Open **Saturday catch-up → Where → Compare places & vote → See each person’s trip → Edit trip estimate**, pick a friend and a venue, then open **Compare ride fares**. Enter the prices shown for the same trip in Angkas and Grab, choose one, and save the trip. In a shared meetup, use **Where → Shortlist & vote → My trip estimate**. The saved fare shows its provider and when the estimate was saved. Live provider prices require approved access.
 
 With a starting pin and a destination near different LRT-1 stations, **Check your trip** suggests boarding and exit stations, direction and the regular single-journey fare. You can also use **LRT-1 fares** to search any two stations. Enter the full one-way amount when connecting by jeepney, bus or another paid leg. **Transit directions** opens the selected trip in Google Maps without a Google Cloud key.
 

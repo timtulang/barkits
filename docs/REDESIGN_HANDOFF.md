@@ -1,6 +1,14 @@
 # Redesign handoff
 
-Updated 2026-11-26. **Original roadmap paused. Phase 4.5A primary planning path is implemented and validated for local web; native/authenticated shared acceptance remains open. Stop before 4.5B. Phases 5/6 are blocked until all Phase 4.5 acceptance criteria pass.**
+Updated 2026-11-26. **Original roadmap paused. Phase 4.5A primary planning path is implemented and validated for local web; native/authenticated shared acceptance remains open. User subsequently authorized 4.5B, C and D with separate commits. Phases 5/6 are blocked until all Phase 4.5 acceptance criteria pass.**
+
+## Phase 4.5B · connect places and transportation
+
+Where now has Explore places and Compare places & vote. A mapped suggestion can be retained and compared as a destination, with a consistent summary of group time, longest one-way trip and group fare. Incomplete and over-limit options stay visible with their missing data or limit issues; the existing ranking formula and confirmation eligibility remain unchanged. Each person’s origin, transport, time/fare sources, provider timestamps and limits sit with the corresponding place. Missing fares stay unavailable, including a distinction between zero and unknown.
+
+Trip entry opens for the selected person and destination within Where; saved estimates return to the comparisons. Unsaved drafts remain per visited person/place while switching contexts. Changing origin or mode resets the affected draft and retains the existing stored estimate invalidation. Ride/LRT/directions tools remain in this trip context. Shared shortlists use the same summaries/breakdowns, show members lacking estimates, and allow only the current member to edit their own trip or starting point.
+
+Validation: TypeScript, 17 tests and web export passed. Chromium checked summaries, demo labels, contextual edit, unsaved drafts across people, saved zero fare, all four ranking modes, stage transitions and 320/390/768/1440 px. Shared evidence fixtures cover missing members, unknown fares, limits and provider sources; authenticated shared UI/native acceptance remains open. Receipts: ignored `.expo/redesign/phase45b/`. No dependencies, schema, providers or storage-format changes. Next authorized unit: 4.5C.
 
 ## Phase 4.5A · reconstruct the primary planning path
 

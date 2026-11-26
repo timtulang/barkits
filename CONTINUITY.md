@@ -1,11 +1,11 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-26 [USER] Goal: Phase 4.5A Planning UX Reconstruction only; original roadmap paused. Task clarity > hierarchy > efficiency > consistency > decoration. Phases 5/6 blocked until all 4.5 UX criteria pass.
+- 2026-11-26 [USER] Goal SUPERSEDED: complete 4.5B, then 4.5C, then 4.5D in this request, committing each boundary. Original roadmap paused; Phases 5/6 blocked until all 4.5 UX criteria pass.
 - 2026-11-26 [TOOL] Safe pre-reconstruction checkpoint: `214e732` (`feat: phase 4`), clean baseline on `barkits-prototype`; Phase 3A–3C and 4A retained.
-- 2026-11-26 [CODE] Now: A checkpoint `96a7366` implemented: Who/When/Where/Review, contextual readiness, optional inline scheduling, explicit map entry, reversible stage navigation and actual local save status. Preserve business rules, permissions, storage, providers and branding; code ≤300 lines.
+- 2026-11-26 [CODE] Previous A checkpoint `96a7366` implemented: Who/When/Where/Review, contextual readiness, optional inline scheduling, explicit map entry, reversible stage navigation and actual local save status. Preserve business rules, permissions, storage, providers and branding; code ≤300 lines.
 - 2026-11-26 [TOOL] Validation: TypeScript, 16 tests, three platform exports and local Chromium planning/error/resume scenarios pass. Native runtime and authenticated shared acceptance remain open; do not claim all 4.5 criteria passed.
-- 2026-11-26 [USER] Next: checkpoint A and STOP. Await explicit 4.5B request; C is detailed review/correction, D is full UX validation. Phase 4B remains paused.
+- 2026-11-26 [USER] Next SUPERSEDED: B integrates location/travel comparisons, C improves review/corrections/confirmation, D validates realistic complete journeys. Commit each; stop after D. Phase 4B remains paused.
 - 2026-11-26 [TOOL] Open: no lint script or `docs/DATABASE.md`; no schema changes. Original shell Node 20; temporary Node 24.15.0 and existing lockfile dependencies restored. Graphify indexing paused/incomplete for urgent UX work.
 
 ## Integrations and initialization
@@ -55,3 +55,5 @@
 - 2026-11-26 [TOOL] Responsive 320/390/768/1440 px stage navigation passed with no page overflow. Two batched visual inspections; mobile task controls now visible earlier. Screenshots/logs in ignored .expo/redesign/phase45a/.
 - 2026-11-26 [USER] Existing commit authorization persists: checkpoint A only; no push/deployment or work on 4.5B/5/6.
 - 2026-11-26 [TOOL] Committed Phase 4.5A as `96a7366`; baseline `214e732` remains recoverable. No push or deployment. Stopped before 4.5B.
+- 2026-11-26 [CODE] 4.5B implemented: contextual place/person comparisons with evidence/limits, visible incomplete options, per-context trip drafts and shared own-trip editing; original ranking and confirmation rules preserved.
+- 2026-11-26 [TOOL] B types, 17 tests, web export and local browser comparisons/draft/zero-fare/ranking/4-width checks pass; authenticated shared/native acceptance open. Next: commit B, implement C, then D.

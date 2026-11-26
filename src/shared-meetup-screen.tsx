@@ -143,7 +143,8 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
       {!!origins.length && !suggestions.length && <PlanningMap origins={origins} places={[]} />}
       </>}
       <View style={{ display: section === 'shortlist' ? 'flex' : 'none' }}><SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId}
-        owner={data.summary.owner_id === userId} busy={plannerBusy} run={run} refresh={refresh} browse={() => setSection('nearby')} /></View>
+        owner={data.summary.owner_id === userId} busy={plannerBusy} run={run} refresh={refresh} browse={() => setSection('nearby')}
+        editStartingPoint={() => { changeStage('who'); setEditing(true); }} /></View>
       <Button secondary onPress={() => changeStage('review')}>Review plan & what’s missing</Button>
       </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</View>
       {planning && editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}

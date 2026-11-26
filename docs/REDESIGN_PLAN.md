@@ -8,10 +8,10 @@ User direction on 2026-11-26 supersedes the previous next-phase order and map-fi
 
 | Subphase | Scope | Status / stop boundary |
 |---|---|---|
-| **4.5A** | Audit primary journey; cohesive Who / When / Where / Review navigation, readiness, required/optional hierarchy, explicit next actions, saved state | Implemented and validated for local web; native/authenticated shared acceptance open. This request authorizes only A. |
-| **4.5B** | Integrate discovery and supported transportation comparisons into the journey; explain evidence and tradeoffs | Await explicit request; existing tools retained under Where. |
-| **4.5C** | Review, corrections, confirmation and supported group-decision states | Await explicit request; A provides basic summary/navigation only. |
-| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Await explicit request; close all acceptance criteria before resuming the original roadmap. |
+| **4.5A** | Audit primary journey; cohesive Who / When / Where / Review navigation, readiness, required/optional hierarchy, explicit next actions, saved state | Implemented and validated for local web; native/authenticated shared acceptance open. Historical A boundary; subsequent user authorization covers B, C and D with separate commits. |
+| **4.5B** | Integrate discovery and supported transportation comparisons into the journey; explain evidence and tradeoffs | Implemented; local browser and evidence tests pass. Native/authenticated shared acceptance open. |
+| **4.5C** | Review, corrections, confirmation and supported group-decision states | Authorized after B checkpoint; implementation next. |
+| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Authorized after C checkpoint; record evidence and any remaining environment blockers. |
 
 Overall 4.5 acceptance: first-time start is obvious; sequence/current stage/purpose/action are clear; required and optional inputs differ; relevant features are discoverable; locations and trips can be compared efficiently; earlier decisions can change without unnecessary loss; incomplete/unconfirmed status is explicit; narrow mobile layouts remain understandable; required functionality is preserved. A establishes the path, but does **not** certify all ten criteria or replace B–D.
 
