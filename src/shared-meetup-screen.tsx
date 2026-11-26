@@ -1,3 +1,4 @@
+import { PlanNavigation } from './plan-navigation';
 import { formatSharedSchedule } from './meetup-schedule';
 import { ParticipantRoster } from './participant-roster';
 import { SuggestedPlaces } from './suggested-places';
@@ -16,14 +17,15 @@ import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { SharedBallot } from './shared-ballot';
 import { ConfirmedPlaceMap } from './confirmed-place-map';
 import { InviteFriend } from './invite-friend';
-import { Button, Label, layout, Panel } from './ui';
+import { Button, Feedback, Label, layout, Panel } from './ui';
 import { useSharedData } from './use-shared-data';
 import { catalog } from './venue-catalog';
 
-export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: string; back: () => void }) {
+export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: string; userId: string; back: () => void; scrollToTop: () => void }) {
   const load = useCallback(() => getShared(id), [id]);
   const { data, loading, error, refresh } = useSharedData(load);
   const [editing, setEditing] = useState(false);
+  const [section, setSection] = useState<'nearby' | 'shortlist'>('nearby');
   const [filter, setFilter] = useState<Category>();
   const mine = data?.members.find(m => m.id === userId);
   const [acting, setActing] = useState(false);
@@ -53,6 +55,14 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   useEffect(() => {
     if (data && fullMap === undefined) setFullMap(openMapOnEntry);
   }, [data, fullMap, openMapOnEntry]);
+  function openShortlist() {
+    setFullMap(false);
+    setSection('shortlist');
+    requestAnimationFrame(scrollToTop);
+  }
+  const plannerBusy = acting || loading || !!error;
+  const refreshError = !!error && <Feedback tone="error" title="Couldn’t refresh the group"
+    action={<Button secondary onPress={refresh}>Try again</Button>}>{error}</Feedback>;
   const startTime = data?.summary.starts_at;
   const schedule = startTime ? formatSharedSchedule(startTime) : undefined;
   const limited = data?.members.some(m => m.trip?.budget !== undefined || m.trip?.maxMinutes !== undefined);
@@ -67,7 +77,7 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
   return <>
     <View style={layout.wrap}><Button quiet onPress={back} icon="arrow-left">Back to meetups</Button>
       <IconAction disabled={loading} onPress={refresh} name="refresh-cw" label="Refresh group" /></View>
-    {loading && <Label>Loading group…</Label>}{!!error && <Label>{error}</Label>}
+    {loading && <Label>Loading group…</Label>}{refreshError}
     {!!actionError && <View accessibilityRole="alert"><Label>{actionError}</Label></View>}
     {data && <>
       <View style={layout.stack}><Label kind="page" heading>{data.summary.name}</Label><StatusMark status={data.summary.status} /></View>
@@ -82,27 +92,35 @@ export function SharedMeetupScreen({ id, userId, back }: { id: string; userId: s
         {(fullMap ?? openMapOnEntry) && <ConfirmedPlaceMap name={chosen.name} point={[chosen.latitude, chosen.longitude]} schedule={schedule}
           navigation={{ title: data.summary.name, expanded: true, setExpanded: setFullMap, back }} />}
       </Panel>}
-      {!data.memories && <WorkspaceColumns sideFirst={planning && !origins.some(friend => friend.id === userId)} side={<>
+      {!data.memories && <WorkspaceColumns sideFirst={planning && section === 'nearby' && !origins.some(friend => friend.id === userId)} side={<>
       <ParticipantRoster members={data.members} located={origins} myId={userId} ownerId={data.summary.owner_id}
         action={planning && mine && <Button secondary={!!mine.trip && origins.some(friend => friend.id === userId)}
           onPress={() => setEditing(true)} icon="map-pin">{mine.trip ? 'Edit my starting point' : 'Add my starting point'}</Button>} />
       {planning && data.summary.owner_id === userId && <InviteFriend id={id} />}
       </>} main={<>{planning && <>
-      <Panel><Label kind="section" heading>Nearby places</Label>
+      <PlanNavigation current={section} change={setSection} sections={[
+        { id: 'nearby', label: 'Nearby places' }, { id: 'shortlist', label: 'Shortlist (' + data.summary.ballot.length + ')' },
+      ]} />
+      {section === 'nearby' && <><Panel><Label kind="section" heading>Nearby places</Label>
         {allLocated ? <>
           <ChoiceField label="Type of place" value={category} options={categories.map(value => ({ value, label: value }))} change={setFilter} />
           {!suggestions.length && <Label>No matching venues within 50 km of everyone. Try another category.</Label>}
-          <SuggestedPlaces navigation={{ title: data.summary.name, expanded: fullMap ?? true, setExpanded: setFullMap, back }} suggestions={suggestions} friends={origins} actions={venue =>
-            data.summary.ballot.some(c => c.place.catalog_key === venue.id) ? <Label>On the group shortlist</Label> :
-              <Button disabled={acting || loading} onPress={() => run(() => shortlistPlace(id, venue))}>Add to shortlist</Button>
-          } />
+          <SuggestedPlaces navigation={{ title: data.summary.name, expanded: fullMap ?? true, setExpanded: setFullMap, back }} suggestions={suggestions} friends={origins} actions={venue => <>
+            {data.summary.ballot.some(c => c.place.catalog_key === venue.id) ? <>
+              <View accessibilityLiveRegion="polite"><Label kind="value">On the group shortlist</Label></View>
+              <Button onPress={openShortlist}>View shortlist</Button>
+            </> : <Button disabled={plannerBusy} onPress={() => run(() => shortlistPlace(id, venue))}>Add to shortlist</Button>}
+            {!!actionError && <Feedback tone="error">{actionError}</Feedback>}
+            {refreshError}
+          </>} />
           <Label kind="detail">Ranked by straight-line distance from the group’s starting points.{limited ? ' Travel time and fare limits still need a route estimate.' : ''}</Label>
           {!!suggestions.length && <Label size={13}>Venue data © OpenStreetMap contributors</Label>}
         </> : <Label>Nearby suggestions appear once each member has a starting point on the map.</Label>}
       </Panel>
-      <SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId} owner={data.summary.owner_id === userId}
-        busy={acting || loading} run={run} refresh={refresh} />
-      {!!origins.length && !suggestions.length && <PlanningMap origins={origins} places={suggestions.map(s => s.venue)} />}
+      {!!origins.length && !suggestions.length && <PlanningMap origins={origins} places={[]} />}
+      </>}
+      {section === 'shortlist' && <SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId}
+        owner={data.summary.owner_id === userId} busy={plannerBusy} run={run} refresh={refresh} browse={() => setSection('nearby')} />}
       {editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}
         saveTrip={async trip => { await saveOwnTrip(id, trip); setEditing(false); refresh(); }} />}
       </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</>} />}
