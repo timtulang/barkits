@@ -110,6 +110,14 @@ Only organizers see the invitation panel. Explain the one-person, 24-hour and re
 
 Open ready planning meetups on an edge-to-edge map. Float the meetup name and navigation above it and keep the place list in a collapsible tray below the map attribution. Start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
 
+## Voting and choosing a destination
+
+Use labeled section controls for the planner. On-device plans have Nearby places, Travel rankings and Trip details. Shared plans have Nearby places and a Shortlist with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
+
+Tie the vote action to its owner. On this device, name the selected friend in the action and let the organizer switch voters in the eligible place sheet. In shared plans, use “my vote” for the signed-in member. Show the tally as text and distinguish moving an existing vote from withdrawing it.
+
+Give confirmation its own review step with the place name, the consequence for voting, and Cancel. In a shared plan, only the organizer gets this action. If limits block confirmation, name the member and show the missing value or the estimate alongside the limit. Keep personal estimates and directions available alongside the decision.
+
 ## Trip comparisons
 
 Keep the route, one-way fare and travel time together. Use the mint panel for a possible train connection. Name the boarding and exit stations, direction, rail-only amount and distance to each station. Put the operator and effective date beside the fare lookup. Use a provider name and save time for a ride price entered by a rider. Keep Kits in the welcome and memory screens so travel decisions have room for names, numbers and controls.

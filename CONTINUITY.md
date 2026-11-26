@@ -1,10 +1,9 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-26 [USER] Current authorization is Phase 3A, using the repository roadmap and handoff. Supersedes the Phase 3B stop.
-- 2026-11-26 [CODE] Start at the verified 3B checkpoint `e84307e` on the same preview branch.
-- 2026-11-26 [CODE] Now: 3A and 3B implemented on the combined preview branch. Creation, editing, scheduling and shared retries verified on web. Next named unit is 3C; separate authorization required.
-- 2026-11-26 [USER] Native runtime acceptance remains open.
+- 2026-11-26 [USER] Proceed with Phase 3C, the next named subphase on the combined preview branch.
+- 2026-11-26 [CODE] Phase 3C implemented from `b4a4d4e`, first checkpoint `634d1fd`. The combined preview includes all Phase 3 subphases.
+- 2026-11-26 [CODE] Next named unit is Phase 4A. Native device and hosted authenticated acceptance remain open.
 
 ## Decisions
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request; checkpoint and stop. Explicit Phase 2 request supersedes previous lack of authorization, not unavailable native checks.
@@ -23,11 +22,13 @@
 
 - 2026-11-26 [CODE] Phase 3A includes explicit scope, required names, preserved legacy schedules, Philippine-time display and idempotent shared retry.
 
+- 2026-11-26 [CODE] 3C planner navigation, map-to-shortlist, local/own voting, explicit confirmation, per-member limit feedback and inline pin click fix.
+
 ## Working set
 - 2026-11-26 [CODE] `docs/REDESIGN_HANDOFF.md`, `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`
-- 2026-11-26 [CODE] `src/meetup-editor.tsx`, `src/meetup-schedule.ts`, `src/schedule-input.tsx`, `src/schedule-input.web.tsx`
-- 2026-11-26 [CODE] `src/services/shared-client.ts`, `src/planner.test.mts`
-- 2026-11-26 [TOOL] `.expo/redesign/phase3a/`, `.expo/redesign/phase3b/`
+- 2026-11-26 [CODE] `src/decision-actions.tsx`, `src/venue-decision.tsx`, `src/plan-navigation.tsx`, `src/nearby-places.tsx`
+- 2026-11-26 [CODE] `src/shared-ballot.tsx`, `src/shared-meetup-screen.tsx`, `src/map-markers.ts`, `src/meetup.tsx`
+- 2026-11-26 [TOOL] `.expo/redesign/phase3c/`
 
 ## Receipts
 - 2026-11-25 [TOOL] Phase 1–2 historical verification and outstanding native checks retained in the handoff.
@@ -44,3 +45,6 @@
 - 2026-11-26 [TOOL] Browser verified create/edit/draft/start/reload, legacy preservation and replacement, incomplete date/time correction/clear and six viewport widths.
 - 2026-11-26 [TOOL] Local shared integration exercised busy double-submit, 400 rejection and 502 after actual commit; one persisted group opened on retry.
 - 2026-11-26 [TOOL] Los Angeles browser verified the same Philippine schedule in list and details. Native runtime and hosted authenticated testing remain open.
+- 2026-11-26 [TOOL] 3C types, 15 unit tests, local rollback SQL and all three platform exports passed.
+- 2026-11-26 [TOOL] Browser checked map/voter/trip and persisted destination; shared organizer/member votes and bounded estimates passed against local PostgREST.
+- 2026-11-26 [TOOL] Reproduced inline map focus moving on mouse-down. After fixing marker handling, both full-screen and inline pin-to-decision paths passed.

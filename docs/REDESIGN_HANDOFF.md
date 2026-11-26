@@ -1,6 +1,24 @@
 # Redesign handoff
 
-Updated 2026-11-26. **Phases 3A and 3B are implemented together on `redesign/phase-3b-participants`.** The shared preview includes both. The next separately scoped unit is Phase 3C, planner organization and voting.
+Updated 2026-11-26. **Phase 3C is implemented on the combined preview branch `redesign/phase-3b-participants`, following 3A and 3B.** The next scoped unit is Phase 4A, search and maps.
+
+## Phase 3C · planner navigation, voting and confirmation
+
+At baseline `b4a4d4e`, the shared shortlist followed the full nearby list, and the map gave no direct way to reach it after nomination. The local map sheet hid the active voter's identity. A shared travel-limit warning identified the person but left the organizer to infer which estimate needed attention.
+
+- Local planning keeps map-first entry. Each eligible place sheet lets the user select the friend whose vote they are recording. Map and ranking actions identify the voter and support casting, moving and withdrawing that person’s vote. Compare trips opens the selected place. An empty ranking offers a path to enter trip details.
+- Shared planning has adjacent Nearby places and Shortlist sections. Adding a place from a pin exposes View shortlist. The shortlist shows the member’s current vote and each candidate’s total. Only the organizer sees Choose destination. A second action names the venue and explains that confirmation closes voting.
+- A blocked shortlist entry names the member and the missing or over-limit time or fare. Members can update their own estimates. The organizer can confirm at the exact limit. After a failed refresh, voting and confirmation wait for a successful reload.
+- An inline pin could lose a mouse click when Leaflet focused the surrounding map on mouse-down, shifting it between press and release. Interactive pins now keep that event within the marker. Keyboard activation still works.
+- Ranking formulas, trip estimate fields, stored votes, RPCs, schema and provider integrations retain their existing contracts. No migrations or dependencies were added.
+
+### Phase 3C verification
+
+Guest browser flows covered draft to planning, local vote selection/move/withdraw across two voters, keyboard pin activation, inline map and trip entry, hard-limit recovery, cancel/confirm and reopening a decided meetup. Navigation controls were checked across eight viewport widths from 320 to 1280 px.
+
+Organizer and member browser sessions used local authenticated PostgreSQL/PostgREST. Checks covered an empty shortlist, nominating two venues, returning to the shortlist, vote ownership and counts, rejected vote and retry, missing and exceeded travel limits, estimates at the exact limits, cancellation and confirmation, and the destination visible to the member on reopen.
+
+TypeScript, 15 domain tests, the rollback-only shared SQL suite and Expo exports for web, Android and iOS passed. No lint script is configured. Screenshots and browser fixtures are in ignored `.expo/redesign/phase3c/`. Native device interactions and the hosted authenticated backend remain unverified.
 
 ## Phase 3A · meetup creation, editing and scheduling
 

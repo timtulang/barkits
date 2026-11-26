@@ -1,6 +1,6 @@
 # Barkits redesign plan
 
-Updated 2026-11-26. **Phases 3A and 3B implemented on the same preview branch. Their web and local authenticated flows are verified. Native runtime acceptance remains open. Phase 3C is next.**
+Updated 2026-11-26. **Phases 3A, 3B and 3C implemented on the combined preview branch. Their web and local authenticated flows are verified. Native runtime acceptance remains open. Phase 4A is next.**
 
 ## Authority and preserved requirements
 
@@ -98,7 +98,7 @@ Every unit requires a scoped diff, applicable type/domain checks, affected-flow 
 | **2 — Implemented; acceptance partial** | Shell/home, shared list presentation, headers/navigation; app entry/layout, `home.tsx`, SharedList | Guest/account, active/past, local/shared entry, create/join/account/back work; loading/error states; responsive hierarchy; storage keys/map entry preserved | 1 |
 | **3A — Implemented; native acceptance open** | Meetup creation/edit, draft/planning/shared creation, schedule; `meetup-editor.tsx`, schedule variants | Clear optional/required fields; validation, async failure/retry, duplicate-submit guard, paired date/time and schedule persistence preserved | 2 |
 | **3B — Implemented; native acceptance open** | Participant editor, roster readiness, invitations, origin disclosure; `editor.tsx`, roster views, InviteFriend | Empty/partial/ready rosters; local add/edit and shared own-origin save; invitation expiry/replacement/copy; limits/invalidation preserved. Use incumbent place input until 4A | 3A in original sequence; user authorized independent 3B on `37dd526` |
-| **3C — Not started** | Planner organization/navigation, vote/shortlist/confirmation; meetup screens, `plan-navigation.tsx`, `venue-decision.tsx`, ballot presentation | Local voter/shared ownership clear; supported vote/change/withdraw; confirmation and limit blockers; draft/planning/decided transitions; map/trip entry intact. Detailed metrics/estimate editor stay with 4B | 3B |
+| **3C — Implemented; native acceptance open** | Planner organization/navigation, vote/shortlist/confirmation; meetup screens, `plan-navigation.tsx`, `venue-decision.tsx`, ballot presentation | Local voter/shared ownership clear; supported vote/change/withdraw; confirmation and limit blockers; draft/planning/decided transitions; map/trip entry intact. Detailed metrics/estimate editor stay with 4B | 3B |
 | **4A — Not started** | Search/input, maps, venue list/sheet, confirmed map, pins and attribution | Search/keyboard selection, ambiguous/no result, coordinates, location denial, map failure; list/pin equivalence; details/home/back and confirmed directions; narrow-screen attribution; no provider changes | 3C |
 | **4B — Not started** | Rankings, individual trips/estimates, ride comparison/LRT; venue summary, trip modules, ranking/shared estimate views | Four local ranking modes unchanged; clear sources/units/unknowns; missing/over-limit and demo/manual cases; provider timestamps/clearing; local/shared estimates and directions verified | 4A |
 | **5A — Not started** | Account/email code, join dialog, contextual onboarding | Unconfigured auth, validation, sending, resend cooldown, bad/expired code, join failure/retry, sign-out return; accurate local/shared scope; no new profile/settings/notifications | 4B |
