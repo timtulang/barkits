@@ -4,7 +4,7 @@ Updated 2026-11-26. **Original roadmap paused. Phase 4.5A primary planning path 
 
 ## Phase 4.5A · reconstruct the primary planning path
 
-Safe baseline: `214e732` (`feat: phase 4`) on `barkits-prototype`. This correction deliberately reopens Phase 3/4 interfaces; visual polish was not evidence that planning was understandable.
+Implementation checkpoint: `96a7366`. Safe baseline: `214e732` (`feat: phase 4`) on `barkits-prototype`. This correction deliberately reopens Phase 3/4 interfaces; visual polish was not evidence that planning was understandable.
 
 ### Focused journey audit
 

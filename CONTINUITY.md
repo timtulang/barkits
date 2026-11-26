@@ -3,7 +3,7 @@
 ## Snapshot
 - 2026-11-26 [USER] Goal: Phase 4.5A Planning UX Reconstruction only; original roadmap paused. Task clarity > hierarchy > efficiency > consistency > decoration. Phases 5/6 blocked until all 4.5 UX criteria pass.
 - 2026-11-26 [TOOL] Safe pre-reconstruction checkpoint: `214e732` (`feat: phase 4`), clean baseline on `barkits-prototype`; Phase 3A–3C and 4A retained.
-- 2026-11-26 [CODE] Now: A implemented: Who/When/Where/Review, contextual readiness, optional inline scheduling, explicit map entry, reversible stage navigation and actual local save status. Preserve business rules, permissions, storage, providers and branding; code ≤300 lines.
+- 2026-11-26 [CODE] Now: A checkpoint `96a7366` implemented: Who/When/Where/Review, contextual readiness, optional inline scheduling, explicit map entry, reversible stage navigation and actual local save status. Preserve business rules, permissions, storage, providers and branding; code ≤300 lines.
 - 2026-11-26 [TOOL] Validation: TypeScript, 16 tests, three platform exports and local Chromium planning/error/resume scenarios pass. Native runtime and authenticated shared acceptance remain open; do not claim all 4.5 criteria passed.
 - 2026-11-26 [USER] Next: checkpoint A and STOP. Await explicit 4.5B request; C is detailed review/correction, D is full UX validation. Phase 4B remains paused.
 - 2026-11-26 [TOOL] Open: no lint script or `docs/DATABASE.md`; no schema changes. Original shell Node 20; temporary Node 24.15.0 and existing lockfile dependencies restored. Graphify indexing paused/incomplete for urgent UX work.
@@ -54,3 +54,4 @@
 - 2026-11-26 [TOOL] Chromium: storage rejection/retry, explicit map/back, confirmation to Review, confirmed map/back, draft-to-planning, partial origins and empty remote discovery passed.
 - 2026-11-26 [TOOL] Responsive 320/390/768/1440 px stage navigation passed with no page overflow. Two batched visual inspections; mobile task controls now visible earlier. Screenshots/logs in ignored .expo/redesign/phase45a/.
 - 2026-11-26 [USER] Existing commit authorization persists: checkpoint A only; no push/deployment or work on 4.5B/5/6.
+- 2026-11-26 [TOOL] Committed Phase 4.5A as `96a7366`; baseline `214e732` remains recoverable. No push or deployment. Stopped before 4.5B.
