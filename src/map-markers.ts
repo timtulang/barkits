@@ -1,13 +1,13 @@
 import type * as Leaflet from 'leaflet';
 import type { Point } from './geo';
+import { palette } from './theme';
 
 export type MapPin = { point: Point; label: string; kind: 'origin' | 'venue'; venueId?: string; number?: number };
 
 export function framePins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[]) {
   const interactive = pins.some(pin => pin.venueId !== undefined);
-  const fullscreen = map.getContainer().parentElement?.classList.contains('fullscreen-venue-map');
   map.fitBounds(L.latLngBounds(pins.map(pin => pin.point)), {
-    paddingTopLeft: fullscreen ? [48, Math.min(108, map.getSize().y / 3)] : interactive ? [48, 52] : [24, 24],
+    paddingTopLeft: interactive ? [56, 56] : [24, 24],
     paddingBottomRight: interactive ? [48, 52] : [24, 24], maxZoom: interactive ? 17 : 15, animate: false,
   });
 }
@@ -28,10 +28,10 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
       pointer.classList.add('confirmed-pin');
     }
     const icon = L.divIcon({
-      className: isInteractive ? 'suggestion-marker' : '',
+      className: isInteractive ? 'suggestion-marker' : 'group-marker',
       html: pointer,
-      iconSize: isInteractive ? [44, 44] : [16, 16],
-      iconAnchor: isInteractive ? [22, 40] : [8, 8],
+      iconSize: [44, 44],
+      iconAnchor: isInteractive ? [22, 40] : [22, 22],
     });
     const marker = L.marker(pin.point, { icon, title: pin.label, alt: pin.label, zIndexOffset: isInteractive ? 1000 : 0 }).addTo(layer);
     marker.getElement()?.setAttribute('aria-label', pin.label);
@@ -67,7 +67,7 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
       const position = map.layerPointToLatLng(display);
       marker.setLatLng(position);
       if (!display.equals(anchor)) {
-        L.polyline([point, position], { color: '#4c285c', weight: 2, interactive: false }).addTo(leaders);
+        L.polyline([point, position], { color: palette.plum, weight: 2, interactive: false }).addTo(leaders);
       }
     }
   }

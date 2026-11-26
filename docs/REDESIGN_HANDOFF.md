@@ -1,6 +1,18 @@
 # Redesign handoff
 
-Updated 2026-11-26. **Phase 3C is implemented on the combined preview branch `redesign/phase-3b-participants`, following 3A and 3B.** The next scoped unit is Phase 4A, search and maps.
+Updated 2026-11-26. **Phase 4A is implemented on `barkits-prototype`, based on `fc383ff`, with verification in progress.** Phase 3A–3C are merged. Stop after the 4A checkpoint; Phase 4B requires a separate request.
+
+## Phase 4A · place search and maps
+
+Search explains its Philippine catalog coverage, announces result counts, labels approximate locality centers and keeps ambiguous queries unselected. Search controls use shared focus and field tokens. Arrow keys, Enter and Escape support selection and reopening. The place input shows the selected pin and adjacent coordinate validation; denied location access has explicit feedback while manual entry remains available.
+
+Map navigation sits above the map and wraps around long titles on narrow screens. The collapsed place tray, numbered list/pin equivalence, origin visibility control and confirmed destination remain. Venue sheets explain straight-line distance and confirmed directions explain where to choose a starting point. Provider attribution has a separate visible strip. Zoom and group markers have 44-point targets, and map colors inherit theme tokens.
+
+OpenStreetMap tile failures expose Retry map. Browser testing caught missing markers after retry when React batched the ready flag; readiness now tracks the map instance so each new instance gets its pins. Google’s existing retry and provider selection remain intact. No ranking formulas, storage formats, permissions, schema or service contracts changed; no dependencies added.
+
+### Phase 4A verification
+
+Node 24.15.0 was provisioned in a temporary cache and existing lockfile dependencies restored. TypeScript, the 15 domain tests, and web/Android/iOS exports pass. No lint script is configured. Browser acceptance is in progress; receipts live under ignored `.expo/redesign/phase4a/`. Native device and hosted authenticated acceptance remain open. No commit, push or deployment has been performed.
 
 ## Phase 3C · planner navigation, voting and confirmation
 

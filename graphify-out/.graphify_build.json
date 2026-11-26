@@ -1,0 +1,30 @@
+{
+  "excludes": [
+    ".git/",
+    ".env",
+    ".env.*",
+    "**/.env*",
+    "node_modules/",
+    ".expo/",
+    "dist/",
+    "build/",
+    "coverage/",
+    ".agents/",
+    ".codex/",
+    ".aws/",
+    "assets/",
+    "public/",
+    "src/data/",
+    "**/generated/",
+    "**/*.generated.*",
+    "package-lock.json",
+    "supabase/.temp/",
+    "CONTINUITY.md",
+    "**/*.pem",
+    "**/*.key",
+    "**/credentials*",
+    "**/secrets*"
+  ],
+  "gitignore": true,
+  "code_only": false
+}

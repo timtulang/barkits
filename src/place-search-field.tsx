@@ -1,18 +1,20 @@
-import { type ReactNode, useId, useMemo, useRef, useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useId, useMemo, useRef, useState } from 'react';
 import { Keyboard, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { findPlaces } from './search-directory';
 import type { PlaceResult } from './search-matches';
-import { font, palette, radius, spacing } from './theme';
+import { colors, control, font, palette, radius, spacing } from './theme';
 import { Button, Icon, Label, layout } from './ui';
 
 export function PlaceSearchField({ label, value, change, select }: {
   label: string; value: string; change: (text: string) => void; select: (place: PlaceResult) => void;
 }) {
   const field = useRef<TextInput>(null);
+  const dismissedResults = useRef(false);
   const listId = useId() + '-places';
   const web = Platform.OS === 'web';
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [limit, setLimit] = useState(5);
   const query = open ? value.trim() : '';
   const { results, total } = useMemo(() => findPlaces(query, limit), [query, limit]);
@@ -29,34 +31,48 @@ export function PlaceSearchField({ label, value, change, select }: {
     setActive(-1);
   }
 
-  return <View style={{ gap: 6 }}>
-    <Label size={14} weight="bold">{label}</Label>
-    <View style={styles.input}>
+  return <View style={{ gap: spacing.sm }}>
+    <Label kind="label" color={colors.text}>{label}</Label>
+    <View style={[styles.input, focused && { borderColor: colors.focus }]}>
       <Icon name="search" color={palette.muted} size={18} />
       <TextInput ref={field} accessibilityLabel={label} placeholder="Search by name, city, or barangay" placeholderTextColor={palette.muted}
-        returnKeyType="search" autoCorrect={false} value={value} onFocus={() => setOpen(true)} onChangeText={update}
+        returnKeyType="search" autoCorrect={false} value={value} onFocus={() => { setFocused(true); setOpen(true); }} onBlur={() => setFocused(false)} onChangeText={update}
+        accessibilityHint="Search the Philippine catalog. Choose a result to set its pin."
         {...(web ? { role: 'combobox' as const, 'aria-autocomplete': 'list' as const,
+          onKeyUp: (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && dismissedResults.current) {
+              event.stopPropagation();
+              dismissedResults.current = false;
+            }
+          },
           'aria-expanded': open && results.length > 0, 'aria-controls': open && results.length ? listId : undefined,
           'aria-activedescendant': open && results[active] ? listId + '-' + active : undefined } : {})}
         onKeyPress={event => {
           if (!web) return;
           const key = event.nativeEvent.key;
-          if (key === 'Escape') {
+          if (key === 'Escape' && open) {
+            dismissedResults.current = true;
             event.preventDefault(); setOpen(false); setActive(-1);
-          } else if (results.length && (key === 'ArrowDown' || key === 'ArrowUp')) {
+          } else if (key === 'ArrowDown' || key === 'ArrowUp') {
             event.preventDefault();
+            if (!open) { setOpen(true); return; }
+            if (!results.length) return;
             const next = key === 'ArrowDown' ? Math.min(active + 1, results.length - 1) : Math.max(0, active - 1);
             setActive(next);
             document.getElementById(listId + '-' + next)?.scrollIntoView({ block: 'nearest' });
           }
         }}
         onSubmitEditing={() => { if (results[active]) pick(results[active]); else if (total === 1) pick(results[0]); else setOpen(true); }}
-        style={{ flex: 1, minWidth: 0, height: 44, fontFamily: font.regular, color: palette.ink, fontSize: 16 }} />
+        style={{ flex: 1, minWidth: 0, minHeight: control.minimum, fontFamily: font.regular, color: palette.ink, fontSize: 16 }} />
       {!!value && <Pressable accessibilityRole="button" accessibilityLabel={'Clear ' + label.toLowerCase()} onPress={() => { update(''); field.current?.focus(); }} style={styles.clear}>
         <Icon name="x" size={16} />
       </Pressable>}
     </View>
-    {query.length >= 2 && (results.length > 0 ? <View style={styles.list}>
+    {query.length < 2 && <Label kind="detail">Search Philippine places by name or area, then choose a result to set its pin.</Label>}
+    {query.length >= 2 && <View accessibilityLiveRegion="polite"><Label kind="detail">
+      {total ? `${total} ${total === 1 ? 'match' : 'matches'}. Check the area before choosing.${total > limit ? ` Showing ${results.length}.` : ''}` : 'No catalog matches. Try a nearby landmark or city, or choose a pin below.'}
+    </Label></View>}
+    {query.length >= 2 && results.length > 0 && <View style={styles.list}>
       <ResultList id={listId}>
       {results.map((place, i) => <Pressable key={place.id} nativeID={listId + '-' + i} accessibilityRole={web ? undefined : 'button'}
         {...(web ? { role: 'option' as const, 'aria-selected': i === active } : {})}
@@ -64,12 +80,12 @@ export function PlaceSearchField({ label, value, change, select }: {
         onPress={() => pick(place)} style={({ pressed }) => [styles.row, (pressed || active === i) && { backgroundColor: palette.lavender }]}>
         <Icon name={place.kind === 'Locality' ? 'map' : 'map-pin'} size={17} color={palette.plum} />
         <View style={{ flex: 1, gap: 2 }}><Label weight="bold">{place.name}</Label>
-          <Label size={13} color={palette.muted}>{[place.kind, place.address, place.area].filter(Boolean).join(' · ')}</Label></View>
+          <Label kind="caption">{[place.kind === 'Locality' ? 'Approximate area center' : place.kind, place.address, place.area].filter(Boolean).join(' · ')}</Label></View>
       </Pressable>)}
       </ResultList>
       {total > limit && <Button secondary onPress={() => setLimit(limit + 5)}>Show more results</Button>}
       <View style={layout.row}><Label size={12} color={palette.muted}>GeoNames · © OpenStreetMap contributors</Label></View>
-    </View> : <Label size={13} color={palette.muted}>No matches in the Philippine catalog. Try a city or landmark, keep your entry, or choose a map pin.</Label>)}
+    </View>}
   </View>;
 }
 
@@ -80,8 +96,8 @@ function ResultList({ id, children }: { id: string; children: ReactNode }) {
 
 const styles = StyleSheet.create({
   input: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingLeft: 12, paddingRight: 2,
-    borderWidth: 1, borderColor: palette.line, backgroundColor: palette.white, borderRadius: radius.control },
-  clear: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+    borderWidth: 1, borderColor: colors.outline, backgroundColor: palette.white, borderRadius: radius.control },
+  clear: { width: control.minimum, height: control.minimum, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 10, gap: 5, borderColor: palette.line, borderWidth: 1, borderRadius: radius.control, backgroundColor: palette.paper },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingVertical: 6 },
 });

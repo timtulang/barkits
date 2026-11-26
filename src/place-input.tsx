@@ -6,7 +6,7 @@ import { parsePoint } from './geo';
 import { googleTilesKey } from './map-provider';
 import PlaceMap from './place-map';
 import { detectPoint } from './services/device-location';
-import { Button, Field, Label, layout } from './ui';
+import { Button, Feedback, Field, Label, layout } from './ui';
 
 export function PlaceInput({ name, setName, coordinates, setCoordinates, destination = false, onSelection }: {
   name: string; setName: (value: string) => void; coordinates: string; setCoordinates: (value: string) => void; destination?: boolean; onSelection?: (place?: PlaceResult) => void;
@@ -15,6 +15,9 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
   const [showMap, setShowMap] = useState(false);
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState('');
+  const [locationError, setLocationError] = useState(false);
+  const point = parsePoint(coordinates);
+  const coordinateError = coordinates.trim() && !point ? 'Enter latitude from −90 to 90, then longitude from −180 to 180, separated by a comma.' : undefined;
   const serial = useRef(0);
   const pinHasLabel = useRef(Boolean(name.trim() && coordinates.trim()));
   useEffect(() => () => { serial.current++; }, []);
@@ -23,6 +26,7 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
     onSelection?.();
     setLocating(false);
     setMessage('');
+    setLocationError(false);
     pinHasLabel.current = Boolean(name.trim() && value.trim());
     setCoordinates(value);
   }
@@ -30,6 +34,7 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
     const request = ++serial.current;
     setLocating(true);
     setMessage('');
+    setLocationError(false);
     try {
       const point = await detectPoint();
       if (request === serial.current) {
@@ -39,7 +44,10 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
         setMessage('Location found. You can check the pin on the map.');
       }
     } catch (error) {
-      if (request === serial.current) setMessage(error instanceof Error ? error.message : 'Location unavailable.');
+      if (request === serial.current) {
+        setLocationError(true);
+        setMessage(error instanceof Error ? error.message : 'Location unavailable. Try again or choose a map pin.');
+      }
     } finally {
       if (request === serial.current) setLocating(false);
     }
@@ -54,15 +62,17 @@ export function PlaceInput({ name, setName, coordinates, setCoordinates, destina
       setName([place.name, place.address, place.area].filter(Boolean).join(', '));
       onSelection?.(place);
     }} />
+    {point && <Label kind="detail">Pin selected: {point.map(value => value.toFixed(5)).join(', ')}. Choose another result or map point to replace it.</Label>}
     <View style={layout.wrap}>
       {!destination && <Button quiet icon="crosshair" disabled={locating} onPress={detect}>{locating ? 'Finding location…' : 'Use my location'}</Button>}
       <Button quiet icon="map" expanded={showMap} onPress={() => setShowMap(!showMap)}>{showMap ? 'Hide map' : 'Choose on map'}</Button>
       <Button quiet expanded={showCoordinates} onPress={() => setShowCoordinates(!showCoordinates)}>{showCoordinates ? 'Hide coordinates' : coordinates ? 'Edit coordinates' : 'Enter coordinates'}</Button>
     </View>
-    {showCoordinates && <Field label="Coordinates (optional)" placeholder="14.5995, 120.9842" value={coordinates} onChange={edit} />}
-    {!!message && <Label>{message}</Label>}
+    {(showCoordinates || !!coordinateError) && <Field label="Coordinates (optional)" placeholder="14.5995, 120.9842" value={coordinates} onChange={edit}
+      error={coordinateError} hint="Latitude, longitude. Use coordinates instead of a catalog result when you know the exact spot." />}
+    {!!message && <Feedback tone={locationError ? 'error' : 'success'}>{message}</Feedback>}
     {showMap && <><Label size={13}>Tap the map to drop a pin. {googleTilesKey ? 'Google Maps' : 'OpenStreetMap'} supplies tiles for the area you view.</Label>
-      <PlaceMap point={parsePoint(coordinates)} onPick={async point => edit(point.map(value => value.toFixed(5)).join(', '))}
-        dom={{ style: { height: 275 }, scrollEnabled: false, applicationNameForUserAgent: 'Barkits/0.1' }} /></>}
+      <PlaceMap viewportHeight={360} point={point} onPick={async point => edit(point.map(value => value.toFixed(5)).join(', '))}
+        dom={{ style: { height: 360 }, scrollEnabled: false, applicationNameForUserAgent: 'Barkits/0.1' }} /></>}
   </View>;
 }

@@ -1,6 +1,6 @@
 # Barkits redesign plan
 
-Updated 2026-11-26. **Phases 3A, 3B and 3C implemented on the combined preview branch. Their web and local authenticated flows are verified. Native runtime acceptance remains open. Phase 4A is next.**
+Updated 2026-11-26. **Phases 3A, 3B and 3C are merged into `barkits-prototype`. Phase 4A is implemented with verification in progress. Native runtime acceptance remains open. Phase 4B is the next separately authorized unit after the 4A checkpoint.**
 
 ## Authority and preserved requirements
 
@@ -99,7 +99,7 @@ Every unit requires a scoped diff, applicable type/domain checks, affected-flow 
 | **3A — Implemented; native acceptance open** | Meetup creation/edit, draft/planning/shared creation, schedule; `meetup-editor.tsx`, schedule variants | Clear optional/required fields; validation, async failure/retry, duplicate-submit guard, paired date/time and schedule persistence preserved | 2 |
 | **3B — Implemented; native acceptance open** | Participant editor, roster readiness, invitations, origin disclosure; `editor.tsx`, roster views, InviteFriend | Empty/partial/ready rosters; local add/edit and shared own-origin save; invitation expiry/replacement/copy; limits/invalidation preserved. Use incumbent place input until 4A | 3A in original sequence; user authorized independent 3B on `37dd526` |
 | **3C — Implemented; native acceptance open** | Planner organization/navigation, vote/shortlist/confirmation; meetup screens, `plan-navigation.tsx`, `venue-decision.tsx`, ballot presentation | Local voter/shared ownership clear; supported vote/change/withdraw; confirmation and limit blockers; draft/planning/decided transitions; map/trip entry intact. Detailed metrics/estimate editor stay with 4B | 3B |
-| **4A — Not started** | Search/input, maps, venue list/sheet, confirmed map, pins and attribution | Search/keyboard selection, ambiguous/no result, coordinates, location denial, map failure; list/pin equivalence; details/home/back and confirmed directions; narrow-screen attribution; no provider changes | 3C |
+| **4A — Implemented; verification in progress** | Search/input, maps, venue list/sheet, confirmed map, pins and attribution | Search/keyboard selection, ambiguous/no result, coordinates, location denial, map failure; list/pin equivalence; details/home/back and confirmed directions; narrow-screen attribution; no provider changes | 3C |
 | **4B — Not started** | Rankings, individual trips/estimates, ride comparison/LRT; venue summary, trip modules, ranking/shared estimate views | Four local ranking modes unchanged; clear sources/units/unknowns; missing/over-limit and demo/manual cases; provider timestamps/clearing; local/shared estimates and directions verified | 4A |
 | **5A — Not started** | Account/email code, join dialog, contextual onboarding | Unconfigured auth, validation, sending, resend cooldown, bad/expired code, join failure/retry, sign-out return; accurate local/shared scope; no new profile/settings/notifications | 4B |
 | **5B — Not started** | Decided summary/lifecycle, local/shared completion, recaps, ratings/archive | Audience/publication/withdrawal/deletion correct; optional ratings/archive restrictions; empty/success/failure states; no old styling on completed surfaces | 5A |

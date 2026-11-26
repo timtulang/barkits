@@ -89,8 +89,8 @@ export function GoogleRoadmap({ map, leaflet, apiKey }: { map: Leaflet.Map; leaf
     return stop;
   }, [map, leaflet, apiKey, attempt]);
 
-  if (error) return <div role="status">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>Retry map</button></div>;
-  return <div style={{ background: '#fff', display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, padding: '10px 10px 5px' }}>
+  if (error) return <div className="map-feedback" role="status" style={{ padding: 8 }}><span>{error}</span> <button type="button" onClick={() => setAttempt(value => value + 1)}>Retry map</button></div>;
+  return <div className="map-attribution" style={{ minHeight: 44 }}>
     <img src="/google-maps-attribution.svg" alt="Google Maps" height={16} />
     <span style={{ font: '12px sans-serif' }}>{credits || 'Loading map…'}</span>
   </div>;

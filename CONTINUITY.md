@@ -1,9 +1,17 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-26 [USER] Proceed with Phase 3C, the next named subphase on the combined preview branch.
-- 2026-11-26 [CODE] Phase 3C implemented from `b4a4d4e`, first checkpoint `634d1fd`. The combined preview includes all Phase 3 subphases.
-- 2026-11-26 [CODE] Next named unit is Phase 4A. Native device and hosted authenticated acceptance remain open.
+- 2026-11-26 [USER] Initialize from verified repository evidence, check optional integrations, then continue redesign Phase 4; no application edits during initialization, no provider changes or unnecessary dependencies.
+- 2026-11-26 [TOOL] Initialization complete at clean `fc383ff` on `barkits-prototype`; supersedes combined-preview branch as current working branch. Phase 3C checkpoint `634d1fd` and handoff `0b0da8e` are in history.
+- 2026-11-26 [CODE] Goal/Now: Phase 4A search and maps, the next incomplete named subphase. Preserve business rules, storage, permissions, providers, branding and existing architecture; code ≤300 lines.
+- 2026-11-26 [USER] Next: implement and verify 4A only, update handoff, then stop before 4B. Report unrelated inconsistencies without fixing them.
+- 2026-11-26 [TOOL] Open: native runtime and hosted authenticated acceptance; `docs/DATABASE.md` absent, no lint script. This checkout lacks historical ignored screenshot/test fixtures and installed dependencies; shell Node 20 differs from required Node 24.
+
+## Integrations and initialization
+- 2026-11-26 [TOOL] Ponytail bundled skill read and active; Impeccable available and context command succeeded using `docs/PRODUCT.md`. Existing `docs/DESIGN_SYSTEM.md` is visual authority; no `DESIGN.md`, no design hook.
+- 2026-11-26 [TOOL] Graphify CLI/graph and OmniRoute executable absent; uv available. No gateway started, provider settings changed, or optional tools installed; external routing configuration UNCONFIRMED.
+- 2026-11-26 [TOOL] Native session skill discovery available; `.agents/` and `.codex/` exist but are empty/read-only. No repository-scoped Agent Skills or `ai-agent-skills` executable found; no duplicate collection installed.
+- 2026-11-26 [CODE] Expo 54 / React Native 0.81 / Expo Router / strict TypeScript verified in package/config. Supabase operations live in `src/services/`; actual UI uses theme/StyleSheet with NativeWind configured (D003 preserves this variance). No initialization changes to application code.
 
 ## Decisions
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request; checkpoint and stop. Explicit Phase 2 request supersedes previous lack of authorization, not unavailable native checks.

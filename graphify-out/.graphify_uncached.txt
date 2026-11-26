@@ -1,0 +1,8 @@
+/home/tim/Code/barkits/AGENTS.md
+/home/tim/Code/barkits/README.md
+/home/tim/Code/barkits/docs/COST_AUDIT.md
+/home/tim/Code/barkits/docs/DESIGN_SYSTEM.md
+/home/tim/Code/barkits/docs/PRODUCT.md
+/home/tim/Code/barkits/docs/REDESIGN_HANDOFF.md
+/home/tim/Code/barkits/docs/REDESIGN_PLAN.md
+/home/tim/Code/barkits/supabase/templates/sign-in-code.html

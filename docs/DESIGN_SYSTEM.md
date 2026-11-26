@@ -108,7 +108,15 @@ Only organizers see the invitation panel. Explain the one-person, 24-hour and re
 
 ## Suggested place pins
 
-Open ready planning meetups on an edge-to-edge map. Float the meetup name and navigation above it and keep the place list in a collapsible tray below the map attribution. Start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
+Open ready planning meetups on an edge-to-edge map. Keep the meetup name and navigation in a paper header above the map, allowing controls to wrap on narrow screens without covering pins or zoom. Keep the place list in a collapsible tray below the map attribution and start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
+
+Map controls and origin markers have at least 44-point targets. Keep provider attribution in its own wrapping strip, visible alongside loading or failure feedback. Retry map restores the map and its pins without switching providers. DOM map colors come from the shared theme through CSS variables; keep provider attribution artwork intact.
+
+## Place search and pin entry
+
+Explain that search uses a Philippine catalog. Show a match count and each result’s area; label locality results as approximate area centers. Arrow keys and Enter choose a result; Escape dismisses results. Ambiguous input stays unselected until a result is chosen. No matches should lead to another landmark, a map pin or coordinates, without silently picking a place.
+
+Show selected coordinates below the place field. Keep manual coordinates optional, with latitude/longitude ranges beside invalid input. Location is requested only through Use my location; denial leaves search, map and manual entry available. Place sheets distinguish straight-line distances from route length or travel time, and confirmed-place directions explain that the starting point is chosen in Google Maps.
 
 ## Voting and choosing a destination
 

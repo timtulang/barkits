@@ -18,6 +18,7 @@ export function ConfirmedPlaceMap({ navigation, name, point, location, schedule 
       <Label kind="label">Confirmed meeting place</Label>
       {!!location && <Label>{location}</Label>}
       {!!schedule && <Label>{schedule}</Label>}
+      <Label kind="detail">Get directions opens Google Maps. Choose your starting point there.</Label>
       <GoogleMapsLink point={point} directions />
     </EditorDialog>}>
     <View style={[layout.wrap, { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm }]}>
