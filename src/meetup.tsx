@@ -1,6 +1,10 @@
 import { formatLocalSchedule } from './meetup-schedule';
 import { ParticipantRoster } from './participant-roster';
 import { LocalPlaceComparison } from './local-place-comparison';
+import { canConfirmLocal } from './destination-eligibility';
+import { DestinationReview, PlanningVotes } from './destination-review';
+import { localTripRows } from './trip-evidence';
+import { TripComparison } from './trip-comparison';
 import { ChoiceField, IconAction } from './form-controls';
 import { PlanNavigation, localSections, type PlanSection } from './plan-navigation';
 import { PlanningJourney, PlanningReview } from './planning-journey';
@@ -23,8 +27,8 @@ import { Meetup, Participant, Ranking, ratingSummary, venues, retainPlace } from
 import { palette } from './theme';
 import { Button, Chip, Field, Label, layout, Panel } from './ui';
 
-export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus }: {
-  saveStatus: string;
+export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus, saveReady }: {
+  saveStatus: string; saveReady: boolean;
   scrollToTop: () => void; meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
   const [tab, setTab] = useState<PlanSection>('nearby');
@@ -35,6 +39,11 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
     discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
   const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
+  const [proposedId, setProposedId] = useState<string>();
+  const proposed = [...venues, ...meetup.customVenues ?? []].find(item => item.id === proposedId);
+  function reviewDestination(place: typeof venues[number]) {
+    save(retainPlace(meetup, place)); setProposedId(place.id); changeStage('review');
+  }
   const [fullMap, setFullMap] = useState(false);
   const [stage, setStage] = useState<PlanningStage>(() => initialPlanningStage(meetup.status, meetup.participants.length, located.length));
   function changeStage(next: PlanningStage) {
@@ -45,6 +54,8 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   }, [meetup.status]);
   const [ranking, setRanking] = useState<Ranking>('Balanced');
   const [tripEditorOpen, setTripEditorOpen] = useState(false);
+  const [scheduleDirty, setScheduleDirty] = useState(false);
+  const [tripDirty, setTripDirty] = useState(false);
   const [voter, setVoter] = useState('');
   const [caption, setCaption] = useState(meetup.recap ?? '');
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
@@ -92,12 +103,28 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       {!!meetup.participants.length && <Label kind="detail">Changing a starting point or transport clears only that friend’s saved trip estimates. Existing votes and suggested places stay.</Label>}
     </>}
     <View style={{ display: stage === 'when' ? 'flex' : 'none' }}>
-      {canEdit ? <PlanningSchedule key={meetup.date} date={meetup.date} save={date => save({ ...meetup, date })}
+      {canEdit ? <PlanningSchedule key={meetup.date} date={meetup.date} reportDirty={setScheduleDirty} save={date => save({ ...meetup, date })}
         continuePlanning={() => changeStage('where')} /> : <Panel><Label>{formatLocalSchedule(meetup.date) || 'Date and time undecided'}</Label>
           <Label kind="detail">The confirmed plan is read-only.</Label><Button onPress={() => changeStage('review')}>Review confirmed plan</Button></Panel>}
     </View>
-    {stage === 'review' && <PlanningReview people={meetup.participants.length} mapped={located.length}
-      schedule={formatLocalSchedule(meetup.date)} destination={venue?.name} change={changeStage} canEdit={canEdit} />}
+    {stage === 'review' && <>
+      <PlanningReview people={meetup.participants.length} mapped={located.length} pending={canEdit ? proposed?.name : undefined}
+        schedule={formatLocalSchedule(meetup.date)} destination={venue?.name} change={changeStage} canEdit={canEdit} />
+      {proposed && meetup.status === 'Planning' && <DestinationReview name={proposed.name}
+        blocked={scheduleDirty ? 'Schedule edits are not saved. Return to When to save or clear them before confirming.' :
+          tripDirty ? 'Trip edits are not saved. Return to Where and resume each draft to save or clear it before confirming.' :
+          !saveReady ? 'Wait for the plan to save before confirming. If saving failed, use Try again above.' :
+          !canConfirmLocal(meetup, proposed) ? 'The group or its limits changed. Check every trip in Where before confirming this place.' : undefined}
+        cancel={() => { setProposedId(undefined); changeStage('where'); }} confirm={() => {
+          if (saveReady && !scheduleDirty && !tripDirty && canConfirmLocal(meetup, proposed)) save({ ...meetup, venue: proposed.id, status: 'Decided' });
+        }}>
+        <TripComparison rows={localTripRows(meetup, proposed)} editableIds={meetup.participants.map(person => person.id)}
+          edit={person => openTrip(proposed.id, person)} changeTransport={id => editFriend(meetup.participants.find(person => person.id === id))} />
+      </DestinationReview>}
+      <PlanningVotes people={meetup.participants} choices={[...venues, ...meetup.customVenues ?? []].map(place => ({
+        id: place.id, name: place.name, voters: Object.entries(meetup.votes).filter(([, vote]) => vote === place.id).map(([person]) => person),
+      }))} />
+    </>}
     {meetup.status === 'Draft' && stage === 'where' && <Panel>
       <Label kind="item" heading>Ready to compare places?</Label><Label>This is a draft. Open place suggestions and voting when you’re ready. You can still change friends and time.</Label>
       <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Find meeting places</Button>
@@ -127,12 +154,12 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       </View>
       <View style={{ display: tab === 'trips' && tripEditorOpen ? 'flex' : 'none', gap: 12 }}>
         <Button secondary onPress={() => setTripEditorOpen(false)}>Back to place comparisons</Button><TripPlanning destinationId={tripTarget} meetup={meetup} save={save} participant={currentVoter}
-        selectDestination={setTripTarget} /></View>
+        selectDestination={setTripTarget} selectParticipant={setVoter} reportDirty={setTripDirty} /></View>
       {tab === 'nearby' && <NearbyPlaces navigation={{ title: meetup.name, expanded: fullMap, setExpanded: setFullMap, back }} meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions}
-        category={category} edit={editFriend} selectVoter={setVoter} save={save}
+        category={category} edit={editFriend} selectVoter={setVoter} save={save} review={reviewDestination}
         compare={spot => { save(retainPlace(meetup, spot)); setTripTarget(spot.id); setTab('trips'); setFullMap(false); requestAnimationFrame(scrollToTop); }} />}
       {tab === 'trips' && !tripEditorOpen && <LocalPlaceComparison meetup={meetup} ranking={ranking} setRanking={setRanking}
-        voter={currentVoter} selected={tripTarget} editTrip={openTrip} editPerson={editFriend} save={save} />}
+        voter={currentVoter} selected={tripTarget} editTrip={openTrip} editPerson={editFriend} save={save} review={reviewDestination} />}
       {tab === 'nearby' && !suggestions.length && <PlanningMap meetup={meetup} origins={located} places={[]} />}
       <Button secondary onPress={() => changeStage('review')}>Review plan & what’s missing</Button>
     </>}

@@ -193,3 +193,20 @@ test('comparison evidence keeps missing fares unknown and exposes incomplete and
   assert.equal(summarizeTrips(shared).time, null);
   assert.match(shared[0].fareSource, /User-entered Grab/);
 });
+
+test('review rechecks local eligibility after people or limits change and shared boundaries remain exact', async () => {
+  const { canConfirmLocal, sharedLimitIssues } = await import('./destination-eligibility.ts');
+  assert.equal(canConfirmLocal(example, venues[0]), true);
+  assert.equal(canConfirmLocal({ ...example, status: 'Decided' }, venues[0]), false);
+  assert.equal(canConfirmLocal({ ...example, participants: [] }, venues[0]), false);
+  const limited = { ...example.participants[0], budget: 0 };
+  assert.equal(canConfirmLocal({ ...example, participants: [limited] }, venues[0]), false);
+  const custom = { ...venues[0], id: 'custom-review' };
+  assert.equal(canConfirmLocal({ ...example, customVenues: [custom] }, custom), true);
+  assert.equal(canConfirmLocal({ ...example, participants: [limited], customVenues: [custom] }, custom), false);
+  const member = { id: 'me', name: 'Me', trip: { ...limited, maxMinutes: 10 } };
+  const exact = { user_id: 'me', minutes: 10, fare_pesos: 0, source: 'User-entered', calculated_at: '2026-11-26T00:00:00Z' };
+  assert.equal(sharedLimitIssues(member, exact), undefined);
+  assert.match(sharedLimitIssues(member, { ...exact, fare_pesos: null })!, /needs a fare/);
+  assert.match(sharedLimitIssues(member, { ...exact, minutes: 11 })!, /exceeds/);
+});

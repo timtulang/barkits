@@ -6,10 +6,11 @@ type Props = {
   place: string; count: number; voter?: string; votedHere: boolean; hasVote: boolean;
   vote: () => void; busy?: boolean; blocked?: boolean;
   confirming: boolean; review: (open: boolean) => void; confirm?: () => void;
+  reviewLabel?: string;
 };
 
 export function DecisionActions({ place, count, voter, votedHere, hasVote, vote, busy, blocked,
-  confirming, review, confirm }: Props) {
+  confirming, review, confirm, reviewLabel = 'Choose destination' }: Props) {
   const whose = voter ? voter + '’s' : 'my';
   const action = votedHere ? 'Remove ' + whose + ' vote' : hasVote ? 'Move ' + whose + ' vote here' :
     voter ? 'Vote as ' + voter : 'Vote for this place';
@@ -30,7 +31,7 @@ export function DecisionActions({ place, count, voter, votedHere, hasVote, vote,
     </> : <View style={layout.wrap}>
       <Button secondary={votedHere} disabled={busy} onPress={vote} accessibilityLabel={action + ', ' + place}>{action}</Button>
       {!!confirm && <Button quiet disabled={busy || blocked} onPress={() => review(true)}
-        accessibilityLabel={'Choose destination, ' + place}>Choose destination</Button>}
+        accessibilityLabel={reviewLabel + ', ' + place}>{reviewLabel}</Button>}
     </View>}
   </View>;
 }

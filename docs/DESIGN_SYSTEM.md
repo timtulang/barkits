@@ -137,3 +137,7 @@ Nunito is distributed under the SIL Open Font License 1.1. Feather icons use the
 ## Place and transportation comparisons
 
 Use the same group-time, longest-trip and one-way-fare layout for every compared place. Keep incomplete or over-limit places visible, identify missing estimates, and distinguish demo data from user estimates with provider timestamps where available. Expand to each person’s origin, transport, one-way time/fare and limits. Put trip editing and starting-point/transport changes next to that person. Shared members edit only their own trip. Do not imply live quotes or turn missing values into zero.
+
+## Review and confirmation
+
+Review destination opens the Review stage with the proposed place still unconfirmed. Present the people/time summary, travel evidence and outstanding votes before explicit confirmation. Keep correction links beside the summary. Pending form edits, failed persistence and current travel-limit blockers must be visible; do not confirm against stale figures. Shared finalization belongs only to the organizer. Cancel returns to places while preserving saved progress. Read-only confirmed plans retain map/directions and supported lifecycle actions.

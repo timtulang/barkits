@@ -57,3 +57,5 @@
 - 2026-11-26 [TOOL] Committed Phase 4.5A as `96a7366`; baseline `214e732` remains recoverable. No push or deployment. Stopped before 4.5B.
 - 2026-11-26 [CODE] 4.5B implemented: contextual place/person comparisons with evidence/limits, visible incomplete options, per-context trip drafts and shared own-trip editing; original ranking and confirmation rules preserved.
 - 2026-11-26 [TOOL] B types, 17 tests, web export and local browser comparisons/draft/zero-fare/ranking/4-width checks pass; authenticated shared/native acceptance open. Next: commit B, implement C, then D.
+- 2026-11-26 [TOOL] B committed `74c04b6`; C implemented with pending destination review, vote ownership/totals, correction links, dirty-form/persistence guards and current eligibility recheck.
+- 2026-11-26 [TOOL] C types, 18 tests, web export and local review/cancel/dirty-form/changed-limit/correction/confirm/reopen browser scenarios passed. Next: commit C then perform authorized D validation; native/live shared acceptance open.

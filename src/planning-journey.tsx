@@ -38,18 +38,18 @@ export function PlanningJourney({ current, change, people, scheduled, destinatio
   </View>;
 }
 
-export function PlanningReview({ people, mapped, schedule, destination, change, canEdit = true }: {
+export function PlanningReview({ people, mapped, schedule, destination, change, canEdit = true, pending }: {
   people: number; mapped: number; schedule?: string; destination?: string;
-  change: (stage: PlanningStage) => void; canEdit?: boolean;
+  change: (stage: PlanningStage) => void; canEdit?: boolean; pending?: string;
 }) {
   return <Panel>
-    <Label kind="item" heading>{destination ? 'Destination confirmed' : 'Destination still to decide'}</Label>
+    <Label kind="item" heading>{destination ? 'Destination confirmed' : pending ? 'Plan awaiting confirmation' : 'Destination still to decide'}</Label>
     <Label>{people} {people === 1 ? 'friend' : 'friends'} · {mapped} starting {mapped === 1 ? 'point' : 'points'} on the map</Label>
     {mapped < people && <Label kind="detail">{people - mapped} starting {people - mapped === 1 ? 'point still needs' : 'points still need'} attention before nearby places can be found for everyone.</Label>}
     <Label>{schedule || 'Date and time undecided (optional)'}</Label>
-    <Label>{destination ? 'Meet at ' + destination : 'No destination confirmed. Votes and suggestions do not confirm a place.'}</Label>
+    <Label>{destination ? 'Meet at ' + destination : pending ? 'Place under review · ' + pending : 'No destination confirmed. Votes and suggestions do not confirm a place.'}</Label>
     {canEdit && <View style={layout.wrap}>
-      <Button onPress={() => change('where')}>{destination ? 'View meeting place' : 'Choose a meeting place'}</Button>
+      <Button secondary={!!pending} onPress={() => change('where')}>{destination ? 'View meeting place' : pending ? 'Compare another place' : 'Choose a meeting place'}</Button>
       <Button quiet onPress={() => change('who')}>Change friends or starting points</Button>
       <Button quiet onPress={() => change('when')}>Review meetup time</Button>
     </View>}

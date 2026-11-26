@@ -1,3 +1,4 @@
+import { sharedLimitIssues } from './destination-eligibility';
 import { DecisionActions } from './decision-actions';
 import { colors, spacing } from './theme';
 import { useState } from 'react';
@@ -9,7 +10,7 @@ import { rideProviders, validFare as validPesoAmount, type RideProvider } from '
 import type { Participant } from './planner';
 import { EditorDialog } from './editor-dialog';
 import { GoogleMapsLink } from './google-maps-link';
-import { finalizeShared, saveEstimate, setSharedVote, type Candidate, type Member, type SharedEstimate } from './services/shared-meetups';
+import { saveEstimate, setSharedVote, type Candidate, type Member, type SharedEstimate } from './services/shared-meetups';
 import { Button, Field, Label, layout, Panel } from './ui';
 
 type Props = { id: string; ballot: Candidate[]; members: Member[]; userId: string; owner: boolean;
@@ -48,22 +49,9 @@ function EstimateEditor({ candidate, current, trip, save, close }: {
   </EditorDialog>;
 }
 
-function limitIssues(member: Member, estimate?: SharedEstimate) {
-  const { budget, maxMinutes } = member.trip ?? {};
-  const issues = [];
-  if (maxMinutes !== undefined && (estimate?.minutes == null || estimate.minutes > maxMinutes)) {
-    issues.push(estimate?.minutes == null ? 'needs a travel time' : `${estimate.minutes} min exceeds the ${maxMinutes} min limit`);
-  }
-  if (budget !== undefined && (estimate?.fare_pesos == null || estimate.fare_pesos > budget)) {
-    issues.push(estimate?.fare_pesos == null ? 'needs a fare' : `₱${estimate.fare_pesos} exceeds the ₱${budget} limit`);
-  }
-  return issues.length ? member.name + ' · ' + issues.join(', ') : undefined;
-}
-
-export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse, editStartingPoint }: Props & {
-  refresh: () => void; browse: () => void; editStartingPoint: () => void;
+export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse, editStartingPoint, reviewCandidate }: Props & {
+  refresh: () => void; browse: () => void; editStartingPoint: () => void; reviewCandidate: (candidate: Candidate) => void;
 }) {
-  const [confirm, setConfirm] = useState('');
   const [editing, setEditing] = useState<Candidate>();
   const myTrip = members.find(m => m.id === userId)?.trip;
   const myChoice = ballot.find(c => c.votes.some(v => v.user_id === userId));
@@ -79,7 +67,7 @@ export function SharedBallot({ id, ballot, members, userId, owner, busy, run, re
     {myChoice && <Label kind="value">Your vote · {myChoice.place.name}</Label>}
     {sorted.map(c => {
       const voted = c.venue_id === myChoice?.venue_id;
-      const blockers = members.map(m => limitIssues(m, c.estimates.find(e => e.user_id === m.id))).filter(Boolean);
+      const blockers = members.map(m => sharedLimitIssues(m, c.estimates.find(e => e.user_id === m.id))).filter(Boolean);
       return <View key={c.venue_id} style={{ gap: spacing.md, paddingTop: spacing.lg, borderTopWidth: 1, borderColor: colors.divider }}>
         <Label kind="item" heading>{c.place.name}</Label>
         <TripComparison rows={sharedTripRows(members, c.estimates)} editableIds={myTrip && !busy ? [userId] : []}
@@ -90,8 +78,8 @@ export function SharedBallot({ id, ballot, members, userId, owner, busy, run, re
         </View>}
         <DecisionActions place={c.place.name} count={c.votes.length} votedHere={voted} hasVote={!!myChoice}
           vote={() => run(() => setSharedVote(id, voted ? null : c.venue_id))} busy={busy} blocked={!!blockers.length}
-          confirming={confirm === c.venue_id} review={open => setConfirm(open ? c.venue_id : '')}
-          confirm={owner ? async () => { if (await run(() => finalizeShared(id, c.venue_id))) setConfirm(''); } : undefined} />
+          confirming={false} review={open => { if (open && owner) reviewCandidate(c); }} reviewLabel="Review destination"
+          confirm={owner ? () => reviewCandidate(c) : undefined} />
         <View style={layout.wrap}>
           {myTrip && <Button secondary disabled={busy} onPress={() => setEditing(c)}>My trip estimate</Button>}
           {!myTrip && <Button secondary disabled={busy} onPress={editStartingPoint}>Add my starting point for trip estimates</Button>}

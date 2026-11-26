@@ -9,7 +9,10 @@ import { PlaceInput } from './place-input';
 import { demoJourney, Meetup, Participant, Venue, venues, retainPlace } from './planner';
 import { Button, Field, Label, layout, Panel } from './ui';
 
-export function TripPlanning({ meetup, save, participant, destinationId, selectDestination }: { selectDestination: (id: string) => void; destinationId?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant }) {
+export function TripPlanning({ meetup, save, participant, destinationId, selectDestination, selectParticipant, reportDirty }: {
+  selectDestination: (id: string) => void; selectParticipant: (id: string) => void; reportDirty: (dirty: boolean) => void;
+  destinationId?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant;
+}) {
   const [match, setMatch] = useState<PlaceResult>();
   const [place, setPlace] = useState('');
   const [coordinates, setCoordinates] = useState('');
@@ -18,6 +21,9 @@ export function TripPlanning({ meetup, save, participant, destinationId, selectD
   const places = [...venues, ...meetup.customVenues ?? []];
   const venue = places.find(item => item.id === selected);
   const [visited, setVisited] = useState<{ venue: string; person: string }[]>([]);
+  const [dirtyTrips, setDirtyTrips] = useState<Record<string, boolean>>({});
+  const hasDrafts = Object.values(dirtyTrips).some(Boolean);
+  useEffect(() => reportDirty(hasDrafts), [hasDrafts, reportDirty]);
   useEffect(() => {
     if (venue && participant) setVisited(current => current.some(item => item.venue === venue.id && item.person === participant.id) ? current :
       [...current, { venue: venue.id, person: participant.id }]);
@@ -35,6 +41,11 @@ export function TripPlanning({ meetup, save, participant, destinationId, selectD
     selectDestination(spot.id); setPlace(''); setCoordinates(''); setError('');
   }
   return <Panel>
+    {hasDrafts && <><Label kind="detail">Unsaved trip edits — save or clear them before confirming a destination.</Label>
+      {visited.filter(item => dirtyTrips[JSON.stringify(item)]).map(item => <Button quiet key={JSON.stringify(item)} onPress={() => {
+        selectDestination(item.venue); selectParticipant(item.person);
+      }}>Resume draft: {meetup.participants.find(person => person.id === item.person)?.name} → {places.find(place => place.id === item.venue)?.name}</Button>)}
+    </>}
     <ChoiceField label="Destination" value={selected} change={selectDestination}
       options={[{ value: '', label: 'Choose a meeting place' }, ...places.map(item => ({ value: item.id, label: item.name })), { value: 'new-place', label: 'Search another meeting place…' }]} />
     {selected === 'new-place' && <><PlaceInput destination onSelection={setMatch} name={place} setName={setPlace} coordinates={coordinates} setCoordinates={setCoordinates} />
@@ -50,13 +61,18 @@ export function TripPlanning({ meetup, save, participant, destinationId, selectD
       const place = places.find(place => place.id === item.venue);
       return person && place && <View key={JSON.stringify([person.id, place.id, person.origin, person.point, person.mode])}
         style={{ display: person.id === participant?.id && place.id === selected ? 'flex' : 'none' }}>
-        <TripFields participant={person} meetup={meetup} venue={place} save={save} />
+        <TripFields participant={person} meetup={meetup} venue={place} save={save} reportDirty={dirty => {
+          const key = JSON.stringify(item);
+          setDirtyTrips(current => current[key] === dirty ? current : { ...current, [key]: dirty });
+        }} />
       </View>;
     })}
   </Panel>;
 }
 
-function TripFields({ participant, meetup, venue, save }: { participant: Participant; meetup: Meetup; venue: Venue; save: (m: Meetup) => void }) {
+function TripFields({ participant, meetup, venue, save, reportDirty }: {
+  participant: Participant; meetup: Meetup; venue: Venue; save: (m: Meetup) => void; reportDirty: (dirty: boolean) => void;
+}) {
   const savedTime = meetup.manualMinutes?.[venue.id]?.[participant.id];
   const savedFare = meetup.manualFares?.[venue.id]?.[participant.id];
   const note = meetup.fareNotes?.[venue.id]?.[participant.id];
@@ -65,6 +81,9 @@ function TripFields({ participant, meetup, venue, save }: { participant: Partici
   const [fare, setFare] = useState(savedFare?.toString() ?? '');
   const [message, setMessage] = useState('');
   const demo = demoJourney(venue, participant);
+  const dirty = (time.trim() ? Number(time) : undefined) !== savedTime || (fare.trim() ? Number(fare) : undefined) !== savedFare || provider !== note?.provider;
+  useEffect(() => reportDirty(dirty), [dirty, reportDirty]);
+  useEffect(() => () => reportDirty(false), []);
   function submit() {
     const minutes = time.trim() ? Number(time) : undefined;
     const cost = fare.trim() ? Number(fare) : undefined;

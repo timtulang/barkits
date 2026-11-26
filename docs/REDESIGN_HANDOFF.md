@@ -2,6 +2,16 @@
 
 Updated 2026-11-26. **Original roadmap paused. Phase 4.5A primary planning path is implemented and validated for local web; native/authenticated shared acceptance remains open. User subsequently authorized 4.5B, C and D with separate commits. Phases 5/6 are blocked until all Phase 4.5 acceptance criteria pass.**
 
+## Phase 4.5C · review, corrections and confirmation
+
+B checkpoint: `74c04b6`. Choosing a destination now goes to Review rather than confirming from a place card. Review shows people, optional schedule, pending destination, participant travel evidence, named vote totals and members who have not voted. Votes do not choose a winner automatically. Cancellation returns to places while preserving votes, retained places and estimates; a reviewed place is a temporary UI choice, not a newly persisted group decision.
+
+Local confirmation rechecks current eligibility and waits for successful device persistence. Unsaved schedule or per-context trip edits are identified and block confirmation until saved or cleared. Trip entry exposes links to resume each unsaved draft. Changing origins/modes still invalidates the affected person’s estimates under existing rules. Existing no-limit confirmation behavior is retained; unknown figures are not treated as verified data.
+
+Shared confirmation remains organizer-only, uses the existing finalize RPC, rechecks limit blockers and is disabled during mutation/refresh or a failed refresh. Members see their vote and the organizer’s confirmation responsibility. Failed requests keep the proposal available for correction/retry. Confirmed plans reopen in read-only Review, with directions/map and existing lifecycle actions.
+
+Validation: types, 18 tests and web export pass. Browser checks covered review/cancel without status change, unsaved schedule/trip gates, changed time limit blocking and correction, explicit confirmation persistence and read-only reopen. Test helper needed a render wait before typing a newly mounted trip field; no application failure was observed. Native runtime and live authenticated shared acceptance remain open. Next: authorized 4.5D realistic combined validation.
+
 ## Phase 4.5B · connect places and transportation
 
 Where now has Explore places and Compare places & vote. A mapped suggestion can be retained and compared as a destination, with a consistent summary of group time, longest one-way trip and group fare. Incomplete and over-limit options stay visible with their missing data or limit issues; the existing ranking formula and confirmation eligibility remain unchanged. Each person’s origin, transport, time/fare sources, provider timestamps and limits sit with the corresponding place. Missing fares stay unavailable, including a distinction between zero and unknown.

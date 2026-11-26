@@ -11,9 +11,10 @@ type Props = {
   navigation: MapNavigation; meetup: Meetup; voter?: Participant; friends: LocatedFriend[]; suggestions: ReturnType<typeof discover>;
   category: Category; edit: (friend: Participant) => void;
   selectVoter: (id: string) => void; compare: (venue: Venue) => void; save: (meetup: Meetup) => void;
+  review: (venue: Venue) => void;
 };
 
-export function NearbyPlaces({ meetup, voter, friends, suggestions, category, edit, selectVoter, compare, save, navigation }: Props) {
+export function NearbyPlaces({ meetup, voter, friends, suggestions, category, edit, selectVoter, compare, save, navigation, review }: Props) {
   const missing = meetup.participants.filter(person => !friends.some(friend => friend.id === person.id));
   const hasLimits = meetup.participants.some(person => person.budget !== undefined || person.maxMinutes !== undefined);
   return <>
@@ -26,7 +27,7 @@ export function NearbyPlaces({ meetup, voter, friends, suggestions, category, ed
       {!hasLimits && voter && <>
         {meetup.participants.length > 1 && <ChoiceField label="Record vote for" value={voter.id} change={selectVoter}
           options={meetup.participants.map(friend => ({ value: friend.id, label: friend.name }))} />}
-        <VenueDecision meetup={meetup} venue={venue} voter={voter} save={updated => save(retainPlace(updated, venue))} />
+        <VenueDecision meetup={meetup} venue={venue} voter={voter} save={updated => save(retainPlace(updated, venue))} onReview={review} />
       </>}
       <Button secondary={!hasLimits} onPress={() => compare(venue)}>Compare trips here</Button>
     </>} />

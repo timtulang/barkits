@@ -11,9 +11,10 @@ const explanations: Record<Ranking, string> = {
   Cheapest: 'Lowest combined fare; every person needs a fare.',
 };
 
-export function LocalPlaceComparison({ meetup, ranking, setRanking, voter, editTrip, editPerson, save, selected }: {
+export function LocalPlaceComparison({ meetup, ranking, setRanking, voter, editTrip, editPerson, save, selected, review }: {
   meetup: Meetup; ranking: Ranking; setRanking: (ranking: Ranking) => void; voter?: Participant; selected?: string;
   editTrip: (venue: string, person?: string) => void; editPerson: (person: Participant) => void; save: (meetup: Meetup) => void;
+  review: (venue: Venue) => void;
 }) {
   const ranked = recommend(meetup.participants, ranking, meetup.manualFares, meetup.customVenues, meetup.manualMinutes);
   const order = new Map(ranked.map((item, i) => [item.venue.id, i]));
@@ -42,7 +43,8 @@ export function LocalPlaceComparison({ meetup, ranking, setRanking, voter, editT
         <TripComparison rows={rows} editableIds={meetup.participants.map(person => person.id)}
           edit={person => editTrip(venue.id, person)} changeTransport={id => editPerson(meetup.participants.find(person => person.id === id)!)} />
         <Button secondary onPress={() => editTrip(venue.id)}>Enter or check trip estimates here</Button>
-        {voter && (position !== undefined || unranked) && <VenueDecision meetup={meetup} venue={venue} voter={voter} save={save} />}
+        {voter && (position !== undefined || unranked) && <VenueDecision meetup={meetup} venue={venue} voter={voter} save={save} onReview={review} />}
+        {voter && position === undefined && !unranked && <Button quiet onPress={() => review(venue)}>Review place &amp; limits</Button>}
       </Panel>;
     })}
   </View>;

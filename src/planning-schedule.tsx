@@ -1,11 +1,11 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { View } from 'react-native';
 import { readSchedule, scheduleProblem } from './meetup-schedule';
 import { ScheduleInput } from './schedule-input';
 import { Button, Feedback, Label, layout, Panel } from './ui';
 
-export function PlanningSchedule({ date, save, continuePlanning }: {
-  date: string; save: (date: string) => void; continuePlanning: () => void;
+export function PlanningSchedule({ date, save, continuePlanning, reportDirty }: {
+  date: string; save: (date: string) => void; continuePlanning: () => void; reportDirty: (dirty: boolean) => void;
 }) {
   const [schedule, setSchedule] = useState(() => readSchedule(date));
   const [incomplete, setIncomplete] = useState({ date: false, time: false });
@@ -17,6 +17,7 @@ export function PlanningSchedule({ date, save, continuePlanning }: {
     incomplete.time ? { field: 'time' as const, message: 'Finish the time or clear the schedule.' } : scheduleProblem(day, time);
   const value = day ? day + ' ' + time : legacy;
   const dirty = value !== date || incomplete.date || incomplete.time;
+  useEffect(() => reportDirty(dirty), [dirty, reportDirty]);
   function advance() {
     setSubmitted(true);
     if (issue) return;

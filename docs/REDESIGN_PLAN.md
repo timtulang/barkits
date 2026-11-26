@@ -1,6 +1,6 @@
 # Barkits redesign plan
 
-Updated 2026-11-26. **Original roadmap paused by user direction. Phase 4.5A reconstructs the primary planning path; 4.5B–D are separate requests. Phases 5 and 6 are blocked until Phase 4.5 passes its UX acceptance criteria. Phase 4B is paused.**
+Updated 2026-11-26. **Original roadmap paused by user direction. Phase 4.5A reconstructs the primary planning path; 4.5B–D are separately committed checkpoints in the current authorized request. Phases 5 and 6 are blocked until Phase 4.5 passes its UX acceptance criteria. Phase 4B is paused.**
 
 ## Priority override: Phase 4.5 — Planning UX Reconstruction
 
@@ -10,8 +10,8 @@ User direction on 2026-11-26 supersedes the previous next-phase order and map-fi
 |---|---|---|
 | **4.5A** | Audit primary journey; cohesive Who / When / Where / Review navigation, readiness, required/optional hierarchy, explicit next actions, saved state | Implemented and validated for local web; native/authenticated shared acceptance open. Historical A boundary; subsequent user authorization covers B, C and D with separate commits. |
 | **4.5B** | Integrate discovery and supported transportation comparisons into the journey; explain evidence and tradeoffs | Implemented; local browser and evidence tests pass. Native/authenticated shared acceptance open. |
-| **4.5C** | Review, corrections, confirmation and supported group-decision states | Authorized after B checkpoint; implementation next. |
-| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Authorized after C checkpoint; record evidence and any remaining environment blockers. |
+| **4.5C** | Review, corrections, confirmation and supported group-decision states | Implemented; local review/correction/confirmation browser checks pass; shared/native acceptance remains open. |
+| **4.5D** | Realistic complete-flow validation, incomplete/error states, corrections and preservation | Authorized; validate combined journeys and record evidence plus remaining environment blockers. |
 
 Overall 4.5 acceptance: first-time start is obvious; sequence/current stage/purpose/action are clear; required and optional inputs differ; relevant features are discoverable; locations and trips can be compared efficiently; earlier decisions can change without unnecessary loss; incomplete/unconfirmed status is explicit; narrow mobile layouts remain understandable; required functionality is preserved. A establishes the path, but does **not** certify all ten criteria or replace B–D.
 

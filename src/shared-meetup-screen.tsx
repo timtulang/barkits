@@ -1,3 +1,7 @@
+import { DestinationReview, PlanningVotes } from './destination-review';
+import { sharedLimitIssues } from './destination-eligibility';
+import { TripComparison } from './trip-comparison';
+import { sharedTripRows } from './trip-evidence';
 import { PlanNavigation } from './plan-navigation';
 import { PlanningJourney, PlanningReview } from './planning-journey';
 import { initialPlanningStage, peopleProgress, type PlanningStage } from './planning-progress';
@@ -12,7 +16,7 @@ import { ParticipantEditor } from './editor';
 import { GoogleMapsLink } from './google-maps-link';
 import { locateFriends } from './locate-friends';
 import { PlanningMap } from './planning-map';
-import { getShared, saveOwnTrip, shortlistPlace } from './services/shared-meetups';
+import { finalizeShared, getShared, saveOwnTrip, shortlistPlace } from './services/shared-meetups';
 import { SharedMemories } from './shared-memories';
 import { finishMeetup } from './services/shared-memories';
 import { StatusMark } from './workspace-layout';
@@ -36,6 +40,9 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
   const planning = data?.summary.status === 'planning';
   const [confirmEnd,setConfirmEnd] = useState(false);
   const chosen = data?.summary.chosen;
+  const [proposedId, setProposedId] = useState<string>();
+  const proposed = data?.summary.ballot.find(candidate => candidate.venue_id === proposedId);
+  const proposalIssues = proposed ? data!.members.map(member => sharedLimitIssues(member, proposed.estimates.find(estimate => estimate.user_id === member.id))).filter(Boolean) : [];
   async function run(action: () => Promise<void>) {
     if (pending.current) return false;
     pending.current = true;
@@ -92,14 +99,6 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
       {!!data.summary.activity && (stage === 'review' || !!data.memories) && <Label>{data.summary.activity}</Label>}
       {!!schedule && !!data.memories && <Label>{schedule}</Label>}
       {!!data.summary.description && (stage === 'review' || !!data.memories) && <Label>{data.summary.description}</Label>}
-      {chosen && !data.memories && (stage === 'review' || stage === 'where') && <Panel><Label kind="item" heading>Meet at {chosen.name}</Label>
-        <Label>Confirmed by the organizer · voting closed</Label>
-        <View style={layout.wrap}><GoogleMapsLink point={[chosen.latitude, chosen.longitude]} />
-          <Button secondary onPress={() => setFullMap(true)}>View venue map</Button></View>
-        {data.summary.owner_id === userId && data.summary.status === 'decided' && lifecycle}
-        {fullMap && <ConfirmedPlaceMap name={chosen.name} point={[chosen.latitude, chosen.longitude]} schedule={schedule}
-          navigation={{ title: data.summary.name, expanded: true, setExpanded: setFullMap, back }} />}
-      </Panel>}
       {!data.memories && <>
       <PlanningJourney current={stage} change={changeStage} people={peopleProgress(data.members.length, origins.length)}
         scheduled={!!schedule} destination={!!chosen} saved={acting ? 'Saving changes to the group…' : loading ? 'Refreshing group…' :
@@ -118,8 +117,30 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
         <Label kind="detail">The organizer sets the time when creating a shared meetup. Editing a shared schedule is not supported yet; you can still compare places.</Label>
         <Button onPress={() => changeStage(planning ? 'where' : 'review')}>{planning ? 'Choose meeting places' : 'Review confirmed plan'}</Button>
       </Panel>}
-      {stage === 'review' && <PlanningReview people={data.members.length} mapped={origins.length} schedule={schedule}
-        destination={chosen?.name} change={changeStage} canEdit={planning} />}
+      {stage === 'review' && <>
+        <PlanningReview people={data.members.length} mapped={origins.length} schedule={schedule}
+          pending={planning ? proposed?.place.name : undefined} destination={chosen?.name} change={changeStage} canEdit={planning} />
+        {planning && proposed && data.summary.owner_id === userId && <DestinationReview name={proposed.place.name} busy={acting || loading}
+          blocked={error ? 'Refresh the group successfully before confirming.' : proposalIssues.length ? proposalIssues.join('. ') : undefined}
+          cancel={() => { setProposedId(undefined); changeStage('where'); setSection('shortlist'); }} confirm={async () => {
+            if (!plannerBusy && !proposalIssues.length && await run(() => finalizeShared(id, proposed.venue_id))) setProposedId(undefined);
+          }}>
+          <TripComparison rows={sharedTripRows(data.members, proposed.estimates)} editableIds={mine?.trip ? [userId] : []}
+            edit={() => { changeStage('where'); setSection('shortlist'); }} />
+        </DestinationReview>}
+        {planning && data.summary.owner_id !== userId && <Label>The organizer confirms the destination. Your vote remains changeable in Where while planning is open.</Label>}
+        <PlanningVotes people={data.members} choices={data.summary.ballot.map(candidate => ({
+          id: candidate.venue_id, name: candidate.place.name, voters: candidate.votes.map(vote => vote.user_id),
+        }))} />
+      </>}
+      {chosen && !data.memories && (stage === 'review' || stage === 'where') && <Panel><Label kind="item" heading>Meet at {chosen.name}</Label>
+        <Label>Confirmed by the organizer · voting closed</Label>
+        <View style={layout.wrap}><GoogleMapsLink point={[chosen.latitude, chosen.longitude]} />
+          <Button secondary onPress={() => setFullMap(true)}>View venue map</Button></View>
+        {data.summary.owner_id === userId && data.summary.status === 'decided' && lifecycle}
+        {fullMap && <ConfirmedPlaceMap name={chosen.name} point={[chosen.latitude, chosen.longitude]} schedule={schedule}
+          navigation={{ title: data.summary.name, expanded: true, setExpanded: setFullMap, back }} />}
+      </Panel>}
       <View style={{ display: stage === 'where' ? 'flex' : 'none', gap: 16 }}>{planning && <>
       <PlanNavigation current={section} change={setSection} sections={[
         { id: 'nearby', label: 'Explore places' }, { id: 'shortlist', label: 'Shortlist & vote (' + data.summary.ballot.length + ')' },
@@ -144,7 +165,8 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
       </>}
       <View style={{ display: section === 'shortlist' ? 'flex' : 'none' }}><SharedBallot id={id} ballot={data.summary.ballot} members={data.members} userId={userId}
         owner={data.summary.owner_id === userId} busy={plannerBusy} run={run} refresh={refresh} browse={() => setSection('nearby')}
-        editStartingPoint={() => { changeStage('who'); setEditing(true); }} /></View>
+        editStartingPoint={() => { changeStage('who'); setEditing(true); }}
+        reviewCandidate={candidate => { if (data.summary.owner_id === userId) { setProposedId(candidate.venue_id); changeStage('review'); } }} /></View>
       <Button secondary onPress={() => changeStage('review')}>Review plan & what’s missing</Button>
       </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</View>
       {planning && editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}
