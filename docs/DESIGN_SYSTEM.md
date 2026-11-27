@@ -2,6 +2,10 @@
 
 Barkits is the working brand pending name and trademark clearance. The product should feel like a welcoming Filipino social app. Clucky informed the use of an expressive character, a recognizable silhouette, and restrained moments of delight. Barkits uses original artwork and a distinct visual identity.
 
+## Meet in the middle
+
+The story starts with rounding up friends and ends when everyone has a place to go. Use vivid mango to show the current stop, coral to identify people and welcome them, and grape-purple for primary actions. Cream and paper give travel evidence room to breathe. Express the same story on local and shared plans with an original route of labeled stops leading to a checked meetup pin.
+
 ## Kits
 
 Kits is an original, waving coral location pin with a cream face, deep-ink outlines, and plum shoes. The source artwork is `assets/kits.png`. Use Kits to welcome people, soften an empty state, celebrate a completed meetup, or introduce a recap. Keep the mascot out of trip comparisons, voting, permission prompts, and confirmations. Place accompanying instructions in live text and treat decorative art as inaccessible to screen readers.
@@ -14,14 +18,15 @@ Kits is an original, waving coral location pin with a cream face, deep-ink outli
 |---|---|---|
 | Cream | `#FFF9EF` | Page background |
 | Paper | `#FFFDFA` | Header, cards and fields |
-| Mango | `#FFDA62` | Welcome artwork and emphasis |
-| Coral | `#F78F78` | Brand mark and friendly accents |
-| Deep ink | `#291D32` | Headings, text and primary controls |
-| Plum | `#4C285C` | Selected controls |
-| Muted ink | `#62566C` | Supporting copy |
-| Lavender and mint | `#F1E5FA`, `#DDF2E5` | Light background accents |
+| Mango | `#FFCD45` | Current planning stop and text selection |
+| Welcome mango | `#FFD24F` | Welcome surface behind Kits |
+| Coral | `#FF795E` | Brand mark and people on the map |
+| Deep ink | `#281934` | Headings, text and foreground on warm colors |
+| Plum | `#43217E` | Focus, selected controls and completed stops |
+| Muted ink | `#6D536F` | Supporting copy |
+| Lavender and mint | `#F2E4FF`, `#DDF2E5` | Selection and success surfaces |
 
-Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 20-point radius, buttons/fields use 12, hero surfaces use 28, and small choice chips use the pill radius. Shared controls have a 48-point minimum target. Panels use a quiet border; only modal sheets use the shared soft elevation (8-point downward offset, 24-point blur, 0.16 opacity; Android elevation 8).
+Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 16-point radius, buttons and fields use 12, welcome surfaces use 24, and choice chips use the pill radius. Shared controls have a 48-point minimum target. Panels use a quiet border. Modal sheets use the shared soft elevation with an 8-point downward offset, 24-point blur, 0.16 opacity and Android elevation 8.
 
 `src/ui.tsx` is the stable public entrypoint. Implementation is split into `ui-text.tsx`, `ui-actions.tsx`, `ui-field.tsx`, `ui-feedback.tsx`, and `ui-styles.ts`. Choice fields and icon actions remain in `form-controls.tsx`. Product state and ranking logic remain outside this layer. This extends the existing React Native styling architecture without replacing NativeWind configuration.
 
@@ -30,17 +35,18 @@ Nunito uses weights 600, 800 and 900 for body, controls and headings respectivel
 | Role | Foreground / surface | Purpose |
 |---|---|---|
 | Canvas / surface / input | `#FFF9EF` / `#FFFDFA` / `#FFFFFF` | Page, grouped task, editable control |
-| Text / supporting text | `#291D32` / `#62566C` | Main content and explanations |
-| Control outline / divider | `#8D8194` / `#EAE1D7` | Visible control boundaries versus decorative separators |
-| Primary | White on `#291D32` | Main action; hover `#3C2B47`, pressed `#4C285C` |
-| Selection / information | `#4C285C` on `#F1E5FA` | Selected option or informational feedback |
+| Text / supporting text | `#281934` / `#6D536F` | Main content and explanations |
+| Control outline / divider | `#85708D` / `#EAE1D7` | Control boundaries and quiet separators |
+| Primary | White on `#582AA0` | Main action, with hover `#6D36B8` and pressed `#43217E` |
+| Current / completed stop | Ink on mango / white on plum | Active stop uses an underline and a stronger outline. Completed stops use a check. |
+| Selection / information | `#43217E` on `#F2E4FF` | Selected option or informational feedback |
 | Error / danger | `#A12C38` on `#FCECEE` | Validation/failure; danger button reverses to white on red |
 | Success | `#245D3D` on `#DDF2E5` | Confirmed successful action |
 | Warning | `#745014` on `#FFF0B9` | Missing prerequisite or caution |
-| Disabled | `#746A7B` on `#EEE8E1` | Unavailable controls; not opacity on live content |
-| Focus | `#4C285C` with cream separation | Web keyboard outline; focused native field border |
+| Disabled | `#665670` on `#EEE6EF` | Unavailable controls use explicit foreground and surface colors |
+| Focus | `#43217E` with cream separation | Keyboard focus ring on web, focused field border on native |
 
-Selected states include a check mark; errors include an icon and live text. Status marks retain their named icon and label. Unknown meetup statuses throw rather than silently appearing as planning. Fourteen enabled text/control contrast pairs were checked in Phase 1: text pairs exceed 4.5:1 and control boundaries exceed 3:1. This is token verification, not whole-app accessibility certification.
+Selected choices use a check mark. Errors pair an icon with live text. Status marks use a named icon and label.
 
 `global.css` mirrors the theme's focus, canvas, ink, muted and mango colors for browser focus, selection, caret and scrollbars. Keep these five variables synchronized with `theme.ts`; this is the existing web CSS boundary, not a second theme.
 
@@ -52,6 +58,7 @@ Selected states include a check mark; errors include an icon and live text. Stat
 - `ChoiceField`: web uses the native select; native uses the existing expandable labeled choice list. Both support disabled state. `IconAction` has a 48-point target, accessible label and web title, focus, hover and pressed feedback.
 - `Feedback`: info/success/warning/error tone, optional title and action; use actionable error copy. `LoadingState` requires a descriptive label. `EmptyState` requires a title and explanatory content, with an optional next action. Adopt these in each later screen phase rather than rewriting all screens during Phase 1.
 - `Panel` stays a simple task surface. `EditorDialog` retains keyboard avoidance, safe-area padding, compact/wide layouts and busy dismissal guards; it now uses shared surface/elevation and section typography.
+- `PlanningRoute` renders the four existing stages as named stops. Who shows a check when all starting points are mapped. When shows a check once a time is saved and remains optional otherwise. The final stop has the venue pin silhouette and shows a check on confirmation. Every stop retains the same navigation action and exposes its state to assistive technology.
 - `MeetupListItem` gives local and shared plans the same summary hierarchy: named status with icon, meetup name, date, available context and an opening arrow. Show the demo label and chosen venue when supplied. Use a paper surface, quiet border, card radius and shared hover/pressed colors; let names wrap. Keep the accessible opening label and summary hint.
 
 Example for later screen adoption:
@@ -67,14 +74,14 @@ Use explicit ARIA state props where needed on web: the installed React Native We
 
 ## Text hierarchy
 
-Use the role scale in `src/theme.ts` with the shared Label. Page titles are 36 points, major sections 28 and venue or item titles 22. Body and numeric values are 16. Field labels and supporting details are 14; captions are 13. Line height is 1.2 for title weight and 1.45 for other text, rounded up. Native font scaling remains enabled. Nunito’s heaviest weight leads the page, bold identifies a name or value, and muted ink carries location, provenance and context. Keep a venue name close to its location. Align people and distance values across a row and state a shared approximation once. Travel rankings group total minutes, time gap and cost under their own labels. Allow long names to wrap and let figures reflow before they collide.
+Use the role scale in `src/theme.ts` with the shared Label. Page titles are 40 points, major sections 28 and venue or item titles 22. Body and numeric values are 16. Field labels and supporting details are 14 and captions are 13. Line height is 1.2 for title weight and 1.45 for other text, rounded up. Native font scaling remains enabled. Nunito’s heaviest weight leads the page, bold identifies a name or value, and muted ink carries location, provenance and context. Keep a venue name close to its location. Align people and distance values across a row and state a shared approximation once. Travel rankings group total minutes, time gap and cost under their own labels. Allow long names to wrap and let figures reflow before they collide.
 
 ## Voice and access
 
 - Write short English labels for actions and navigation. Use natural Filipino-English in welcome copy, empty states, and recap prompts. “Kita-kits, barkada!” works as a greeting. “Finalize location” names the action clearly.
 - Use sentence case and show minutes and Philippine pesos beside their values. Use “Fare unavailable” when a fare is missing. Keep demo labels visible near route data.
 - Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus.
-- Keep essential information in text. Use brief, optional motion in celebratory moments and respect reduced motion. Kits makes one brief hop upon meetup completion when reduced motion is off. Controls respond immediately.
+- Keep essential information in text. Stage content reveals in 180 ms with an ease-out. Kits rises over 130 ms and settles over 170 ms with a gentler ease-in-out. Both respect the system reduced-motion setting. Control feedback is immediate.
 
 ## Responsive application layout
 

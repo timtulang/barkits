@@ -104,7 +104,11 @@ def guest(args):
             for stage in ('who', 'when', 'where', 'review'):
                 b.stage(stage)
                 assert b.js('return document.documentElement.scrollWidth<=innerWidth'), (width, stage)
-                assert b.js('const progress=document.querySelector(\'[aria-label="Planning stages"]\'); return progress.querySelectorAll("button").length===4 && progress.querySelectorAll(\'[aria-current="step"]\').length===1 && !progress.innerText.trim()')
+                assert b.js('''const progress=document.querySelector('[aria-label="Planning stages"]');
+                  const steps=[...progress.querySelectorAll('button')];
+                  const labels=['Who','When','Where','Review'];
+                  return steps.length===labels.length && progress.querySelectorAll('[aria-current="step"]').length===1
+                    && steps.every((step,index)=>step.innerText.trim().endsWith(labels[index]) && step.getBoundingClientRect().height>=48);''')
                 assert b.js('''const nav=document.querySelector('[aria-label="Planning navigation"]');
                   const [left,right]=[...nav.querySelectorAll('button')].map(e=>e.getBoundingClientRect());
                   return nav.getBoundingClientRect().bottom===innerHeight && (!right ||

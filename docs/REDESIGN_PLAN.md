@@ -1,8 +1,26 @@
 # Barkits redesign plan
 
-## Current brief · Phase 1 design and UX audit
+## Current brief · Phase 2 visual identity and design foundations
 
-**Checkpoint · 27 November 2026.** The audit covers the current map-first implementation at `2d0348e` on `barkits-prototype`. This brief has its own six-phase sequence. The earlier roadmap below is historical and retains its open native and hosted acceptance items. Phase 1 is complete and Phase 2 requires approval.
+**Checkpoint · 27 November 2026.** The approved direction brings more color and a clearer sense of progress to Barkits. Phase 2 applies the foundations and exercises them on Home and in the existing planning flow. Phase 3 requires approval.
+
+- **Color and type.** Mango leads the welcome and current stop. Coral marks people. Grape-purple gives primary actions a consistent, high-contrast color. Cream and paper support dense content. The shared Nunito scale gives page titles more presence while retaining aligned numeric text and readable form labels.
+- **Shape and motion.** Shared fields retain 48-point targets and 12-point corners. Panels use 16-point corners, with elevation reserved for sheets. Named timing and easing values govern stage reveals and Kits’ short celebration. The system reduced-motion setting skips both.
+- **Progress.** Local and shared planning use the same labeled route with an outlined current stop, a check for completed work, and a venue-shaped endpoint. Skipping time leaves its stop open. Opening Review leaves the endpoint unchecked until the venue is confirmed. For a local plan, the endpoint waits for the save to succeed. Existing navigation, readiness, voting and persistence rules provide the state.
+
+The implementation lives in `src/theme.ts`, `global.css`, `src/planning-route.tsx`, `src/planning-journey.tsx`, `src/home.tsx`, `src/kits.tsx`, `src/meetup.tsx`, and `src/shared-meetup-screen.tsx`. `scripts/check-planning-browser.py` now expects visible stage labels, one current step and minimum target sizes. The token and component contracts are in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), and the checkpoint is in [CONTINUITY.md](../CONTINUITY.md).
+
+### Phase 2 validation
+
+- Contrast checks passed for 20 text pairs and 9 control pairs. The lowest measured ratios were 5.50:1 for text and 3.37:1 for controls. All five mirrored CSS color values matched the theme.
+- Chromium captures cover phone and desktop Home and planning, including validation, empty setup, discovery and confirmed arrival. Guest planning passed at 320, 390, 768 and 1440 px with visible stage names, one active stage, 48-point targets, a fixed footer and no horizontal page overflow. Keyboard focus and reduced motion passed. An injected local save failure kept the arrival pin unchecked until retry succeeded.
+- TypeScript, all 18 planner tests and Expo exports for web, Android and iOS passed. The shared Chromium check passed member voting, organizer-only confirmation, busy feedback and refreshed arrival using a localhost fixture. Native device behavior, screen readers, hosted shared permissions and map tiles remain open.
+
+**Next approval gate · Phase 3, Primary experience redesign.** Build the guest vertical slice around Home, setup, map-first discovery, cross-place rankings, review and directions. Bring the place list and comparison within reach without losing the map or the fixed step actions. Lead review with the proposed or confirmed venue.
+
+## Phase 1 baseline · Design and UX audit
+
+**Checkpoint · 27 November 2026.** The audit covers the map-first implementation at `2d0348e` on `barkits-prototype`. This brief has its own six-phase sequence. The earlier roadmap below is historical and retains its open native and hosted acceptance items.
 
 Barkits helps friends in Metro Manila agree on a place they can all reach. An organizer needs to see who is ready, how a venue affects each person's trip, and what is still preventing a decision. A shared participant needs to join, give only their own starting point and trip details, vote, and find the confirmed venue. The experience should start with the anticipation of making plans, build confidence through legible travel evidence, and end with the relief of having somewhere to meet.
 

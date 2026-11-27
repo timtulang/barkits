@@ -9,7 +9,7 @@ import { TripComparison } from './trip-comparison';
 import { ChoiceField, IconAction } from './form-controls';
 import { PlanningJourney, PlanningReview, PlanningStepActions } from './planning-journey';
 import { PlanningSchedule } from './planning-schedule';
-import { initialPlanningStage, peopleProgress, type PlanningStage } from './planning-progress';
+import { initialPlanningStage, type PlanningStage } from './planning-progress';
 import { WorkspaceColumns, StatusMark } from './workspace-layout';
 import { activityCategory, categories, Category, discover } from './discovery';
 import { catalog } from './venue-catalog';
@@ -103,7 +103,8 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
       {!!meetup.description && (canRate || meetup.status === 'Archived') && <Label>{meetup.description}</Label>}
     </View>
     {(canEdit || meetup.status === 'Decided') && <PlanningJourney current={stage} change={changeStage}
-      people={peopleProgress(meetup.participants.length, located.length)} scheduled={!!meetup.date} destination={!!venue} saved={saveStatus}>
+      people={meetup.participants.length} mapped={located.length} scheduled={!!meetup.date}
+      destination={!!venue && saveReady} saved={saveStatus}>
     {stage === 'who' && <>
       {!canEdit && <Label>The destination is confirmed. The roster is read-only.</Label>}
       <ParticipantRoster

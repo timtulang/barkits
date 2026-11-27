@@ -4,7 +4,7 @@ import { sharedLimitIssues } from './destination-eligibility';
 import { TripComparison } from './trip-comparison';
 import { sharedTripRows } from './trip-evidence';
 import { PlanningJourney, PlanningReview, PlanningStepActions } from './planning-journey';
-import { initialPlanningStage, peopleProgress, type PlanningStage } from './planning-progress';
+import { initialPlanningStage, type PlanningStage } from './planning-progress';
 import { formatSharedSchedule } from './meetup-schedule';
 import { ParticipantRoster } from './participant-roster';
 import { SuggestedPlaces } from './suggested-places';
@@ -105,7 +105,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: { f
       {!!data.summary.activity && !!data.memories && <Label>{data.summary.activity}</Label>}
       {!!schedule && !!data.memories && <Label>{schedule}</Label>}
       {!!data.summary.description && !!data.memories && <Label>{data.summary.description}</Label>}
-      {!data.memories && <PlanningJourney current={stage} change={changeStage} people={peopleProgress(data.members.length, origins.length)}
+      {!data.memories && <PlanningJourney current={stage} change={changeStage} people={data.members.length} mapped={origins.length}
         scheduled={!!schedule} destination={!!chosen} saved={acting ? 'Saving changes to the group…' : loading ? 'Refreshing group…' :
           error ? 'Group data may be out of date. Refresh before continuing.' : undefined}>
       <View style={{ display: stage === 'who' ? 'flex' : 'none', gap: 16 }}>
