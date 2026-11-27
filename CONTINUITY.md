@@ -1,8 +1,8 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-27 [USER] Approved Phase 3 in the current brief after the more vibrant Phase 2 foundations. Wait for approval before each subsequent phase.
-- 2026-11-27 [CODE] Phase 3 delivers the guest redesign. Next is Phase 4, Remaining screens and workflows, pending approval. Native, assistive technology, hosted shared flows and working map tiles remain open. See `docs/REDESIGN_PLAN.md`.
+- 2026-11-27 [USER] Approved Phase 4 in the current brief. Wait for approval before each subsequent phase.
+- 2026-11-27 [CODE] Phase 4 delivers account and invites, shared planning and memories. Next is Phase 5, Personality and interaction polish, pending approval. Native, assistive technology, hosted shared flows and working map tiles remain open. See `docs/REDESIGN_PLAN.md`.
 - 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at the end of each task.
 - 2026-11-27 [CODE] Planning now has a fixed Back/Next footer, a map-first place step with initials and fullscreen control, named voter avatars, and a shorter review. Trip estimates remain available per place. Native device and map tile rendering checks remain open.
 - 2026-11-27 [USER] Prior `barkits-prototype` scope authorized story-inspired progress for four-stage meetup creation and fixes to mobile inputs.
@@ -35,24 +35,24 @@
 - 2026-11-27 [CODE] D009 ACTIVE: retain Nunito, Kits and map-first planning. Use stronger mango, coral and grape-purple roles. Represent real progress with labeled route stops and a checked venue pin after confirmation.
 - 2026-11-27 [CODE] D010 ACTIVE: guest discovery keeps the map as the default and offers Places and Compare above it. Rankings reuse eligibility rules. Review leads with the venue, blockers or directions according to confirmation state.
 
+- 2026-11-27 [CODE] D011 ACTIVE: keep the invite action through sign-in, reuse map-first browsing and arrival layouts for shared plans, and default shared recap drafts to private. Retain organizer and author boundaries.
+
 ## Done (recent)
+- 2026-11-27 [CODE] Phase 4 added invite continuation after sign-in, map and shortlist navigation, explicit completion and archive actions, and audience-aware recaps. Shared phase checks use local synthetic data.
 - 2026-11-27 [CODE] Phase 3 restored four ranking modes with consistent evidence, moved saved plans up on returning Home, and added venue-first review and direct directions. The guest flow and validation are recorded in the redesign plan.
 - 2026-11-27 [CODE] Phase 2 implemented richer color roles, shared type and motion values, and the reusable local/shared route. Guest and synthetic shared UI evidence is recorded in the redesign plan.
 - 2026-11-27 [CODE] Documented Phase 1 journey findings, starting screen scores, creative direction and implementation roadmap. The local cross-place ranking UI is absent at `2d0348e`; the ranking rules and tests remain.
 - 2026-11-26 [CODE] Earlier milestones retained: Phase 1 `e2c1d8e`, Phase 2 `38e826d`/`37dd526`, 3A `c5c9a9d`, merged 3B/3C and 4A `214e732`; historical evidence remains in handoff.
 - 2026-11-26 [CODE] A `96a7366`: state-aware Who/When/Where/Review, optional schedule, explicit map entry and actual saved/saving/error states. Required features and shared permissions retained.
 - 2026-11-26 [CODE] B `74c04b6`: consistent place/person totals, unknown/zero/source/limit distinctions, visible incomplete options and per-context trip drafts; shared own-trip editing remains scoped to the member.
-- 2026-11-26 [CODE] C `4fce554`: pending destination review with vote totals, correction links, unsaved-form and persistence gates; current local/shared limit checks precede explicit confirmation.
 
 ## Working set
-- 2026-11-27 [CODE] `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`
-- 2026-11-27 [CODE] `src/home.tsx`, `src/app-shell.tsx`, `src/meetup.tsx`
-- 2026-11-27 [CODE] `src/nearby-places.tsx`, `src/suggested-places.tsx`, `src/place-rankings.tsx`
-- 2026-11-27 [CODE] `src/planning-journey.tsx`, `src/destination-review.tsx`
-- 2026-11-27 [CODE] `scripts/check-planning-browser.py`, `scripts/planning-fixture.py`
+- 2026-11-27 [CODE] `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`, `app/index.tsx`
+- 2026-11-27 [CODE] `src/account-dialog.tsx`, `src/invite-friend.tsx`, `src/shared-membership.tsx`
+- 2026-11-27 [CODE] `src/shared-meetup-screen.tsx`, `src/shared-ballot.tsx`, `src/meetup-arrival.tsx`
+- 2026-11-27 [CODE] `src/local-memories.tsx`, `src/shared-memories.tsx`, `scripts/check-shared-lifecycle.py`
 
 ## Receipts
-- 2026-11-26 [TOOL] Chromium: new-name validation, empty/ready Who, optional/incomplete schedule correction, retained unsaved schedule/trips across stages/tabs, persisted estimates, home/reload resume passed.
 - 2026-11-26 [TOOL] Chromium: storage rejection/retry, explicit map/back, confirmation to Review, confirmed map/back, draft-to-planning, partial origins and empty remote discovery passed.
 - 2026-11-26 [TOOL] Responsive 320/390/768/1440 px stage navigation passed with no page overflow. Two batched visual inspections; mobile task controls now visible earlier. Screenshots/logs in ignored .expo/redesign/phase45a/.
 - 2026-11-26 [USER] Existing commit authorization persists: checkpoint A only; no push/deployment or work on 4.5B/5/6.
@@ -72,3 +72,4 @@
 - 2026-11-27 [TOOL] Current Phase 1 audited Chromium guest and synthetic organizer/member journeys, four planning widths, keyboard focus and mobile/desktop captures. Baseline types, 18 planner tests and web export passed. Map tiles failed.
 - 2026-11-27 [TOOL] Phase 2 passed 29 contrast pairs, TypeScript, 18 planner tests, all Expo exports, Chromium guest and synthetic shared flows, 320/390/768/1440 px, keyboard focus, reduced motion and save retry.
 - 2026-11-27 [TOOL] Phase 3 passed TypeScript, 18 planner tests, all Expo exports, guest Chromium at 320/390/768/1440 px, confirmation save retry, directions coordinates and synthetic shared organizer/member checks.
+- 2026-11-27 [TOOL] Phase 4 passed TypeScript, 18 planner tests, all Expo exports, guest Chromium, synthetic sign-in and invite, shared role and review checks, and private, published and archived recap checks. Captures cover phone and desktop.

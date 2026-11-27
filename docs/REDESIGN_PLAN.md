@@ -1,8 +1,45 @@
 # Barkits redesign plan
 
-## Current brief · Phase 3 primary experience redesign
+## Current brief · Phase 4 remaining screens and workflows
 
-**Checkpoint · 27 November 2026.** Phase 3 delivers the guest vertical slice. Phase 4 requires approval.
+**Checkpoint · 27 November 2026.** Phase 4 carries the Phase 3 layout into account and invite entry, shared planning, and memories. Phase 5 requires approval.
+
+- **Account and invites.** Join with code opens the invite sheet after email verification. Validation stays beside the affected field, and retryable service errors stay in the sheet. The organizer sees the single-use code, Philippine-time expiration and copy fallback in Who.
+- **Shared planning.** The map opens first. Places and the shortlist are available above it, with side-by-side browsing on wide screens. Members can edit their own estimates and change their vote. Review leads with travel blockers, the proposed venue or directions. Confirmation, completion and archiving remain organizer actions.
+- **Memories.** Both modes show Kits, the venue and schedule. Local recaps say On this device and protect unsaved changes on exit. A new shared recap starts at Only me and shows the audience beside the saved post. Archived meetups reopen from Past meetups. Shared authors can still make a recap private or remove their own recap or rating.
+
+Implementation covers `app/index.tsx`, the account and invite sheets, shared list, ballot and planner, and local and shared memories. `src/meetup-arrival.tsx` and `src/memory-ui.tsx` share presentation across both modes. The design system, README and continuity ledger describe the updated flow.
+
+### Phase 4 validation
+
+- Guest Chromium checks passed across the four planning widths. They cover explicit completion, keeping an unsaved recap when returning to the editor, saving and rating on-device, archiving, and reopening from Past meetups.
+- The shared planning and lifecycle suites passed against the localhost fixture. They cover email-code handoff, invalid and replaced invite codes, copy fallback, member and organizer controls, travel limit checks, confirmation and recap retry, private and published visibility, ratings, and archive reopening and withdrawal. The fixture sends no email.
+- Phone and desktop captures show the join sheet, invite code, member arrival, private recap editor and archived view. At 320 px, the recap audience choices and save action fit in the sheet. TypeScript, 18 planner tests, Python syntax, and Expo web, Android and iOS exports passed. Native-device behavior, screen readers, hosted Auth and database policies, and working map tiles remain unverified.
+
+### Updated screen scores
+
+Scores reflect the browser walkthroughs and captures. Map tile failure limits shared discovery. Native behavior and assistive technology remain open for validation.
+
+| Criterion | Account and invites | Shared planning | Memories |
+|---|---:|---:|---:|
+| Recognizable personality | 7 | 8 | 9 |
+| Purpose is obvious | 9 | 8 | 9 |
+| Visual hierarchy | 8 | 8 | 8 |
+| Intentional composition | 8 | 8 | 8 |
+| Necessary containers only | 8 | 8 | 8 |
+| Typography supports the brand | 8 | 8 | 8 |
+| Purposeful palette | 8 | 8 | 8 |
+| Obvious next action | 9 | 8 | 9 |
+| Features discoverable | 8 | 8 | 8 |
+| Enjoyable to use | 7 | 8 | 8 |
+| Accessible and responsive | 8 | 7 | 8 |
+| Recognizable without logo | 7 | 8 | 9 |
+
+**Next approval gate · Phase 5, Personality and interaction polish.** Refine motion and feedback for setup, errors, decisions and memories within the existing design direction.
+
+## Phase 3 checkpoint · Primary experience redesign
+
+**Checkpoint · 27 November 2026.** Phase 3 delivered the guest vertical slice before the Phase 4 redesign.
 
 - **Home and setup.** The first visit keeps Kits and the welcome. After someone makes a plan, Home leads with their plans, newest first, and retains the labeled demo. The compact header gives setup more room, Add friend leads the empty roster, and schedule copy explains when Next skips the optional date and time.
 - **Discovery and comparison.** Where opens at the map. Places and Compare are available above it, and a wide screen keeps the map beside the active view. Map pins, list rows and comparison results open the same detail sheet. Balanced, Fairest, Fastest and Cheapest use the existing ranking and limit rules. Results show one-way group minutes, trip gap, fares, and estimate sources. Places that need more data or exceed limits remain available for correction. The selected ranking survives a trip edit within the same plan.
@@ -35,7 +72,7 @@ Scores reflect the browser walkthrough and captures. The observed tile failure a
 | Accessible and responsive | 8 | 7 | 7 | 8 |
 | Recognizable without logo | 8 | 7 | 8 | 8 |
 
-**Next approval gate · Phase 4, Remaining screens and workflows.** Extend the design to account and invite entry, organizer and member planning, and local and shared completion and memories. Verify role-specific actions, recap audience, and archived states.
+**Phase 3 handoff · Phase 4, Remaining screens and workflows.** Extend the design to account and invite entry, organizer and member planning, and local and shared completion and memories. Verify role-specific actions, recap audience, and archived states.
 
 ## Phase 2 checkpoint · Visual identity and design foundations
 

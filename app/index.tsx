@@ -20,16 +20,16 @@ import { useAccount } from '../src/use-account';
 
 export default function Index() {
   const { ready, user } = useAccount();
+  const [joining, setJoining] = useState(false);
   if (!ready) return <SafeAreaView style={styles.safe}><View style={styles.container}><LoadingState label="Loading your account…" /></View></SafeAreaView>;
-  return <Workspace key={user?.id ?? 'guest'} user={user} />;
+  return <Workspace key={user?.id ?? 'guest'} user={user} joining={joining} setJoining={setJoining} />;
 }
 
-function Workspace({ user }: { user: User | null }) {
+function Workspace({ user, joining, setJoining }: { user: User | null; joining: boolean; setJoining: (value: boolean) => void }) {
   const scroll = useRef<ScrollView>(null);
   const storageKey = user ? 'barkits.meetups.v1.' + user.id : 'barkits.meetups.v1';
   const [accountOpen, setAccountOpen] = useState(false);
   const [sharedId, setSharedId] = useState<string>();
-  const [joining, setJoining] = useState(false);
   const [past, setPast] = useState(false);
   function navigateLocal(next: number | null) {
     if (planningDirty && next !== index) { setPendingLocal(next); return; }
@@ -107,19 +107,19 @@ function Workspace({ user }: { user: User | null }) {
       ready && selected ? <MeetupScreen key={index} frame={renderWorkspace} reportDirty={setPlanningDirty} saveReady={savedMeetups === meetups && !storageError} saveStatus={saveStatus}
         scrollToTop={scrollToTop} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
       renderWorkspace(ready && <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
-          shared={user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
-            <View style={{ gap: 12 }}><Label kind="item" heading>With friends</Label><Label kind="detail">Sign in to create a shared plan or join your barkada with an invite code.</Label>
-              <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button></View> : undefined} />)}
+        join={authSetup.client ? () => { setJoining(true); if (!user) setAccountOpen(true); } : undefined}
+        shared={user ? <SharedList past={past} open={openShared} /> : undefined} />)}
     {pendingLocal !== undefined && <EditorDialog title="Unsaved planning edits" close={() => setPendingLocal(undefined)} actions={<>
       <Button onPress={() => setPendingLocal(undefined)}>Keep planning</Button>
       <Button secondary onPress={() => {
         setPlanningDirty(false); setSharedId(undefined); setIndex(pendingLocal); setPendingLocal(undefined);
       }}>Discard unsaved edits &amp; leave</Button>
     </>}>
-      <Label>Save or clear your schedule and trip edits before leaving. Your saved plan, votes and estimates will stay on this device.</Label>
+      <Label>Save your schedule, trip, or recap edits before leaving. Saved changes stay on this device.</Label>
     </EditorDialog>}
     {joining && user && <JoinDialog close={() => setJoining(false)} open={openShared} />}
-    {accountOpen && <AccountDialog user={user} close={() => setAccountOpen(false)} />}
+    {accountOpen && <AccountDialog user={user} forInvite={joining && !user}
+      close={() => { setAccountOpen(false); setJoining(false); }} />}
     {(editor === 'new' || editor === 'details') && <MeetupEditor key={editor} meetup={editor === 'details' && selected ? selected : undefined}
       share={editor === 'new' && user ? async (id, meetup, name) => openShared(await createShared(id, meetup, name)) : undefined}
       close={() => setEditor(null)} save={saveEditor} />}

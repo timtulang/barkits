@@ -57,7 +57,8 @@ class Browser:
         self.click_element(self.wait(lambda: self.js('const root=[...document.querySelectorAll("[aria-modal=true]")].filter(e=>e.getBoundingClientRect().width).at(-1)||document;return [...root.querySelectorAll("[role=button],button")].find(e=>e.getBoundingClientRect().width && e.innerText.trim().split("\\n").at(-1)===arguments[0])', label)))
 
     def fill(self, label, text):
-        element = self.wait(lambda: self.visible('input[aria-label=' + json.dumps(label, ensure_ascii=False) + ']'))
+        selector = ':is(input, textarea)[aria-label=' + json.dumps(label, ensure_ascii=False) + ']'
+        element = self.wait(lambda: self.visible(selector))
         self.command('/element/' + element['element-6066-11e4-a52e-4f735466cecf'] + '/value', {'text': '\ue009a\ue000\ue003' + text})
 
     def stage(self, name):
@@ -82,3 +83,19 @@ class Browser:
 
     def close(self):
         self.request('DELETE', '/session/' + self.session)
+
+def fixture(url, path, value=None):
+    req = urllib.request.Request(url + path, data=json.dumps(value).encode() if value is not None else None,
+                                 headers={'Content-Type': 'application/json'}, method='POST' if value is not None else 'GET')
+    with urllib.request.urlopen(req) as response:
+        payload = response.read()
+        if value is not None and not payload:
+            return None
+        return json.loads(payload)
+
+def seed_session(browser, user_id):
+    encoded = lambda value: base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip('=')
+    token = encoded({'alg': 'HS256', 'typ': 'JWT'}) + '.' + encoded({'sub': user_id, 'aud': 'authenticated', 'exp': int(time.time()) + 3600}) + '.fixture'
+    session = {'access_token': token, 'refresh_token': 'fixture-refresh', 'token_type': 'bearer', 'expires_at': int(time.time()) + 3600,
+               'expires_in': 3600, 'user': {'id': user_id, 'email': 'fixture@example.invalid', 'aud': 'authenticated', 'role': 'authenticated', 'app_metadata': {}, 'user_metadata': {}}}
+    browser.cdp('Page.addScriptToEvaluateOnNewDocument', {'source': 'localStorage.setItem("sb-127-auth-token",' + json.dumps(json.dumps(session)) + ');'})

@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
-import { View } from 'react-native';
 import { EditorDialog } from './editor-dialog';
 import { joinShared } from './services/shared-meetups';
-import { Button, Field, Label, layout } from './ui';
+import { Button, Feedback, Field, Label } from './ui';
 
 export { SharedList } from './shared-meetup-list';
 
@@ -25,12 +24,13 @@ export function JoinDialog({ open, close }: { open: (id: string) => void; close:
     catch (e) { setError(e instanceof Error ? e.message : 'Couldn’t join this meetup. Try again.'); }
     finally { pending.current = false; setBusy(false); }
   }
-  return <EditorDialog title="Join a meetup" close={close} busy={busy}>
-    <Field label="Invite code" placeholder="Paste the organizer’s code" value={code} onChange={setCode}
+  return <EditorDialog title="Join a meetup" close={close} busy={busy}
+    actions={<Button busy={busy} busyLabel="Joining…" onPress={join}>Join meetup</Button>}>
+    <Label>Paste the code your organizer sent. It works for one person and expires after 24 hours.</Label>
+    <Field label="Invite code" placeholder="Paste the organizer’s code" value={code} onChange={setCode} required disabled={busy}
       error={submitted && !validCode ? 'Enter the 16-character code. Spaces and hyphens are OK.' : undefined} />
-    <Field label="Your display name" placeholder="What your friends call you" value={name} onChange={setName} maxLength={80}
+    <Field label="Your display name" placeholder="What your friends call you" value={name} onChange={setName} maxLength={80} required disabled={busy}
       error={submitted && !name.trim() ? 'Enter the name your friends will see.' : undefined} />
-    {!!error && <View accessibilityRole="alert"><Label>{error}</Label></View>}
-    <View style={layout.wrap}><Button disabled={busy} onPress={join}>{busy ? 'Joining…' : 'Join meetup'}</Button></View>
+    {!!error && <Feedback tone="error">{error}</Feedback>}
   </EditorDialog>;
 }

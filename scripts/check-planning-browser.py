@@ -1,22 +1,10 @@
 """run local planning journeys against an exported app and an existing chromedriver."""
 import argparse
-import base64
 import json
-import time
-import urllib.request
-from planning_webdriver import Browser
+from planning_webdriver import Browser, fixture, seed_session
 
 OWNER = '11111111-1111-4111-8111-111111111111'
 MEMBER = '22222222-2222-4222-8222-222222222222'
-
-def fixture(url, path, value=None):
-    req = urllib.request.Request(url + path, data=json.dumps(value).encode() if value is not None else None,
-                                 headers={'Content-Type': 'application/json'}, method='POST' if value is not None else 'GET')
-    with urllib.request.urlopen(req) as response:
-        payload = response.read()
-        if value is not None and not payload:
-            return None
-        return json.loads(payload)
 
 def selected_value(browser, label):
     return browser.js('return [...document.querySelectorAll("input")].find(e=>e.getBoundingClientRect().width && e.getAttribute("aria-label")===arguments[0]).value', label)
@@ -178,23 +166,32 @@ def guest(args):
         assert 'Dec 5' in b.body() and not b.visible('[aria-label="Confirm destination"]')
         b.snapshot('guest-confirmed-390')
         b.tap('View venue map'); b.tap('Back to planning')
-        b.tap('Mark completed'); b.wait(lambda: 'Save the memory' in b.body())
+        b.tap('Mark completed'); b.tap('Cancel')
+        assert 'Destination confirmed' in b.body()
+        b.tap('Mark completed'); b.tap('Confirm completion')
+        b.wait(lambda: 'Save the memory' in b.body() and 'Saving changes' not in b.body())
+        b.fill('Recap caption', 'A local memory in Quezon City.')
+        b.tap('Back to meetups'); b.wait(lambda: 'Unsaved planning edits' in b.body()); b.tap('Keep planning')
+        b.tap('Save recap')
+        b.click('[aria-label="4 stars"]:not(:disabled)')
+        b.wait(lambda: '4.0 / 5' in b.body() and 'Saving changes' not in b.body())
         b.snapshot('guest-completed')
-        b.tap('Back to meetups'); b.tap('Plan a meetup'); b.fill('Meetup name', 'Unfinished draft'); b.tap('Save draft')
+        b.tap('Archive meetup'); b.tap('Confirm archive')
+        b.wait(lambda: 'Archived' in b.body() and 'Saving changes' not in b.body())
+        b.tap('Back to meetups'); b.tap('Past meetups')
+        b.click('[aria-label="Open Acceptance catch-up"]')
+        assert 'A local memory in Quezon City.' in b.body() and '4.0 / 5' in b.body()
+        assert not b.visible('[aria-label="Recap caption"]')
+        b.snapshot('guest-archived-390')
+        b.tap('Back to meetups'); b.tap('Active plans')
+        b.tap('Plan a meetup'); b.fill('Meetup name', 'Unfinished draft'); b.tap('Save draft')
         b.wait(lambda: 'Who is joining?' in b.body()); b.stage('when'); date_value(b, 'date', '2026-12-10')
         b.tap('Back to meetups'); b.wait(lambda: 'Unsaved planning edits' in b.body()); b.tap('Discard unsaved edits & leave')
         b.click('[aria-label="Open Unfinished draft"]'); b.wait(lambda: 'Who is joining?' in b.body()); b.stage('when')
         assert b.js('return document.querySelector("input[type=date]").value') == ''
-        print('PASS guest: setup, recovery, map and list, four rankings, trip estimates, vote, venue-first review, directions, four widths, resume and completion')
+        print('PASS guest: setup, recovery, map and list, four rankings, trip estimates, vote, venue-first review, directions, four widths, resume, completion and archive')
     finally:
         b.close()
-
-def seed_session(browser, user_id):
-    encoded = lambda value: base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip('=')
-    token = encoded({'alg': 'HS256', 'typ': 'JWT'}) + '.' + encoded({'sub': user_id, 'aud': 'authenticated', 'exp': int(time.time()) + 3600}) + '.fixture'
-    session = {'access_token': token, 'refresh_token': 'fixture-refresh', 'token_type': 'bearer', 'expires_at': int(time.time()) + 3600,
-               'expires_in': 3600, 'user': {'id': user_id, 'email': 'fixture@example.invalid', 'aud': 'authenticated', 'role': 'authenticated', 'app_metadata': {}, 'user_metadata': {}}}
-    browser.cdp('Page.addScriptToEvaluateOnNewDocument', {'source': 'localStorage.setItem("sb-127-auth-token",' + json.dumps(json.dumps(session)) + ');'})
 
 def shared(args):
     fixture(args.fixture, '/fixture/reset', {})

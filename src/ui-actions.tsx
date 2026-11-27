@@ -33,8 +33,8 @@ export function Button({ children, icon, onPress, secondary = false, quiet = fal
   </Pressable>;
 }
 
-export function Chip({ children, selected = false, onPress, icon, disabled = false }: {
-  children: ReactNode; selected?: boolean; onPress?: () => void; icon?: IconName; disabled?: boolean;
+export function Chip({ children, selected = false, onPress, icon, disabled = false, accessibilityLabel }: {
+  children: ReactNode; selected?: boolean; onPress?: () => void; icon?: IconName; disabled?: boolean; accessibilityLabel?: string;
 }) {
   const [hovered, setHovered] = useState(false);
   const foreground = disabled ? colors.onDisabled : selected ? colors.onSelected : colors.textMuted;
@@ -44,7 +44,7 @@ export function Chip({ children, selected = false, onPress, icon, disabled = fal
   </>;
   const base = [styles.chip, { borderColor: selected ? colors.onSelected : colors.outline,
     backgroundColor: selected ? colors.selected : colors.surface }, disabled && { backgroundColor: colors.disabled, borderColor: colors.disabled }];
-  return onPress ? <Pressable accessibilityRole="button" accessibilityState={{ selected, disabled }} disabled={disabled}
+  return onPress ? <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} accessibilityState={{ selected, disabled }} disabled={disabled}
     {...(Platform.OS === 'web' ? { 'aria-pressed': selected } : {})}
     onPress={onPress} onHoverIn={() => setHovered(true)} onHoverOut={() => setHovered(false)}
     style={({ pressed }) => [base, !disabled && (pressed || hovered) && { backgroundColor: pressed ? colors.pressed : colors.hover }]}>

@@ -22,8 +22,8 @@ type Props = {
 export function NearbyPlaces({ meetup, voter, friends, suggestions, filters, selectVoter, editTrip, editFriend, save, navigation,
   selected, select, view, changeView, ranking, changeRanking }: Props) {
   return <SuggestedPlaces navigation={navigation} suggestions={suggestions} friends={friends}
-    browser={{ view, change: changeView, compare: (places, open) =>
-      <PlaceRankings meetup={meetup} places={places} open={open} selected={selected} ranking={ranking} changeRanking={changeRanking} /> }}
+    browser={{ view, change: changeView, extra: { id: 'compare', label: 'Compare', render: (places, open) =>
+      <PlaceRankings meetup={meetup} places={places} open={open} selected={selected} ranking={ranking} changeRanking={changeRanking} /> } }}
     alternatives={[...meetup.customVenues ?? [], ...venues]} filters={filters} actions={(venue, close) => {
       const ready = canConfirmLocal(retainPlace(meetup, venue), venue);
       const hasLimits = meetup.participants.some(person => person.budget !== undefined || person.maxMinutes !== undefined);

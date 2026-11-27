@@ -2,6 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Platform, Text, View } from 'react-native';
 import { issueCode } from './services/shared-meetups';
+import { formatSharedSchedule } from './meetup-schedule';
 import { colors, font, radius, spacing } from './theme';
 import { Button, Feedback, Label, Panel, layout } from './ui';
 
@@ -82,8 +83,8 @@ export function InviteFriend({ id }: { id: string }) {
         {invite ? 'Replace code' : 'Create invite code'}
       </Button>
     </View>
-    {invite && <Label kind="caption">Replacing the code stops the previous one from working.</Label>}
-    {!!notice && <View accessibilityLiveRegion="polite"><Label kind="value">{notice}</Label></View>}
+    {invite && <Label kind="caption">Expires {formatSharedSchedule(new Date(invite.hideAt).toISOString())}. Replacing this code cancels it.</Label>}
+    {!!notice && <View accessibilityLiveRegion="polite" aria-live="polite"><Label kind="value">{notice}</Label></View>}
     {!!error && <Feedback tone="error">{error}</Feedback>}
   </Panel>;
 }

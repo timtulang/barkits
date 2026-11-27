@@ -85,7 +85,7 @@ Use the role scale in `src/theme.ts` with the shared Label. Page titles are 40 p
 
 ## Responsive application layout
 
-Barkits uses a paper header with the coral brand mark, a home action and account access. The shell is centered at a maximum width of 1112 px with 16-point horizontal padding. A compact, full-width mango welcome panel with Kits and Plan a meetup sits above the plans at every width. At 860 px and above, On this device and With friends use equal columns when shared access is available; below that they stack. Keep their storage-scope explanations visible. The header hides its tagline and shortens New meetup to New on compact screens while retaining the full accessible action name.
+Barkits uses a paper header with the coral brand mark, a home action and account access. The shell is centered at a maximum width of 1112 px with 16-point horizontal padding. The first visit has a mango welcome with Kits. Once users have on-device plans, Home puts those plans first. Plan a meetup and, when sign-in is configured, Join with code are available together. At 860 px and above, On this device and With friends use equal columns when both lists are available. Below that they stack. Keep their storage-scope explanations visible. The header hides its tagline and shortens New meetup to New on compact screens while retaining the full accessible action name.
 
 Active plans and Past meetups filter both lists, and the selection remains when returning home from a meetup. Completed and archived plans appear under Past meetups. Use labeled loading states for account, local and shared plans, contextual empty states, and actionable load/save/refresh errors with Try again. A failed shared refresh keeps previously loaded plans visible and identifies them as such.
 
@@ -127,7 +127,13 @@ Show selected coordinates below the place field. Keep manual coordinates optiona
 
 ## Voting and choosing a destination
 
-Within an on-device plan, Where opens at the map. Map, Places, and Compare appear above the map on phones. On wide screens the map shares a row with Places or Compare. Numbered map pins, venue rows, and ranking results open the same details. Use Balanced, Fairest, Fastest, or Cheapest to order eligible venues, and keep incomplete or over-limit places available for correction. Display group time, trip gap and fare, with the source of the figures beside the relevant results. Shared plans keep the discovery map and shortlist count.
+Where opens at the map. Map, Places, and Compare appear above the map on phones for on-device plans. Shared plans replace Compare with the shortlist and its count. On wide screens the map shares a row with the active view. Numbered map pins, venue rows, and ranking results open the same details. Use Balanced, Fairest, Fastest, or Cheapest to order eligible venues, and keep incomplete or over-limit places available for correction. Display group time, trip gap and fare, with the source of the figures beside the relevant results.
+
+## Account and memories
+
+Join with code continues to the invite form after email verification. Keep validation beside its field and service errors inside the active sheet. In Who, show the organizer the single-use code, expiration and copy controls. Show members their own starting-point and estimate actions. Keep destination confirmation, completion and archiving in the organizer’s view.
+
+Use the mango memories banner with Kits, venue and schedule. For on-device recaps, label the storage scope next to the editor. New shared recaps start with Only me selected. Changing the audience changes the explanation and save action. Show the saved audience beside each recap. Archived memories retain published recaps and rating summaries. Authors can make a recap private or remove their own recap or rating after a shared meetup is archived.
 
 Review leads with the proposed or confirmed venue. Keep blockers and trip edits next to the pending venue. After local confirmation saves, show the checked route and make Get directions the main action when a pin is available. Time, people and votes provide context beside the venue on wide screens and below it on phones.
 

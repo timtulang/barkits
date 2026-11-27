@@ -12,10 +12,10 @@ import { palette, radius, spacing } from './theme';
 import { Button, Chip, Icon, Label, layout } from './ui';
 import { VenueDistances } from './venue-summary';
 
-export type PlaceBrowseView = 'map' | 'places' | 'compare';
+export type PlaceBrowseView = 'map' | 'places' | 'compare' | 'shortlist';
 type PlaceBrowser = {
   view: PlaceBrowseView; change: (view: PlaceBrowseView) => void;
-  compare: (places: Venue[], open: (id: string) => void) => ReactNode;
+  extra: { id: 'compare' | 'shortlist'; label: string; render: (places: Venue[], open: (id: string) => void) => ReactNode };
 };
 
 export function SuggestedPlaces({ suggestions, friends, actions, navigation, alternatives = [], filters, browser }: {
@@ -89,13 +89,13 @@ export function SuggestedPlaces({ suggestions, friends, actions, navigation, alt
   </View>;
 
   if (!browser) return <View style={{ gap: spacing.sm }}>{map}{list}{detail}</View>;
-  const comparing = browser.view === 'compare';
-  const browseContent = comparing ? browser.compare([...suggestions.map(item => item.venue), ...extra], setSelectedId) : list;
+  const extraVisible = browser.view === browser.extra.id;
+  const browseContent = extraVisible ? browser.extra.render([...suggestions.map(item => item.venue), ...extra], setSelectedId) : list;
   return <View style={layout.stack}>
     <View role="navigation" accessibilityLabel="Where views" style={layout.wrap}>
       {!wide && <Chip selected={browser.view === 'map'} onPress={() => browser.change('map')}>Map</Chip>}
-      <Chip selected={browser.view === 'places' || (wide && !comparing)} onPress={() => browser.change('places')}>Places</Chip>
-      <Chip selected={comparing} onPress={() => browser.change('compare')}>Compare</Chip>
+      <Chip selected={browser.view === 'places' || (wide && !extraVisible)} onPress={() => browser.change('places')}>Places</Chip>
+      <Chip selected={extraVisible} onPress={() => browser.change(browser.extra.id)}>{browser.extra.label}</Chip>
     </View>
     {wide ? <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xl }}>
       <View style={{ flex: 1.35, minWidth: 0 }}>{map}</View>

@@ -34,7 +34,7 @@ With a starting pin and a destination near different LRT-1 stations, **Check you
 
 ## Enable email sign-in
 
-Barkits supports guest planning immediately. When email sign-in is enabled, open the account icon, enter your email, then enter the code from your inbox. On-device meetups are saved separately for guests and each account. Signing out restores the guest list.
+Barkits supports guest planning immediately. When email sign-in is enabled, choose **Sign in**, enter your email, then enter the code from your inbox. Choosing **Join with code** opens the invite form after sign-in. On-device meetups are saved separately for guests and each account. Signing out restores the guest list.
 
 ### On Vercel
 
@@ -52,14 +52,14 @@ Email sign-in uses Supabase Auth directly.
 Apply the SQL migrations in `supabase/migrations` in timestamp order to the same Supabase project as Auth. With a linked development project, `supabase db push --dry-run` previews the pending migrations and `supabase db push` applies them. For an existing project, apply only its pending migrations, including the shared decisions, shared memories and fare sources migrations. Use the publishable key already configured for the app.
 
 1. Sign in and choose **Plan a meetup → With friends**. Add a meetup name and the display name your friends will see. Schedule and notes are optional.
-2. Open **Create invite code** and copy the code to send to one friend. It expires after 24 hours. Creating another code replaces any unused one.
-3. On another device, the friend signs in and chooses **Shared meetups → Join with code**. The group can see each member’s display name and the starting point and preferences they choose to save.
+2. In **Who**, choose **Create invite code** and copy the code to send to one friend. It expires after 24 hours. Creating another code replaces any unused one.
+3. On another device, the friend chooses **Join with code** from Home and signs in if needed. The group can see each member’s display name and the starting point and preferences they choose to save.
 4. Each member selects **Add my starting point**. Use **Refresh group** to see new members and updated origins. Once every origin is located, Barkits calculates nearby venues for the group.
 5. Select **Add to shortlist** beside a suggestion. Every member can vote for one venue, change their vote, or withdraw it. Use **Refresh group** to see other members’ changes.
 6. Use **My trip estimate** on a shortlisted venue to enter your own one-way minutes and optional fare. Members with a fare or duration limit need a matching estimate within that limit for the organizer to finalize the venue. Changing your starting point or transportation mode clears your previous estimates.
 7. The organizer chooses **Choose this spot → Finalize location**. Members can reopen the meetup to see the confirmed venue and its map.
 
-8. After the gathering, the organizer selects **Mark completed → Confirm completion**. Members can save a private recap, publish it to the group, or optionally rate the meetup. Organizers can archive it. Find completed and archived groups under **Past meetups**. Authors can still withdraw a post or remove a rating after archiving.
+8. After the gathering, the organizer selects **Mark completed → Confirm completion**. In **Write a recap**, choose **Only me** or **Meetup members** before saving. Ratings are optional. Organizers can archive the meetup. Find completed and archived plans under **Past meetups**. Authors can still make a recap private or remove a recap or rating after archiving.
 
 For database verification against a migrated local Supabase database, run `psql "$DATABASE_URL" -f scripts/check-shared-meetups.sql`. The script uses temporary fixtures inside a rolled-back transaction.
 
@@ -103,4 +103,4 @@ python3 scripts/planning-fixture.py
 python3 -m http.server 5178 --bind 127.0.0.1 --directory .expo/redesign/check/shared
 ```
 
-Keep the fixture API and static server running in separate terminals, then run `python3 scripts/check-planning-browser.py shared --app http://127.0.0.1:5178/`. These are explicitly synthetic accounts/data. The script checks organizer/member presentation, own-trip editing, missing/at-limit estimates, votes and failed confirmation/retry. It sends no emails and does not validate real Supabase authentication, database policies or hosted behavior. Build the normal app again with its intended environment and `--clear` after switching away from fixtures. Actual Android/iOS and authorized Supabase acceptance remain separate checks.
+Keep the fixture API and static server running in separate terminals, then run `python3 scripts/check-planning-browser.py shared --app http://127.0.0.1:5178/`. It checks organizer and member views, own-trip editing, missing and at-limit estimates, voting and confirmation retry. Run `python3 scripts/check-shared-lifecycle.py --app http://127.0.0.1:5178/` for sign-in handoff, invite replacement, private and published recaps, and archive behavior. Both scripts use synthetic accounts and send no email. Real Supabase authentication, hosted database policies, and native-device behavior require separate validation. Build the normal app again with its intended environment and `--clear` after switching away from fixtures.

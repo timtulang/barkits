@@ -7,21 +7,24 @@ import { Meetup, venues } from './planner';
 import { colors, palette, radius, spacing } from './theme';
 import { Button, Chip, EmptyState, Label, layout } from './ui';
 
-export function Home({ wide, meetups, create, open, shared, signedIn, past, setPast }: {
+export function Home({ wide, meetups, create, open, shared, signedIn, past, setPast, join }: {
   shared?: ReactNode; signedIn: boolean; wide: boolean; meetups: Meetup[]; create: () => void;
-  open: (index: number) => void; past: boolean; setPast: (past: boolean) => void;
+  open: (index: number) => void; past: boolean; setPast: (past: boolean) => void; join?: () => void;
 }) {
   const rows = meetups.map((item, index) => ({ item, index }))
     .filter(({ item }) => ['Completed', 'Archived'].includes(item.status) === past)
     .sort((a, b) => b.index - a.index);
   const returning = meetups.length > 1;
+  const actions = <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button>
+    {join && <Button secondary icon="users" onPress={join}>Join with code</Button>}
+  </View>;
   return <View style={styles.board}>
     {!returning && <View style={[styles.welcome, wide && styles.welcomeWide]}>
       <View style={styles.intro}>
         <View style={layout.row}><Label kind={wide ? 'page' : 'section'} heading>Tara, kita-kits!</Label>
           {!wide && <Kits style={styles.artSmall} />}</View>
         <Label>Round up the barkada and find a spot everyone can get to.</Label>
-        <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button></View>
+        {actions}
       </View>
       {wide && <Kits style={styles.artWide} />}
     </View>}
@@ -29,7 +32,7 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
       <View style={[styles.listHeader, wide && styles.listHeaderWide]}>
         <View style={[layout.wrap, { justifyContent: 'space-between' }]}>
           <Label kind={returning && wide ? 'page' : 'section'} heading>Your meetups</Label>
-          {returning && <Button icon="plus" onPress={create}>Plan a meetup</Button>}
+          {returning && actions}
         </View>
         <View style={layout.wrap}>
           <Chip selected={!past} onPress={() => setPast(false)}>Active plans</Chip>
