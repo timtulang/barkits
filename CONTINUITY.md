@@ -1,11 +1,13 @@
 # Continuity ledger
 
 ## Snapshot
+- 2026-11-27 [USER] Current brief starts a separate six-phase UI/UX overhaul and authorizes only Phase 1. Wait for approval before each subsequent phase.
+- 2026-11-27 [CODE] Phase 1 audited current map-first baseline `2d0348e`. Next is Phase 2, Visual identity and design foundations, pending approval. Open acceptance includes native, assistive technology, hosted shared flows and working map tiles. See `docs/REDESIGN_PLAN.md`.
 - 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at the end of each task.
 - 2026-11-27 [CODE] Planning now has a fixed Back/Next footer, a map-first place step with initials and fullscreen control, named voter avatars, and a shorter review. Trip estimates remain available per place. Native device and map tile rendering checks remain open.
-- 2026-11-27 [USER] Current scope supersedes the prior stop for this refinement. On `barkits-prototype`, simplify four-stage meetup creation with story-inspired progress and fix mobile inputs.
+- 2026-11-27 [USER] Prior `barkits-prototype` scope authorized story-inspired progress for four-stage meetup creation and fixes to mobile inputs.
 - 2026-11-27 [CODE] Local and shared plans use four tappable progress bars, one task heading per stage, and brief reduced-motion-aware transitions. Compact web editors follow the keyboard viewport and keep the focused input in view. Native device and hosted acceptance remain open.
-- 2026-11-26 [USER] Current request explicitly authorizes sequential 4.5B/C/D with a commit at each boundary; original roadmap remains paused. Task clarity leads hierarchy, efficiency, consistency and decoration.
+- 2026-11-26 [USER] Prior request authorized sequential 4.5B/C/D with a commit at each boundary; original roadmap remains paused. Task clarity leads hierarchy, efficiency, consistency and decoration.
 - 2026-11-26 [TOOL] Checkpoints: pre-reconstruction `214e732`, A `96a7366`, B `74c04b6`, C `4fce554`; D checkpoint `0958b7a` contains preservation fixes and repeatable browser validation.
 - 2026-11-26 [CODE] B integrates place/person travel comparisons; C connects pending review, votes, corrections and explicit confirmation; D restores group-map/time-gap visibility and guards leaving unsaved forms. Business rules, service/storage contracts, providers and brand preserved; no new dependencies.
 - 2026-11-26 [TOOL] Types, 18 tests, Python syntax, final design scan, web/Android/iOS exports, guest browser journeys and synthetic organizer/member UI sessions pass. Four widths: 320/390/768/1440 px.
@@ -30,23 +32,24 @@
 
 - 2026-11-26 [USER] D008 ACTIVE: explicitly authorized B then C then D in one request, with commits at every boundary. Do not advance to 5/6 while 4.5 acceptance gates remain open.
 
+- 2026-11-27 [CODE] D009 PROPOSED: retain Barkits colors, Nunito, Kits and map-first planning. Give the current task a clear focal point and make the group convergence motif a functional stage and confirmation cue.
+
 ## Done (recent)
+- 2026-11-27 [CODE] Documented Phase 1 journey findings, starting screen scores, creative direction and implementation roadmap. The local cross-place ranking UI is absent at `2d0348e`; the ranking rules and tests remain.
 - 2026-11-26 [CODE] Earlier milestones retained: Phase 1 `e2c1d8e`, Phase 2 `38e826d`/`37dd526`, 3A `c5c9a9d`, merged 3B/3C and 4A `214e732`; historical evidence remains in handoff.
 - 2026-11-26 [CODE] A `96a7366`: state-aware Who/When/Where/Review, optional schedule, explicit map entry and actual saved/saving/error states. Required features and shared permissions retained.
 - 2026-11-26 [CODE] B `74c04b6`: consistent place/person totals, unknown/zero/source/limit distinctions, visible incomplete options and per-context trip drafts; shared own-trip editing remains scoped to the member.
 - 2026-11-26 [CODE] C `4fce554`: pending destination review with vote totals, correction links, unsaved-form and persistence gates; current local/shared limit checks precede explicit confirmation.
 - 2026-11-26 [CODE] D: restored comparison group map and trip-time gap; protected unsaved local forms on back/home with keep/discard choices. Saved records survive explicit discard.
 - 2026-11-26 [TOOL] Repeatable standard-library WebDriver guest and synthetic shared-role scripts pass; fixture API binds only localhost and sends no email. Native/backend policy acceptance remains open.
-- 2026-11-26 [CODE] README test setup and handoff acceptance matrix document exact checks, limitations and next gates; final detector found no deterministic issues. No push or deployment.
 
 ## Working set
 - 2026-11-26 [CODE] `docs/REDESIGN_PLAN.md`, `docs/REDESIGN_HANDOFF.md`
-- 2026-11-26 [CODE] `src/meetup.tsx`, `src/shared-meetup-screen.tsx`, `src/local-place-comparison.tsx`
+- 2026-11-27 [CODE] `src/meetup.tsx`, `src/shared-meetup-screen.tsx`, `src/suggested-places.tsx`
 - 2026-11-26 [CODE] `src/trip-comparison.tsx`, `src/trip-evidence.ts`, `src/destination-eligibility.ts`, `src/destination-review.tsx`
 - 2026-11-26 [CODE] `scripts/check-planning-browser.py`, `scripts/planning_webdriver.py`, `scripts/planning-fixture.py`
 
 ## Receipts
-- 2026-11-26 [TOOL] Browser checked map/voter/trip and persisted destination; shared organizer/member votes and bounded estimates passed against local PostgREST.
 - 2026-11-26 [TOOL] Reproduced inline map focus moving on mouse-down. After fixing marker handling, both full-screen and inline pin-to-decision paths passed.
 - 2026-11-26 [TOOL] 4.5A: npx tsc --noEmit and 16 domain/readiness tests pass; Expo web/Android/iOS exports pass. No lint script; native exports are not device tests.
 - 2026-11-26 [TOOL] Chromium: new-name validation, empty/ready Who, optional/incomplete schedule correction, retained unsaved schedule/trips across stages/tabs, persisted estimates, home/reload resume passed.
@@ -66,3 +69,4 @@
 - 2026-11-26 [TOOL] D committed `0958b7a`; B `74c04b6`, C `4fce554`. Final normal export excludes fixture configuration. Stop at documented native/live-backend acceptance gates; no Phase 5/6 work or deployment.
 - 2026-11-27 [TOOL] Typecheck, 18 planner tests, web/Android/iOS exports, guest acceptance at 320/390/768/1440 px and synthetic shared acceptance passed. Chromium also verified form entry with a simulated keyboard viewport, touch, keyboard navigation and reduced motion.
 - 2026-11-27 [TOOL] Map-first follow-up passed types, 18 tests, four-width guest and synthetic shared journeys, including the fixed footer and overlapping origins. Cloud proxy returned HTTP 403 for OpenStreetMap tiles.
+- 2026-11-27 [TOOL] Current Phase 1 audited Chromium guest and synthetic organizer/member journeys, four planning widths, keyboard focus and mobile/desktop captures. Baseline types, 18 planner tests and web export passed. Map tiles failed.

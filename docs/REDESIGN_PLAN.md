@@ -1,5 +1,94 @@
 # Barkits redesign plan
 
+## Current brief · Phase 1 design and UX audit
+
+**Checkpoint · 27 November 2026.** The audit covers the current map-first implementation at `2d0348e` on `barkits-prototype`. This brief has its own six-phase sequence. The earlier roadmap below is historical and retains its open native and hosted acceptance items. Phase 1 is complete and Phase 2 requires approval.
+
+Barkits helps friends in Metro Manila agree on a place they can all reach. An organizer needs to see who is ready, how a venue affects each person's trip, and what is still preventing a decision. A shared participant needs to join, give only their own starting point and trip details, vote, and find the confirmed venue. The experience should start with the anticipation of making plans, build confidence through legible travel evidence, and end with the relief of having somewhere to meet.
+
+### Journey audit
+
+| Journey | Observed behavior and opportunity |
+|---|---|
+| Start or resume | Home offers a clear **Plan a meetup** action and a labeled practice plan. On a phone the welcome panel is the largest block ahead of saved plans. The shared invite-code entry is farther down the page. Give a ready-to-resume plan greater priority when one exists and keep the practice plan recognizable. |
+| Set up friends and time | Local creation validates the name and folds away optional details. Starting-place search resolves a labeled locality center, and date and time can be skipped. The progress bars hide stage names visually, the narrow planner header wraps before the task, and the disabled **Next** competes with **Add friend** in an empty plan. Show the stage names, distinguish optional from completed states, and give the first setup action primary weight. |
+| Find and compare places | The map and list open the same place detail, and the map has labeled pins and retry feedback. At 390 px the map consumes the first viewport and pushes the equivalent list, filters and shared shortlist below the fixed footer. Expanding trip estimates can push the vote and selection out of view. Put a visible **Places** / **Shortlist** entry beside the map, make the comparison reachable in one action, and keep distances, estimates, votes and selection visibly distinct. |
+| Decide and attend | Local and shared reviews keep confirmation explicit and communicate that voting will close. The proposed or confirmed place sits below the general meetup summary, and votes can precede venue directions even after confirmation. Lead with the venue and the decision state, position blockers and correction links beside the affected evidence, and give **Get directions** priority once the plan is set. |
+| Sign in, join and coordinate | Account and shared list are separate entry points. The signed-in organizer sees invite expiry and shared members can vote without organizer controls. Invite-code entry competes with home content, while the invite action sits below the organizer's roster. Keep device and group scope clear, give join and invite controls a predictable location, and preserve member ownership. |
+| Complete and remember | Local completion leads to a recap prompt with Kits. The shared recap editor exposes private and group publication choices in source. Give completion a distinct visual moment, then emphasize one next action with the recap's audience beside its save or publish action. |
+
+### Changes in priority order
+
+| Priority | Evidence | Design response |
+|---|---|---|
+| High | The map-first commit deleted `LocalPlaceComparison`. The four modes still exist in `planner.ts` and are covered by tests, but Where exposes per-place estimates only. The trip editor and README still mention rankings. | Restore a visible **Compare places** entry in the map-first step and reuse the existing ranking and eligibility rules. Show minutes, trip-time gap and one-way fare with provenance and eligibility together. |
+| High | All four progress controls render without visible text. The browser exposes names and an active step, but the bar changes thickness and color to carry visual state. | Keep the four tappable steps and fixed thumb-reachable footer. Give every step a visible name and use distinct selected, incomplete and done states with text or symbols. Use action-specific footer labels where intent is ambiguous. |
+| High | On phone, the map failure still leaves a tall gray area while the list remains below the fold. Desktop puts the same workflow in a full-width stack. | Keep the map as the spatial focal point. Give its equivalent list an above-the-fold entry on phones and a companion column on wide screens. Keep attribution and map retry available. |
+| Medium | Home, planning and review repeat full-width rounded panels, heavy Nunito headings and similar button weight. Confirmed Review buries the main outcome. | Use containers where they group controls or evidence, and use alignment and separators for repeated plan, person and venue rows. Make each screen's focal element obvious even with the logo hidden. |
+| Medium | The local completed view describes recap storage as demo-only even when the plan is user-created. The account dialog describes all signed-in meetups as device-local. | Match existing behavior in the copy. Label device plans, shared plans, and recap audience at the point of action, with short, literal wording. |
+
+### Creative direction
+
+Three directions were explored. The playful approach used Kits and sticker-like place marks to make discovery social. The bold editorial approach used oversized destination names, asymmetrical columns and compact lists to make decisions easy to scan. The unconventional approach used a simplified diagram of friends converging to show progress and tie the decision to the product's purpose. The first approach suits the welcome and recap but would compete with trip evidence. The second organizes dense data but needs a recognizably Barkits element. The third supplies that element and works best with the second approach's hierarchy.
+
+**Selected direction · Meet in the middle.** Friendly, plainspoken and precise when the group needs to make a choice. An original convergence motif takes the existing coral initials and numbered venue pins into a small diagram of individual paths meeting at one checked pin. Use it to orient users through stages and mark a confirmed decision. Use text and shape with color so the state reads at a glance. Keep the motif schematic, separate from actual map paths, and avoid implying routing or travel estimates. Transport wayfinding demonstrates how consistent station symbols and simplified paths can express a real task. The route motif and assets will be original to Barkits. [London Transport Museum on the diagrammatic Tube map](https://library.ltmuseum.co.uk/portal/Default/en-GB/RecordView/Index/106)
+
+| Element | Direction |
+|---|---|
+| Typography | Keep licensed Nunito. Use one prominent title and a strong venue-name role. Give labels and provenance quieter weights, and align tabular minutes and pesos for comparison. Allow long names and enlarged text to wrap. |
+| Color and shape | Keep cream, paper and deep ink as the reading surfaces. Use mango for current action or progress, coral for people and brand moments, plum for selected controls, and existing semantic roles for feedback. Use the pin silhouette and circular initials for map-linked information. Keep field and button shapes familiar and reserve elevation for sheets. |
+| Composition | Use an asymmetric map and place-list split on desktop, with a single phone column and a quick path to the list. Set forms in a narrower reading column. Let repeated rows align without individual card borders. Use a larger, quieter venue block to give confirmation its own focal point. |
+| Illustration, icons and voice | Keep the original Kits in welcome, empty and memory moments. Use familiar Feather icons with visible action labels for key controls. Write actions in short, plain English and use Filipino-English warmth in greetings and recaps. |
+| Motion and states | Keep press response immediate and use brief shared transitions, starting with the existing 180 ms timing. Move the relevant selection or progress state together, and keep changes immediate with reduced motion. Pair waiting, error and retry feedback with the affected control and keep confirmation explicit. |
+
+### Baseline screen scores
+
+Scores are a design review of the rendered starting point, on a 1–10 scale. Criteria follow the brief. Access scores reflect the browser spot checks. Hosted, native and assistive-technology coverage remains open.
+
+| Criterion | Home | Create and setup | Map and compare | Review and attend | Shared ballot | Local memories |
+|---|---:|---:|---:|---:|---:|---:|
+| Recognizable personality | 8 | 6 | 6 | 5 | 5 | 7 |
+| Purpose is obvious | 8 | 8 | 7 | 7 | 7 | 8 |
+| Visual hierarchy | 7 | 7 | 5 | 5 | 6 | 6 |
+| Intentional composition | 7 | 6 | 5 | 5 | 5 | 6 |
+| Necessary containers only | 7 | 7 | 6 | 5 | 5 | 6 |
+| Typography supports the brand | 8 | 7 | 7 | 6 | 6 | 7 |
+| Purposeful palette | 8 | 7 | 7 | 7 | 7 | 7 |
+| Obvious next action | 8 | 6 | 5 | 6 | 6 | 7 |
+| Features discoverable | 7 | 7 | 4 | 6 | 6 | 7 |
+| Enjoyable to use | 7 | 6 | 5 | 6 | 6 | 7 |
+| Accessible and responsive | 7 | 6 | 5 | 6 | 6 | 6 |
+| Recognizable without logo | 8 | 5 | 6 | 4 | 4 | 7 |
+
+The home and memory scores reflect visible Kits artwork and the direct language of the next actions. Setup loses clarity at the unlabeled progress controls and disabled footer. Place discovery loses discoverability because the list is below the map and cross-place ranking is absent. Review and the shared ballot use similar large white panels for venue, general details and evidence, which gives them less visual distinction and slows scanning.
+
+### Implementation roadmap
+
+| Phase | Scope and checkpoint |
+|---|---|
+| **2 · Visual identity and design foundations** | Extend `theme.ts`, existing UI primitives, `global.css` and `DESIGN_SYSTEM.md` with explicit color, type, spacing, shape, surface, elevation, icon, motion and interaction roles. Prototype the original convergence motif in one reusable presentation component. Validate contrast, 48-point shared targets, focus, disabled and busy states, and reduced motion. Checkpoint before broad screen changes. |
+| **3 · Primary experience redesign** | Build the guest vertical slice from Home through Who, When, map-first Where, Compare, Review and directions. Restore the four ranking controls using the existing algorithms and preserve the list/map entry, inline corrections, save guards and explicit confirmation. Validate at phone and desktop widths before reuse. |
+| **4 · Remaining screens and workflows** | Apply the language to shared account, invite/join, organizer and member planning, and local/shared completion and memories. Confirm scope, invitation expiry, role actions, publication audience, archived state and responsive layout. |
+| **5 · Personality and interaction polish** | Refine purposeful motion and recovery, and check Kits use in empty and memory states. Apply the convergence motif at confirmation, and verify reduced motion and retained form state. |
+| **6 · Validation and refinement** | Re-run guest, organizer and member flows with keyboard, enlarged text and narrow/wide screenshots. Check assistive tech, native devices, working map tiles, real authorized shared auth and database policy behavior. Measure baseline and revised cold loads before choosing asset work. Score each changed screen again and fix regressions. |
+
+The implementation uses the existing Expo, React Native and Supabase boundaries. Protect saved data, voting and organizer permissions, trip limit semantics, unknown versus zero fares, fare source labels, map attribution and available transport tools. Phase 3 keeps the recent map-first layout and fixed planner footer as established behavior.
+
+### Validation record
+
+- The normal Expo web export, TypeScript check, and all 18 planner tests passed for the baseline. The guest export bundled about 5.46 MB of JavaScript and 1.4 MB of Kits PNG artwork before transport compression. These are build output sizes. Cold-load timing remains open.
+- Chromium guest inspection covered Home, create/name validation, the empty roster, starting-place selection, optional time, map discovery, per-place estimates, voting, review, directions entry, completion and recap. Shared Chromium inspection used the repository's local fixture to observe organizer tools, member voting, organizer-only confirmation and the member's refreshed result.
+- Captures were reviewed at 390 and 1440 px. All four stages had a fixed footer, 48 px high stage controls and no page-width overflow at 320, 390, 768 and 1440 px. Tabbing from Where to Review displayed a 3 px focus outline. The environment's OpenStreetMap tile requests failed. The map retained pins and exposed retry, and venue details remained reachable.
+- Native devices, screen readers, real email/code redemption, hosted database policies and successful map tile rendering remain unverified. The Impeccable launcher was unavailable, so the audit used project context, screenshots, browser interaction and source inspection.
+
+**Files affected** · `docs/REDESIGN_PLAN.md` and the canonical `CONTINUITY.md`.
+
+**Next approval gate** · Phase 2, Visual identity and design foundations, using the direction above.
+
+---
+
+## Earlier redesign roadmap
+
 Updated 2026-11-26. **Phase 4.5A–C are implemented; 4.5D browser validation is checkpointed with native and live shared acceptance still open. Original roadmap remains paused. Phases 5/6 remain blocked until those checks close; Phase 4B remains paused.**
 
 ## Priority override: Phase 4.5 — Planning UX Reconstruction
