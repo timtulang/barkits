@@ -25,3 +25,5 @@ For a static web export, run `npm run build:web`. Run `npm start` to use a compa
 Open the Saturday catch-up demo to compare four friends' trips, try ranking modes, cast votes, finalize a venue, complete the meetup, and save a recap or optional ratings. A new meetup starts with an empty group.
 
 See [design system](docs/DESIGN_SYSTEM.md), [product and integration decisions](docs/PRODUCT.md), and [cost audit](docs/COST_AUDIT.md).
+
+The collaborative platform migration begins with the [Phase 0 audit and architecture plan](docs/ARCHITECTURE.md) and [Google Cloud setup guide](docs/GOOGLE_CLOUD.md).
