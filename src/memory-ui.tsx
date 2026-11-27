@@ -3,8 +3,8 @@ import { Kits } from './kits';
 import { palette, radius, spacing } from './theme';
 import { Chip, Label, layout } from './ui';
 
-export function MemoryHeading({ title, venue, schedule, archived }: {
-  title: string; venue?: string; schedule?: string; archived: boolean;
+export function MemoryHeading({ title, venue, schedule, celebrate }: {
+  title: string; venue?: string; schedule?: string; celebrate: boolean;
 }) {
   return <View style={styles.banner}>
     <View style={styles.text}>
@@ -12,7 +12,7 @@ export function MemoryHeading({ title, venue, schedule, archived }: {
       {!!venue && <Label>{venue}</Label>}
       {!!schedule && <Label kind="detail" color={palette.ink}>{schedule}</Label>}
     </View>
-    <Kits celebrate={!archived} style={styles.art} />
+    <Kits celebrate={celebrate} style={styles.art} />
   </View>;
 }
 

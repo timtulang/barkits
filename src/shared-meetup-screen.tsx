@@ -9,6 +9,7 @@ import { InviteFriend } from './invite-friend';
 import { locateFriends } from './locate-friends';
 import { LifecycleAction, MeetupArrival } from './meetup-arrival';
 import { formatSharedSchedule } from './meetup-schedule';
+import { useNewMilestone } from './motion-feedback';
 import { ParticipantRoster } from './participant-roster';
 import { PlanningJourney, PlanningReview, PlanningStepActions } from './planning-journey';
 import { initialPlanningStage, type PlanningStage } from './planning-progress';
@@ -44,6 +45,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
   const pending = useRef(false);
 
   const summary = data?.summary;
+  const celebrate = useNewMilestone(summary ? summary.status === 'completed' : undefined);
   const members = data?.members;
   const mine = members?.find(member => member.id === userId);
   const owner = summary?.owner_id === userId;
@@ -101,6 +103,8 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
   const schedule = summary.starts_at ? formatSharedSchedule(summary.starts_at) : undefined;
   const navigation = { title: summary.name, expanded: fullMap, setExpanded: setFullMap, back };
   const proposalIssues = proposed ? data.members.map(member => sharedLimitIssues(member, proposed.estimates.find(estimate => estimate.user_id === member.id))).filter(Boolean) : [];
+  const actionFeedback = !!actionError && <Feedback tone="error">{actionError}</Feedback>;
+  const reviewingProposal = stage === 'review' && planning && proposed && owner;
   const blocked = error ? 'Refresh the group before confirming.' : proposalIssues.length ? proposalIssues.join('. ') : undefined;
   const confirm = stage === 'review' && planning && proposed && owner ? async () => {
     if (!busy && !proposalIssues.length && await run(() => finalizeShared(id, proposed.venue_id))) setProposedId(undefined);
@@ -120,6 +124,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
   </MeetupArrival>;
   const review = arrival || (planning && proposed && owner ?
     <DestinationReview name={proposed.place.name} prominent blocked={blocked}>
+      {actionFeedback}
       <TripComparison rows={sharedTripRows(data.members, proposed.estimates)} editableIds={mine?.trip && !busy ? [userId] : []}
         edit={() => { setEstimateId(proposed.venue_id); openShortlist(); }} />
       <Button quiet icon="arrow-left" onPress={openShortlist}>Change place</Button>
@@ -139,9 +144,9 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
       <Label kind="detail">Shared meetup · {owner ? 'You’re the organizer' : 'You’re a group member'}</Label>
     </View>
     {refreshError}
-    {!!actionError && <Feedback tone="error">{actionError}</Feedback>}
+    {!reviewingProposal && actionFeedback}
     {!data.memories && <PlanningJourney current={stage} change={changeStage} people={data.members.length} mapped={origins.length}
-      scheduled={!!schedule} destination={!!chosen} saved={acting ? 'Saving changes to the group…' : loading ? 'Refreshing group…' :
+      scheduled={!!schedule} destination={!!chosen} saveTone={error ? 'warning' : 'info'} saved={acting ? 'Saving changes to the group…' : loading ? 'Refreshing group…' :
         error ? 'Group data may be out of date.' : undefined}>
       <View style={{ display: stage === 'who' ? 'flex' : 'none' }}>
         {planning && owner ? <WorkspaceColumns main={roster} side={<InviteFriend id={id} />} sideFirst={!!mine?.trip} /> : roster}
@@ -182,7 +187,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
         saveTrip={async trip => { await saveOwnTrip(id, trip); setEditing(false); refresh(); }} />}
     </PlanningJourney>}
     {data.memories && <SharedMemories id={id} userId={userId} venue={chosen?.name} schedule={schedule}
-      activity={summary.activity} description={summary.description}
+      activity={summary.activity} description={summary.description} celebrate={celebrate}
       point={chosen ? [chosen.latitude, chosen.longitude] : undefined} members={data.members} archived={summary.status === 'archived'}
       data={data.memories} refresh={refresh} run={run} busy={busy}
       archiveAction={summary.status === 'completed' && owner ? <LifecycleAction archive shared busy={busy}

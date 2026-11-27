@@ -7,11 +7,12 @@ import { View } from 'react-native';
 import { directDistance, parsePoint } from './geo';
 import { PlaceInput } from './place-input';
 import { demoJourney, Meetup, Participant, Venue, venues, retainPlace } from './planner';
-import { Button, Field, Label, layout, Panel } from './ui';
+import { Button, Feedback, Field, Label, layout, Panel, StatusLine } from './ui';
 
-export function TripPlanning({ meetup, save, participant, destinationId, selectDestination, selectParticipant, reportDirty }: {
+export function TripPlanning({ meetup, save, saveReady, retrySave, participant, destinationId, selectDestination, selectParticipant, reportDirty }: {
   selectDestination: (id: string) => void; selectParticipant: (id: string) => void; reportDirty: (dirty: boolean) => void;
   destinationId?: string; meetup: Meetup; save: (m: Meetup) => void; participant?: Participant;
+  saveReady: boolean; retrySave?: () => void;
 }) {
   const [match, setMatch] = useState<PlaceResult>();
   const [place, setPlace] = useState('');
@@ -49,7 +50,7 @@ export function TripPlanning({ meetup, save, participant, destinationId, selectD
     <ChoiceField label="Destination" value={selected} change={selectDestination}
       options={[{ value: '', label: 'Choose a meeting place' }, ...places.map(item => ({ value: item.id, label: item.name })), { value: 'new-place', label: 'Search another meeting place…' }]} />
     {selected === 'new-place' && <><PlaceInput destination onSelection={setMatch} name={place} setName={setPlace} coordinates={coordinates} setCoordinates={setCoordinates} />
-      {!!error && <Label>{error}</Label>}<Button onPress={add}>Add meeting place</Button></>}
+      {!!error && <Feedback tone="error">{error}</Feedback>}<Button onPress={add}>Add meeting place</Button></>}
     {!participant && <Label>Add a friend and starting point to enter a trip estimate.</Label>}
     {venue && participant && <>
       <Label kind="item" heading>{participant.name} → {venue.name}</Label>
@@ -61,7 +62,7 @@ export function TripPlanning({ meetup, save, participant, destinationId, selectD
       const place = places.find(place => place.id === item.venue);
       return person && place && <View key={JSON.stringify([person.id, place.id, person.origin, person.point, person.mode])}
         style={{ display: person.id === participant?.id && place.id === selected ? 'flex' : 'none' }}>
-        <TripFields participant={person} meetup={meetup} venue={place} save={save} reportDirty={dirty => {
+        <TripFields participant={person} meetup={meetup} venue={place} save={save} saveReady={saveReady} retrySave={retrySave} reportDirty={dirty => {
           const key = JSON.stringify(item);
           setDirtyTrips(current => current[key] === dirty ? current : { ...current, [key]: dirty });
         }} />
@@ -70,8 +71,9 @@ export function TripPlanning({ meetup, save, participant, destinationId, selectD
   </Panel>;
 }
 
-function TripFields({ participant, meetup, venue, save, reportDirty }: {
+function TripFields({ participant, meetup, venue, save, saveReady, retrySave, reportDirty }: {
   participant: Participant; meetup: Meetup; venue: Venue; save: (m: Meetup) => void; reportDirty: (dirty: boolean) => void;
+  saveReady: boolean; retrySave?: () => void;
 }) {
   const savedTime = meetup.manualMinutes?.[venue.id]?.[participant.id];
   const savedFare = meetup.manualFares?.[venue.id]?.[participant.id];
@@ -79,17 +81,19 @@ function TripFields({ participant, meetup, venue, save, reportDirty }: {
   const [provider,setProvider] = useState<RideProvider | undefined>(note?.provider);
   const [time, setTime] = useState(savedTime?.toString() ?? '');
   const [fare, setFare] = useState(savedFare?.toString() ?? '');
-  const [message, setMessage] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [showSaveStatus, setShowSaveStatus] = useState(false);
   const demo = demoJourney(venue, participant);
-  const dirty = (time.trim() ? Number(time) : undefined) !== savedTime || (fare.trim() ? Number(fare) : undefined) !== savedFare || provider !== note?.provider;
+  const minutes = time.trim() ? Number(time) : undefined;
+  const cost = fare.trim() ? Number(fare) : undefined;
+  const invalidTime = minutes !== undefined && (!Number.isFinite(minutes) || minutes < 0);
+  const invalidFare = cost !== undefined && (!validFare(fare) || !Number.isFinite(cost) || cost < 0);
+  const dirty = minutes !== savedTime || cost !== savedFare || provider !== note?.provider;
   useEffect(() => reportDirty(dirty), [dirty, reportDirty]);
   useEffect(() => () => reportDirty(false), []);
   function submit() {
-    const minutes = time.trim() ? Number(time) : undefined;
-    const cost = fare.trim() ? Number(fare) : undefined;
-    if ((fare.trim() && !validFare(fare)) || [minutes, cost].some(value => value !== undefined && (!Number.isFinite(value) || value < 0))) {
-      return setMessage('Enter a nonnegative time and a peso fare with up to two decimal places.');
-    }
+    setSubmitted(true);
+    if (invalidTime || invalidFare) return;
     const times = { ...meetup.manualMinutes?.[venue.id] };
     const fares = { ...meetup.manualFares?.[venue.id] };
     if (minutes === undefined) delete times[participant.id]; else times[participant.id] = minutes;
@@ -98,16 +102,26 @@ function TripFields({ participant, meetup, venue, save, reportDirty }: {
     if (provider && cost !== undefined) notes[participant.id] = { provider, savedAt: new Date().toISOString() };
     else delete notes[participant.id];
     save({ ...meetup, fareNotes: { ...meetup.fareNotes, [venue.id]: notes }, manualMinutes: { ...meetup.manualMinutes, [venue.id]: times }, manualFares: { ...meetup.manualFares, [venue.id]: fares } });
-    setMessage('Trip estimates updated. Check the save status above before leaving.');
+    setSubmitted(false);
+    setShowSaveStatus(true);
   }
   return <View style={layout.stack}>
     <Label kind="detail">{demo ? 'You can replace this demo trip with your own travel figures.' : 'Enter the expected travel time to include this trip in rankings.'}</Label>
-    <Field label="One-way travel time (minutes)" numeric value={time} onChange={value => { setTime(value); setMessage(''); }} />
-    <Field label="Travel fare (₱, optional)" inputMode="decimal" value={fare} onChange={value => { setFare(value); setProvider(undefined); setMessage(''); }} />
+    <Field label="One-way travel time (minutes)" numeric value={time} onChange={value => { setTime(value); setShowSaveStatus(false); }}
+      error={submitted && invalidTime ? 'Enter zero or more minutes.' : undefined} />
+    <Field label="Travel fare (₱, optional)" inputMode="decimal" value={fare}
+      onChange={value => { setFare(value); setProvider(undefined); setShowSaveStatus(false); }}
+      error={submitted && invalidFare ? 'Enter a peso fare with up to two decimal places.' : undefined} />
     <Label kind="detail">Include the whole one-way trip. Fares are optional unless needed for a fare limit or the Cheapest comparison. Nothing here is a live quote.</Label>
     <TripOptions origin={participant.point?.join(',') ?? participant.origin} destination={venue.point?.join(',') ?? [venue.name,venue.area].filter(Boolean).join(', ')}
-      walking={participant.mode === 'Walking'} currentProvider={provider} currentFare={fare} onUse={(p,f) => { setProvider(p); setFare(f); setMessage(''); }} />
+      walking={participant.mode === 'Walking'} currentProvider={provider} currentFare={fare} onUse={(p,f) => { setProvider(p); setFare(f); setShowSaveStatus(false); }} />
     {note && <Label size={13}>Saved {note.provider} fare · {new Date(note.savedAt).toLocaleString('en-PH')}</Label>}
-    <Button onPress={submit}>Save trip details</Button>{!!message && <Label>{message}</Label>}
+    <Button onPress={submit}>Save trip details</Button>
+    {showSaveStatus && (retrySave ? <View style={layout.stack}>
+      <StatusLine tone="warning">The trip changes are still open.</StatusLine>
+      <Button secondary onPress={retrySave}>Try saving the trip again</Button>
+    </View> : <StatusLine tone={saveReady ? 'success' : 'info'}>
+      {saveReady ? 'Trip saved on this device.' : 'Saving the trip on this device…'}
+    </StatusLine>)}
   </View>;
 }

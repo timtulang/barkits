@@ -93,7 +93,7 @@ python3 -m http.server 5179 --bind 127.0.0.1 --directory .expo/redesign/check/gu
 chromedriver --port=9515 --allowed-ips=127.0.0.1
 ```
 
-Then run `python3 scripts/check-planning-browser.py guest --app http://127.0.0.1:5179/`. Each run creates an isolated temporary browser profile. Screenshots go to ignored `.expo/redesign/phase45d/`. This checks setup, scheduling, place/trip comparison, corrections, confirmation, resume, save failure/retry, unsaved-edit protection and small/wide layouts.
+Then run `python3 scripts/check-planning-browser.py guest --app http://127.0.0.1:5179/`. Each run creates an isolated temporary browser profile. Screenshots go to ignored `.expo/redesign/phase45d/`. This checks setup, scheduling, place/trip comparison, corrections, confirmation, resume, save failure/retry, unsaved-edit protection and small/wide layouts. Repeat with `--reduced-motion` to check the same journey with motion disabled.
 
 For synthetic shared-role UI checks, export a separate fixture build. `--clear` is required when switching these build-time public environment values, because Metro can retain inlined values:
 

@@ -90,7 +90,8 @@ function Workspace({ user, joining, setJoining }: { user: User | null; joining: 
   const renderWorkspace: RenderWorkspace = (content, footer) => <>
     <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
-      {!!storageError && <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
+      {!!storageError && selected?.status !== 'Completed' && selected?.status !== 'Archived' &&
+        <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
         action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
       {!ready && !storageError && <LoadingState label="Loading your meetups…" />}
       {content}
@@ -105,6 +106,7 @@ function Workspace({ user, joining, setJoining }: { user: User | null; joining: 
       home={() => navigateLocal(null)} account={() => setAccountOpen(true)} create={() => setEditor('new')} />
     {ready && sharedId && user ? <SharedMeetupScreen key={sharedId} frame={renderWorkspace} scrollToTop={scrollToTop} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> :
       ready && selected ? <MeetupScreen key={index} frame={renderWorkspace} reportDirty={setPlanningDirty} saveReady={savedMeetups === meetups && !storageError} saveStatus={saveStatus}
+        retrySave={storageError ? () => setSaveAttempt(value => value + 1) : undefined}
         scrollToTop={scrollToTop} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
       renderWorkspace(ready && <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
         join={authSetup.client ? () => { setJoining(true); if (!user) setAccountOpen(true); } : undefined}

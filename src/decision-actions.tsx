@@ -13,7 +13,7 @@ export function DecisionActions({ place, count, voter, votedHere, hasVote, vote,
   const action = votedHere ? 'Remove ' + whose + ' vote' : hasVote ? 'Move ' + whose + ' vote here' :
     voter ? 'Vote as ' + voter : 'Vote for this place';
   return <View style={{ gap: spacing.sm }}>
-    <View accessibilityLiveRegion="polite" style={layout.row}>
+    <View accessibilityLiveRegion="polite" aria-live="polite" style={layout.row}>
       <Icon name={votedHere ? 'check-circle' : 'users'} size={16} color={votedHere ? colors.success : colors.textMuted} />
       <Label kind="detail" color={votedHere ? colors.success : colors.textMuted}>
         {count} {count === 1 ? 'vote' : 'votes'}{votedHere ? (voter ? ' · ' + voter + ' voted here' : ' · includes your vote') : ''}

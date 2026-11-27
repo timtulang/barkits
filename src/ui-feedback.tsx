@@ -10,6 +10,17 @@ const tones = {
   error: { foreground: colors.error, background: colors.errorSurface, icon: 'alert-circle' },
 } satisfies Record<string, { foreground: string; background: string; icon: IconName }>;
 
+export function StatusLine({ children, tone = 'info', icon }: {
+  children: ReactNode; tone?: keyof typeof tones; icon?: IconName;
+}) {
+  const state = tones[tone];
+  return <View role="status" accessibilityLiveRegion="polite" aria-live="polite"
+    style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minWidth: 0 }}>
+    <Icon name={icon ?? state.icon} size={16} color={state.foreground} />
+    <Label kind="detail" color={state.foreground}>{children}</Label>
+  </View>;
+}
+
 export function Feedback({ children, tone = 'info', title, action }: {
   children: ReactNode; tone?: keyof typeof tones; title?: string; action?: ReactNode;
 }) {

@@ -6,16 +6,18 @@ import { LifecycleAction } from './meetup-arrival';
 import { formatLocalSchedule } from './meetup-schedule';
 import { MemoryHeading, RatingChoices } from './memory-ui';
 import { ratingSummary, type Meetup, type Participant, type Venue } from './planner';
-import { Button, EmptyState, Field, Icon, Label, layout, Panel } from './ui';
+import { Button, EmptyState, Feedback, Field, Icon, Label, layout, Panel, StatusLine } from './ui';
 import { WorkspaceColumns } from './workspace-layout';
 
-export function LocalMemories({ meetup, venue, voter, selectVoter, save, saved, saveStatus, map, roster, reportDirty }: {
+export function LocalMemories({ meetup, venue, voter, selectVoter, save, saved, saveStatus, retrySave, celebrate, map, roster, reportDirty }: {
   meetup: Meetup; venue?: Venue; voter?: Participant; selectVoter: (id: string) => void;
-  save: (meetup: Meetup) => void; saved: boolean; saveStatus: string; map: () => void; roster: ReactNode;
+  save: (meetup: Meetup) => void; saved: boolean; saveStatus: string; retrySave?: () => void; celebrate: boolean;
+  map: () => void; roster: ReactNode;
   reportDirty: (dirty: boolean) => void;
 }) {
   const [caption, setCaption] = useState(meetup.recap ?? '');
   const [removing, setRemoving] = useState(false);
+  const [recapNotice, setRecapNotice] = useState('');
   const archived = meetup.status === 'Archived';
   const ratings = ratingSummary(meetup.ratings);
   const dirty = caption !== (meetup.recap ?? '');
@@ -31,19 +33,24 @@ export function LocalMemories({ meetup, venue, voter, selectVoter, save, saved, 
 
   return <View style={layout.stack}>
     <MemoryHeading title={archived ? 'Meetup memories' : 'Save the memory'} venue={venue?.name}
-      schedule={formatLocalSchedule(meetup.date)} archived={archived} />
+      schedule={formatLocalSchedule(meetup.date)} celebrate={celebrate} />
     <WorkspaceColumns main={<Panel>
       <Label kind="item" heading>Recap</Label>
       <View style={layout.row}><Icon name="lock" size={16} /><Label kind="label">On this device</Label></View>
-      {!saved && <Label kind="detail">{saveStatus}</Label>}
+      {retrySave ? <Feedback tone="error" title="Changes are not saved"
+        action={<Button secondary onPress={retrySave}>Try again</Button>}>
+        Barkits kept your changes open. Try saving them on this device again.
+      </Feedback> : !saved && <StatusLine>{saveStatus}</StatusLine>}
       {archived ? meetup.recap ? <Label>{meetup.recap}</Label> :
         <EmptyState title="No recap saved">This meetup was archived without a recap.</EmptyState> : <>
-        <Field label="Recap caption" value={caption} onChange={setCaption} placeholder="Anong kuwento ng lakad?" multiline disabled={!saved} />
+        <Field label="Recap caption" value={caption} onChange={value => { setCaption(value); setRecapNotice(''); }}
+          placeholder="Anong kuwento ng lakad?" multiline disabled={!saved} />
         <View style={layout.wrap}>
           <Button disabled={!saved || !caption.trim() || !dirty} onPress={() => {
             const recap = caption.trim();
             setCaption(recap);
             save({ ...meetup, recap });
+            setRecapNotice('Recap saved on this device.');
           }}>Save recap</Button>
           {dirty && <Button quiet disabled={!saved} onPress={() => setCaption(meetup.recap ?? '')}>Reset changes</Button>}
           {!!meetup.recap && !removing && <Button quiet disabled={!saved} onPress={() => setRemoving(true)}>Remove recap</Button>}
@@ -54,8 +61,10 @@ export function LocalMemories({ meetup, venue, voter, selectVoter, save, saved, 
             setCaption('');
             setRemoving(false);
             save({ ...meetup, recap: undefined });
+            setRecapNotice('Recap removed from this device.');
           }}>Confirm removal</Button><Button quiet onPress={() => setRemoving(false)}>Cancel</Button></View>
         </View>}
+        {saved && !!recapNotice && <StatusLine tone="success">{recapNotice}</StatusLine>}
       </>}
     </Panel>} side={<>
       <Panel>

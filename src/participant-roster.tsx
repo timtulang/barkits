@@ -5,7 +5,7 @@ import { IconAction } from './form-controls';
 import { Kits } from './kits';
 import type { Participant } from './planner';
 import { colors, spacing } from './theme';
-import { Icon, Label, Panel } from './ui';
+import { Icon, Label, Panel, StatusLine } from './ui';
 
 type Member = { id: string; name: string; trip?: Participant };
 
@@ -14,18 +14,18 @@ export function ParticipantRoster({ members, located, myId, ownerId, edit, actio
   edit?: (friend: Participant) => void; action?: ReactNode;
 }) {
   const mapped = new Map(located.map(friend => [friend.id, friend]));
+  const ready = mapped.size === members.length;
   return <Panel>
     <View style={styles.intro}>
       <Label kind="item" heading>Your barkada</Label>
-      {members.length > 0 && <View style={styles.summary} accessibilityLiveRegion="polite">
-        <Icon name={mapped.size === members.length ? 'check-circle' : 'map-pin'} size={16}
-          color={mapped.size === members.length ? colors.success : colors.textMuted} />
-        <Label kind="detail">{mapped.size} of {members.length} starting {members.length === 1 ? 'point' : 'points'} on the map</Label>
-      </View>}
+      {members.length > 0 && <StatusLine tone={ready ? 'success' : 'info'} icon={ready ? 'check-circle' : 'map-pin'}>
+        {mapped.size} of {members.length} starting {members.length === 1 ? 'point' : 'points'} on the map
+        {ready && action ? ' · Ready to find a place' : ''}
+      </StatusLine>}
     </View>
     {!members.length && <View style={styles.empty}>
       <Kits style={{ width: 72, height: 54 }} />
-      <Label>{action ? 'Add the first friend and where they’ll start from.' : 'No friends were added to this meetup.'}</Label>
+      <Label>{action ? 'Add a friend and their starting point so Barkits can look for places nearby.' : 'No friends were added to this meetup.'}</Label>
     </View>}
     {action}
     {members.length > 0 && <View>{members.map(({ id, name, trip }) => {

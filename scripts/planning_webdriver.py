@@ -81,6 +81,24 @@ class Browser:
         self.js('for(const e of document.querySelectorAll("*")) {if(e.scrollHeight>e.clientHeight && getComputedStyle(e).overflowY.match(/auto|scroll/))e.scrollTop=0}')
         self.artifacts.joinpath(name + '.png').write_bytes(base64.b64decode(self.command('/screenshot', method='GET')))
 
+    def watch_motion(self, selector, scale=False):
+        self.js('''const [selector,scale]=arguments;
+          window.motionObserver?.disconnect();
+          window.motionSamples=[];
+          const sample=()=>{for(const element of document.querySelectorAll(selector)) {
+            const matrix=new DOMMatrixReadOnly(getComputedStyle(element).transform);
+            window.motionSamples.push(scale ? Math.hypot(matrix.a,matrix.b)-1 : matrix.f);
+          }};
+          window.motionObserver=new MutationObserver(sample);
+          window.motionObserver.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style']});
+          sample();''', selector, scale)
+
+    def motion_seen(self):
+        return self.js('return window.motionSamples.some(value=>Math.abs(value)>.05)')
+
+    def finish_motion(self):
+        self.command('/execute/async', {'script': 'setTimeout(arguments[0], 400);', 'args': []})
+
     def close(self):
         self.request('DELETE', '/session/' + self.session)
 

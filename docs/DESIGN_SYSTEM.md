@@ -81,7 +81,8 @@ Use the role scale in `src/theme.ts` with the shared Label. Page titles are 40 p
 - Write short English labels for actions and navigation. Use natural Filipino-English in welcome copy, empty states, and recap prompts. “Kita-kits, barkada!” works as a greeting. “Finalize location” names the action clearly.
 - Use sentence case and show minutes and Philippine pesos beside their values. Use “Fare unavailable” when a fare is missing. Keep demo labels visible near route data.
 - Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus.
-- Keep essential information in text. Stage content reveals in 180 ms with an ease-out. Kits rises over 130 ms and settles over 170 ms with a gentler ease-in-out. Both respect the system reduced-motion setting. Control feedback is immediate.
+- Keep essential information in text. Move only the stage heading by 3 points over 150 ms. The checked pin settles over 220 ms after confirmation. Kits rises over 130 ms and settles over 170 ms once for a newly completed meetup. With reduced motion, controls, checks and messages appear immediately.
+- Use `StatusLine` for confirmed saves, audience changes and recoverable failures near the relevant task. Keep the draft open if a save fails and put validation beside the affected field. Show success after persistence confirms it.
 
 ## Responsive application layout
 

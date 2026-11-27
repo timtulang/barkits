@@ -8,10 +8,12 @@ import { MemoryHeading, RatingChoices } from './memory-ui';
 import type { Member } from './services/shared-meetups';
 import { rateMeetup, readMemories, writeRecap, type Recap } from './services/shared-memories';
 import { colors, spacing } from './theme';
-import { Button, Chip, EmptyState, Feedback, Field, Icon, Label, Panel, layout } from './ui';
+import { Button, Chip, EmptyState, Feedback, Field, Icon, Label, Panel, layout, StatusLine } from './ui';
 import { WorkspaceColumns } from './workspace-layout';
 
-function RecapEditor({ group, post, close, refresh }: { group: string; post?: Recap; close: () => void; refresh: () => void }) {
+function RecapEditor({ group, post, close, saved }: {
+  group: string; post?: Recap; close: () => void; saved: (audience: Recap['visibility']) => void;
+}) {
   const [title, setTitle] = useState(post?.title ?? '');
   const [caption, setCaption] = useState(post?.caption ?? '');
   const [audience, setAudience] = useState<Recap['visibility']>(post?.visibility ?? 'private');
@@ -29,8 +31,7 @@ function RecapEditor({ group, post, close, refresh }: { group: string; post?: Re
     try {
       key.current ??= randomUUID();
       await writeRecap(group, key.current, post?.revision ?? 0, title, caption, audience);
-      refresh();
-      close();
+      saved(audience);
     } catch (problem) { setError(problem instanceof Error ? problem.message : 'Couldn’t save this recap. Try again.'); }
     finally { pending.current = false; setBusy(false); }
   }
@@ -57,29 +58,31 @@ function RecapEditor({ group, post, close, refresh }: { group: string; post?: Re
   </EditorDialog>;
 }
 
-export function SharedMemories({ id, userId, venue, point, schedule, activity, description, archived, members, data, refresh, busy, run, archiveAction }: {
+export function SharedMemories({ id, userId, venue, point, schedule, activity, description, archived, celebrate, members, data, refresh, busy, run, archiveAction }: {
   id: string; userId: string; venue?: string; point?: Point; schedule?: string; activity?: string | null; description?: string | null;
-  archived: boolean; members: Member[];
+  archived: boolean; celebrate: boolean; members: Member[];
   data: Awaited<ReturnType<typeof readMemories>>; refresh: () => void; busy: boolean;
   run: (action: () => Promise<void>) => Promise<boolean>; archiveAction?: ReactNode;
 }) {
   const [editor, setEditor] = useState<Recap | 'new'>();
   const [removing, setRemoving] = useState('');
+  const [notice, setNotice] = useState('');
   const visible = data.recaps.filter(post => post.visibility === 'group' || post.author_id === userId);
   const mine = data.ratings.find(row => row.user_id === userId)?.stars;
   const count = data.ratings.length;
   const average = count ? (data.ratings.reduce((sum, row) => sum + row.stars, 0) / count).toFixed(1) : null;
 
   return <View style={layout.stack}>
-    <MemoryHeading title="Meetup memories" venue={venue} schedule={schedule} archived={archived} />
+    <MemoryHeading title="Meetup memories" venue={venue} schedule={schedule} celebrate={celebrate} />
     <WorkspaceColumns main={<>
       <View style={[layout.wrap, { justifyContent: 'space-between' }]}>
         <Label kind="item" heading>Recaps</Label>
-        {!archived && <Button disabled={busy} onPress={() => setEditor('new')} icon="edit-3">Write a recap</Button>}
+        {!archived && <Button disabled={busy} onPress={() => { setNotice(''); setEditor('new'); }} icon="edit-3">Write a recap</Button>}
       </View>
+      {!!notice && <StatusLine tone="success">{notice}</StatusLine>}
       {archived && <Label kind="detail">Published recaps stay visible to meetup members. Authors can still make them private or remove them.</Label>}
       {!visible.length && <EmptyState title="No recaps yet">
-        {archived ? 'There are no recaps available to read in this archive.' : 'Write a private note or share a moment with the group.'}
+        {archived ? 'There are no recaps available to read in this archive.' : 'Save a detail you want to remember, or share it with the barkada.'}
       </EmptyState>}
       {visible.map(post => {
         const own = post.author_id === userId;
@@ -93,16 +96,23 @@ export function SharedMemories({ id, userId, venue, point, schedule, activity, d
           {!!post.title && <Label kind="item" heading>{post.title}</Label>}
           <Label>{post.caption}</Label>
           {own && removing !== post.id && <View style={layout.wrap}>
-            {!archived && <Button quiet disabled={busy} onPress={() => setEditor(post)}>Edit recap</Button>}
-            {!privatePost && <Button quiet disabled={busy} onPress={() => run(() =>
-              writeRecap(id, post.id, post.revision, post.title ?? '', post.caption, 'private'))}>Make private</Button>}
-            <Button quiet disabled={busy} onPress={() => setRemoving(post.id)}>Remove recap</Button>
+            {!archived && <Button quiet disabled={busy} onPress={() => { setNotice(''); setEditor(post); }}>Edit recap</Button>}
+            {!privatePost && <Button quiet disabled={busy} onPress={async () => {
+              setNotice('');
+              if (await run(() => writeRecap(id, post.id, post.revision, post.title ?? '', post.caption, 'private'))) {
+                setNotice('Recap is now private.');
+              }
+            }}>Make private</Button>}
+            <Button quiet disabled={busy} onPress={() => { setNotice(''); setRemoving(post.id); }}>Remove recap</Button>
           </View>}
           {own && removing === post.id && <View style={layout.stack}>
             <Label kind="detail">Delete this recap permanently?</Label>
             <View style={layout.wrap}>
               <Button variant="danger" disabled={busy} onPress={async () => {
-                if (await run(() => writeRecap(id, post.id, post.revision, '', '', 'delete'))) setRemoving('');
+                if (await run(() => writeRecap(id, post.id, post.revision, '', '', 'delete'))) {
+                  setRemoving('');
+                  setNotice('Recap removed.');
+                }
               }}>Delete recap</Button>
               <Button quiet disabled={busy} onPress={() => setRemoving('')}>Cancel</Button>
             </View>
@@ -128,7 +138,12 @@ export function SharedMemories({ id, userId, venue, point, schedule, activity, d
         {point && <GoogleMapsLink point={point} />}
       </Panel>}
     </>} />
-    {!archived && editor && <RecapEditor group={id} post={editor === 'new' ? undefined : editor} close={() => setEditor(undefined)} refresh={refresh} />}
+    {!archived && editor && <RecapEditor group={id} post={editor === 'new' ? undefined : editor} close={() => setEditor(undefined)}
+      saved={audience => {
+        setNotice(audience === 'private' ? 'Recap saved privately.' : 'Recap shared with meetup members.');
+        refresh();
+        setEditor(undefined);
+      }} />}
   </View>;
 }
 

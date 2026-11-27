@@ -1,6 +1,8 @@
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { Animated, Easing, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useMotionAllowed } from './motion-feedback';
 import { peopleProgress, type PlanningStage } from './planning-progress';
-import { colors, control, radius, spacing } from './theme';
+import { colors, control, motion, radius, spacing } from './theme';
 import { Icon, Label } from './ui';
 
 export const planningStages = [
@@ -14,6 +16,21 @@ export function PlanningRoute({ current, change, people, mapped, scheduled, dest
   current: PlanningStage; change: (stage: PlanningStage) => void; people: number; mapped: number;
   scheduled: boolean; destination: boolean;
 }) {
+  const previous = useRef(destination);
+  const [scale] = useState(() => new Animated.Value(1));
+  const allowed = useMotionAllowed();
+  useLayoutEffect(() => {
+    const arrived = destination && !previous.current;
+    previous.current = destination;
+    if (!arrived || !allowed) return;
+    scale.setValue(0.85);
+    const settle = Animated.timing(scale, {
+      toValue: 1, duration: motion.arrival.duration, easing: Easing.bezier(...motion.arrival.curve),
+      useNativeDriver: Platform.OS !== 'web',
+    });
+    settle.start();
+    return () => { settle.stop(); scale.setValue(1); };
+  }, [destination, allowed, scale]);
   const completed = [people > 0 && mapped === people, scheduled, destination, destination];
   const summary = [
     peopleProgress(people, mapped),
@@ -35,13 +52,14 @@ export function PlanningRoute({ current, change, people, mapped, scheduled, dest
         onPress={() => { if (!active) change(id); }} style={styles.step}>
         {({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => (
           <>
-            <View style={[styles.node, arrival && styles.pin, done && styles.completed, active && styles.current,
-              (pressed || hovered) && !done && !active && styles.highlight]}>
+            <Animated.View style={[styles.node, arrival && styles.pin, done && styles.completed, active && styles.current,
+              (pressed || hovered) && !done && !active && styles.highlight,
+              arrival && { transform: [{ rotate: '-45deg' }, { scale }] }]}>
               <View style={arrival && styles.pinIcon}>
                 <Icon name={done ? 'check' : icon} size={16}
                   color={active ? colors.onProgressCurrent : done ? colors.onPrimary : colors.onSelected} />
               </View>
-            </View>
+            </Animated.View>
             <View style={[styles.legend, active && styles.currentLegend]}>
               <Label kind="label" color={active || done ? colors.text : colors.textMuted}>{label}</Label>
             </View>
@@ -59,7 +77,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', paddingVertical: spacing.xs, paddingHorizontal: spacing.xs, gap: spacing.xs },
   node: { width: 34, height: 34, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.outline,
     backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-  pin: { borderBottomLeftRadius: spacing.xs, transform: [{ rotate: '-45deg' }] },
+  pin: { borderBottomLeftRadius: spacing.xs },
   pinIcon: { transform: [{ rotate: '45deg' }] },
   completed: { backgroundColor: colors.progressComplete, borderColor: colors.progressComplete },
   current: { backgroundColor: colors.progressCurrent, borderWidth: 2, borderColor: colors.text },

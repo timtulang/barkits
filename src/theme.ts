@@ -25,7 +25,8 @@ export const colors = {
 
 export const control = { minimum: 48, icon: 18, border: 1 };
 export const motion = {
-  stage: { duration: 180, curve: [0.22, 0.61, 0.36, 1] },
+  stage: { duration: 150, curve: [0.22, 0.61, 0.36, 1] },
+  arrival: { duration: 220, curve: [0.16, 1, 0.3, 1] },
   celebrationRise: { duration: 130, curve: [0.25, 0.46, 0.45, 0.94] },
   celebrationSettle: { duration: 170, curve: [0.455, 0.03, 0.515, 0.955] },
 } as const;

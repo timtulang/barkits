@@ -1,8 +1,23 @@
 # Barkits redesign plan
 
-## Current brief · Phase 4 remaining screens and workflows
+## Current brief · Phase 5 personality and interaction polish
 
-**Checkpoint · 27 November 2026.** Phase 4 carries the Phase 3 layout into account and invite entry, shared planning, and memories. Phase 5 requires approval.
+**Checkpoint · 27 November 2026.** The route gives confirmed milestones more emphasis. Save and recovery feedback stays beside the task that produced it.
+
+- **Planning and confirmation.** The heading moves 3 points over 150 ms when switching stops. The body and controls stay in place. The selected pin settles over 220 ms after confirmation succeeds. With reduced motion, the checked pin and confirmation text appear immediately.
+- **Setup and recovery.** The roster gives an explicit first step and shows when the group can look for places. Votes show a text status. Trip validation sits beside the time or fare field, and a failed save keeps the open entry available for retry. Shared organizers see failed proposal saves in the review.
+- **Completion and memories.** Kits takes one short hop after a newly completed meetup is saved, with no replay on reopening. Local recaps report when changes are saved to the device and expose an inline retry on failure. Shared recaps confirm the resulting audience or removal after the service responds. Reduced motion keeps the same text and status cues.
+
+### Phase 5 validation
+
+- Chromium guest journeys cover four planning widths from 320 to 1440 px with standard and reduced motion, including confirmation recovery, field validation, trip and recap retries, and reopening a completed meetup. Captures cover the confirmed route, recap save and retry on phones, and confirmed and shared memory layouts on desktop.
+- The local shared fixture covers organizer and member behavior, confirmation and recap retries, and private and published feedback. TypeScript, 18 planner tests, Python syntax and Expo web, Android and iOS exports passed. Device behavior, screen readers, hosted Auth and database policies, and working map tiles remain open.
+
+**Next approval gate · Phase 6, Validation and refinement.** Carry out cross-app journey checks, performance measurement and the final comparison against the starting screens.
+
+## Phase 4 checkpoint · Remaining screens and workflows
+
+**Checkpoint · 27 November 2026.** Phase 4 carries the Phase 3 layout into account and invite entry, shared planning, and memories.
 
 - **Account and invites.** Join with code opens the invite sheet after email verification. Validation stays beside the affected field, and retryable service errors stay in the sheet. The organizer sees the single-use code, Philippine-time expiration and copy fallback in Who.
 - **Shared planning.** The map opens first. Places and the shortlist are available above it, with side-by-side browsing on wide screens. Members can edit their own estimates and change their vote. Review leads with travel blockers, the proposed venue or directions. Confirmation, completion and archiving remain organizer actions.
@@ -35,7 +50,7 @@ Scores reflect the browser walkthroughs and captures. Map tile failure limits sh
 | Accessible and responsive | 8 | 7 | 8 |
 | Recognizable without logo | 7 | 8 | 9 |
 
-**Next approval gate · Phase 5, Personality and interaction polish.** Refine motion and feedback for setup, errors, decisions and memories within the existing design direction.
+**Phase 4 handoff · Phase 5, Personality and interaction polish.** Refine motion and feedback for setup, errors, decisions and memories within the existing design direction.
 
 ## Phase 3 checkpoint · Primary experience redesign
 

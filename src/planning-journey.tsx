@@ -1,46 +1,46 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, Platform, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
 import { shellStyles } from './app-shell';
+import { useMotionAllowed } from './motion-feedback';
 import type { PlanningStage } from './planning-progress';
 import { PlanningRoute, planningStages } from './planning-route';
 import { colors, motion, spacing } from './theme';
-import { Button, Label, layout, Panel } from './ui';
+import { Button, Icon, Label, layout, Panel, StatusLine } from './ui';
 
-export function PlanningJourney({ current, change, people, mapped, scheduled, destination, saved, children }: {
+export function PlanningJourney({ current, change, people, mapped, scheduled, destination, saved, saveTone, children }: {
   current: PlanningStage; change: (stage: PlanningStage) => void; people: number; mapped: number;
-  scheduled: boolean; destination: boolean; saved?: string; children: ReactNode;
+  scheduled: boolean; destination: boolean; saved?: string; saveTone?: 'info' | 'warning' | 'success'; children: ReactNode;
 }) {
   const index = planningStages.findIndex(stage => stage.id === current);
   const previous = useRef(current);
-  const [opacity] = useState(() => new Animated.Value(1));
+  const [offset] = useState(() => new Animated.Value(0));
+  const allowed = useMotionAllowed();
 
   useLayoutEffect(() => {
     if (previous.current === current) return;
     previous.current = current;
-    let active = true;
-    const reveal = Animated.timing(opacity, {
-      toValue: 1, duration: motion.stage.duration, easing: Easing.bezier(...motion.stage.curve),
+    if (!allowed) return;
+    offset.setValue(3);
+    const reveal = Animated.timing(offset, {
+      toValue: 0, duration: motion.stage.duration, easing: Easing.bezier(...motion.stage.curve),
       useNativeDriver: Platform.OS !== 'web',
     });
-    AccessibilityInfo.isReduceMotionEnabled().then(reduced => {
-      if (!active) return;
-      opacity.setValue(reduced ? 1 : 0.65);
-      if (!reduced) reveal.start();
-    }, () => { if (active) opacity.setValue(1); });
-    return () => { active = false; reveal.stop(); };
-  }, [current, opacity]);
+    reveal.start();
+    return () => { reveal.stop(); offset.setValue(0); };
+  }, [current, offset, allowed]);
 
   return <View style={layout.stack}>
     <PlanningRoute current={current} change={change} people={people} mapped={mapped} scheduled={scheduled} destination={destination} />
-    <Animated.View style={[layout.stack, { opacity }]}>
+    <View style={layout.stack}>
       <View style={styles.heading}>
-        <View accessibilityLiveRegion="polite" aria-live="polite" style={styles.title}>
+        <Animated.View accessibilityLiveRegion="polite" aria-live="polite"
+          style={[styles.title, { transform: [{ translateY: offset }] }]}>
           <Label kind="section" heading>{planningStages[index].title}</Label>
-        </View>
-        {!!saved && <View accessibilityLiveRegion="polite" aria-live="polite"><Label kind="caption">{saved}</Label></View>}
+        </Animated.View>
+        {!!saved && <StatusLine tone={saveTone}>{saved}</StatusLine>}
       </View>
       {children}
-    </Animated.View>
+    </View>
   </View>;
 }
 
@@ -60,8 +60,11 @@ export function PlanningStepActions({ stage, change, onNext, disabled, busy, sel
   return <View role="navigation" accessibilityLabel="Planning navigation"
     style={{ borderTopWidth: 1, borderColor: colors.divider, backgroundColor: colors.surface }}>
     <View style={[shellStyles.container, { paddingVertical: spacing.sm, gap: spacing.xs }]}>
-      {selection && <View accessibilityLiveRegion="polite" aria-live="polite">
-        <Label kind="detail" numberOfLines={1}>Selected · {selection}</Label>
+      {selection && <View accessibilityLiveRegion="polite" aria-live="polite" style={layout.row}>
+        <Icon name="map-pin" size={16} color={colors.info} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Label kind="detail" numberOfLines={1}>Selected · {selection}</Label>
+        </View>
       </View>}
       <View style={layout.between}>
         <View style={{ width: 112 }}>{previous && <Button secondary stretch icon="chevron-left" disabled={busy}

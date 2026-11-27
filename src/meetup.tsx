@@ -22,13 +22,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, View } from 'react-native';
 import { LocalMemories } from './local-memories';
 import { LifecycleAction, MeetupArrival } from './meetup-arrival';
+import { useNewMilestone } from './motion-feedback';
 import { Meetup, Participant, type Ranking, venues, retainPlace } from './planner';
 import { spacing } from './theme';
 import { Button, Label, layout, Panel } from './ui';
 
-export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus, saveReady, reportDirty, frame }: {
+export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus, saveReady, retrySave, reportDirty, frame }: {
   frame: RenderWorkspace;
-  saveStatus: string; saveReady: boolean; reportDirty: (dirty: boolean) => void;
+  saveStatus: string; saveReady: boolean; retrySave?: () => void; reportDirty: (dirty: boolean) => void;
   scrollToTop: () => void; meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
   const [filter, setFilter] = useState<{ activity?: string; category: Category }>();
@@ -70,6 +71,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
   const canEdit = meetup.status === 'Planning' || meetup.status === 'Draft';
   const finished = meetup.status === 'Completed' || meetup.status === 'Archived';
+  const celebrate = useNewMilestone(meetup.status === 'Completed' ? saveReady || undefined : false);
   function openTrip(id: string, person?: string) {
     setTripTarget(id);
     setTripEditorOpen(true);
@@ -107,7 +109,7 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
     </View>
     {(canEdit || meetup.status === 'Decided') && <PlanningJourney current={stage} change={changeStage}
       people={meetup.participants.length} mapped={located.length} scheduled={!!meetup.date}
-      destination={!!venue && saveReady} saved={saveStatus}>
+      destination={!!venue && saveReady} saved={saveStatus} saveTone={retrySave ? 'warning' : saveReady ? 'success' : 'info'}>
     {stage === 'who' && <>
       {!canEdit && <Label>The destination is confirmed. The roster is read-only.</Label>}
       <ParticipantRoster
@@ -160,14 +162,15 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
           {placeView === 'compare' ? 'Back to comparison' : placeView === 'places' ? 'Back to places' : 'Map'}
         </Button>
         <FriendPicker label="Trip for" people={meetup.participants} selected={currentVoter?.id} change={setVoter} />
-        <TripPlanning destinationId={tripTarget} meetup={meetup} save={save} participant={currentVoter}
+        <TripPlanning destinationId={tripTarget} meetup={meetup} save={save} saveReady={saveReady} retrySave={retrySave} participant={currentVoter}
           selectDestination={setTripTarget} selectParticipant={setVoter} reportDirty={setTripDirty} />
       </View>
     </>}
     {stage === 'where' && meetup.status === 'Decided' && confirmedPlace}
     </PlanningJourney>}
     {finished && <LocalMemories meetup={meetup} venue={venue} voter={currentVoter} selectVoter={setVoter}
-      save={save} saved={saveReady} saveStatus={saveStatus} map={() => setFullMap(true)} reportDirty={setRecapDirty}
+      save={save} saved={saveReady} saveStatus={saveStatus} retrySave={retrySave} celebrate={celebrate}
+      map={() => setFullMap(true)} reportDirty={setRecapDirty}
       roster={<ParticipantRoster members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located} />} />}
     {fullMap && venue?.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={formatLocalSchedule(meetup.date)}
       navigation={{ title: meetup.name, expanded: true, setExpanded: setFullMap, back }} />}
