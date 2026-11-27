@@ -4,13 +4,11 @@ import { Button, Icon, Label, layout } from './ui';
 
 type Props = {
   place: string; count: number; voter?: string; votedHere: boolean; hasVote: boolean;
-  vote: () => void; busy?: boolean; blocked?: boolean;
-  confirming: boolean; review: (open: boolean) => void; confirm?: () => void;
-  reviewLabel?: string;
+  vote: () => void; busy?: boolean; blocked?: boolean; voteDisabled?: boolean;
+  select?: () => void; selected?: boolean;
 };
 
-export function DecisionActions({ place, count, voter, votedHere, hasVote, vote, busy, blocked,
-  confirming, review, confirm, reviewLabel = 'Choose destination' }: Props) {
+export function DecisionActions({ place, count, voter, votedHere, hasVote, vote, busy, blocked, voteDisabled, select, selected }: Props) {
   const whose = voter ? voter + '’s' : 'my';
   const action = votedHere ? 'Remove ' + whose + ' vote' : hasVote ? 'Move ' + whose + ' vote here' :
     voter ? 'Vote as ' + voter : 'Vote for this place';
@@ -21,17 +19,11 @@ export function DecisionActions({ place, count, voter, votedHere, hasVote, vote,
         {count} {count === 1 ? 'vote' : 'votes'}{votedHere ? (voter ? ' · ' + voter + ' voted here' : ' · includes your vote') : ''}
       </Label>
     </View>
-    {confirming && confirm ? <>
-      <Label kind="value">Meet at {place}?</Label>
-      <Label kind="detail">Confirming sets the group’s destination and closes voting.</Label>
-      <View style={layout.wrap}>
-        <Button disabled={busy || blocked} onPress={confirm}>Confirm destination</Button>
-        <Button quiet disabled={busy} onPress={() => review(false)}>Cancel</Button>
-      </View>
-    </> : <View style={layout.wrap}>
-      <Button secondary={votedHere} disabled={busy} onPress={vote} accessibilityLabel={action + ', ' + place}>{action}</Button>
-      {!!confirm && <Button quiet disabled={busy || blocked} onPress={() => review(true)}
-        accessibilityLabel={reviewLabel + ', ' + place}>{reviewLabel}</Button>}
-    </View>}
+    <View style={layout.wrap}>
+      <View style={{ flex: 1 }}><Button secondary stretch disabled={busy || voteDisabled} onPress={vote}
+        accessibilityLabel={action + ', ' + place}>{votedHere ? 'Unvote' : hasVote ? 'Move vote' : 'Vote'}</Button></View>
+      {select && <View style={{ flex: 1 }}><Button stretch disabled={busy || blocked} onPress={select}
+        accessibilityLabel={'Select destination, ' + place}>{selected ? 'Selected' : 'Select'}</Button></View>}
+    </View>
   </View>;
 }

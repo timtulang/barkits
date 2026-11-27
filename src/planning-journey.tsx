@@ -1,5 +1,6 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { shellStyles } from './app-shell';
 import type { PlanningStage } from './planning-progress';
 import { colors, control, palette, radius, spacing } from './theme';
 import { Button, Label, layout, Panel } from './ui';
@@ -72,22 +73,44 @@ const styles = StyleSheet.create({
   title: { flexShrink: 1, minWidth: 0 },
 });
 
+export function PlanningStepActions({ stage, change, onNext, disabled, busy, selection }: {
+  stage: PlanningStage; change: (stage: PlanningStage) => void; onNext?: () => void; disabled?: boolean; busy?: boolean;
+  selection?: string;
+}) {
+  const index = stages.findIndex(item => item.id === stage);
+  const previous = stages[index - 1];
+  const next = stages[index + 1];
+  const label = stage === 'where' ? 'Review' : stage === 'review' ? 'Confirm' : 'Next';
+  return <View role="navigation" accessibilityLabel="Planning navigation"
+    style={{ borderTopWidth: 1, borderColor: colors.divider, backgroundColor: colors.surface }}>
+    <View style={[shellStyles.container, { paddingVertical: spacing.sm, gap: spacing.xs }]}>
+      {selection && <View accessibilityLiveRegion="polite" aria-live="polite">
+        <Label kind="detail" numberOfLines={1}>Selected · {selection}</Label>
+      </View>}
+      <View style={layout.between}>
+        <View style={{ width: 112 }}>{previous && <Button secondary stretch icon="chevron-left" disabled={busy}
+          accessibilityLabel={'Back to ' + previous.label} onPress={() => change(previous.id)}>Back</Button>}</View>
+        {(next || onNext) && <View style={{ width: 112 }}><Button stretch disabled={disabled} busy={busy} busyLabel="Saving…"
+          accessibilityLabel={stage === 'review' ? 'Confirm destination' : undefined}
+          onPress={() => { if (onNext) onNext(); else if (next) change(next.id); }}>{label}</Button></View>}
+      </View>
+    </View>
+  </View>;
+}
+
 export function PlanningReview({ people, mapped, schedule, destination, change, canEdit = true, pending, activity, description }: {
   people: number; mapped: number; schedule?: string; destination?: string; activity?: string | null; description?: string | null;
   change: (stage: PlanningStage) => void; canEdit?: boolean; pending?: string;
 }) {
   return <Panel>
-    <Label kind="item" heading>{destination ? 'Destination confirmed' : pending ? 'Plan awaiting confirmation' : 'Destination still to decide'}</Label>
-    <Label>{people} {people === 1 ? 'friend' : 'friends'} · {mapped} starting {mapped === 1 ? 'point' : 'points'} on the map</Label>
-    {mapped < people && <Label kind="detail">{people - mapped} starting {people - mapped === 1 ? 'point still needs' : 'points still need'} attention before nearby places can be found for everyone.</Label>}
-    <Label>{schedule || 'Date and time undecided (optional)'}</Label>
+    <Label kind="item" heading>{destination ? 'Destination confirmed' : pending ? 'Meetup details' : 'Pick a place'}</Label>
+    <Label>{people} {people === 1 ? 'friend' : 'friends'}{mapped < people ? ' · ' + (people - mapped) + ' missing a start' : ''}</Label>
+    <Label>{schedule || 'Time undecided'}</Label>
     {!!activity && <Label>Activity · {activity}</Label>}
     {!!description && <Label>{description}</Label>}
-    <Label>{destination ? 'Meet at ' + destination : pending ? 'Place under review · ' + pending : 'No destination confirmed. Votes and suggestions do not confirm a place.'}</Label>
-    {canEdit && <View style={layout.wrap}>
-      <Button secondary={!!pending} onPress={() => change('where')}>{destination ? 'View meeting place' : pending ? 'Compare another place' : 'Choose a meeting place'}</Button>
-      <Button quiet onPress={() => change('who')}>Change friends or starting points</Button>
-      <Button quiet onPress={() => change('when')}>Review meetup time</Button>
+    {canEdit && <View style={[layout.wrap, { width: '100%', maxWidth: 288 }]}>
+      <View style={{ flex: 1 }}><Button secondary stretch onPress={() => change('who')}>Friends</Button></View>
+      <View style={{ flex: 1 }}><Button secondary stretch onPress={() => change('when')}>Time</Button></View>
     </View>}
   </Panel>;
 }

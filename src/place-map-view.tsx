@@ -10,9 +10,9 @@ import { GoogleRoadmap } from './google-roadmap';
 import type { Point } from './geo';
 import { colors, palette, radius, spacing } from './theme';
 
-export type MapProps = { mapLabel?: string; viewportHeight?: number; onSelectVenue?: (id: string) => Promise<void>; pins?: MapPin[]; point?: Point; onPick?: (point: Point) => Promise<void>; dom?: DOMProps };
+export type MapProps = { mapLabel?: string; viewportHeight?: number; onSelectVenue?: (id: string) => Promise<void>; onExpand?: () => Promise<void>; pins?: MapPin[]; point?: Point; onPick?: (point: Point) => Promise<void>; dom?: DOMProps };
 
-export default function PlaceMapView({ point, onPick, pins, onSelectVenue, viewportHeight, mapLabel, googleKey }: MapProps & { googleKey?: string }) {
+export default function PlaceMapView({ point, onPick, pins, onSelectVenue, onExpand, viewportHeight, mapLabel, googleKey }: MapProps & { googleKey?: string }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Leaflet.Map | null>(null);
   const [ready, setReady] = useState<Leaflet.Map | null>(null);
@@ -80,7 +80,14 @@ export default function PlaceMapView({ point, onPick, pins, onSelectVenue, viewp
       '--map-error-surface': colors.errorSurface, '--map-shadow': colors.scrim,
       position: 'relative', zIndex: 0, width: '100%', height: viewportHeight, display: 'flex', flexDirection: 'column',
     } as CSSProperties}>
-    <div ref={container} aria-label={mapLabel ?? (onSelectVenue ? 'Suggested places map' : 'Location map')} style={{ height: viewportHeight ? undefined : onSelectVenue ? 300 : 240, flex: viewportHeight ? 1 : undefined, minHeight: 0, width: '100%', borderRadius: viewportHeight ? 0 : radius.control }} />
+    <div style={{ position: 'relative', flex: viewportHeight ? 1 : undefined, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div ref={container} aria-label={mapLabel ?? (onSelectVenue ? 'Suggested places map' : 'Location map')} style={{ height: viewportHeight ? undefined : onSelectVenue ? 300 : 240, flex: viewportHeight ? 1 : undefined, minHeight: 0, width: '100%', borderRadius: viewportHeight ? 0 : radius.control }} />
+      {onExpand && <button type="button" className="map-expand" aria-label="Open full-screen map" title="Open full-screen map" onClick={() => void onExpand()}>
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4" />
+        </svg>
+      </button>}
+    </div>
     {googleKey && ready && map.current && leaflet.current && <GoogleRoadmap map={map.current} leaflet={leaflet.current} apiKey={googleKey} />}
     {!googleKey && <div className="map-attribution">
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>

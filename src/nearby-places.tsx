@@ -1,37 +1,37 @@
-import { ChoiceField } from './form-controls';
+import { canConfirmLocal } from './destination-eligibility';
 import type { MapNavigation } from './fullscreen-place-map';
+import { FriendPicker } from './friend-picker';
 import { SuggestedPlaces } from './suggested-places';
-import { Linking, View } from 'react-native';
-import type { LocatedFriend, Category, discover } from './discovery';
-import { Meetup, Participant, Venue, retainPlace } from './planner';
-import { Button, Chip, Label, layout, Panel } from './ui';
+import type { ReactNode } from 'react';
+import type { LocatedFriend, discover } from './discovery';
+import { type Meetup, type Participant, type Venue, retainPlace, venues } from './planner';
+import { localTripRows } from './trip-evidence';
+import { TripComparison } from './trip-comparison';
+import { Label } from './ui';
 import { VenueDecision } from './venue-decision';
 
 type Props = {
   navigation: MapNavigation; meetup: Meetup; voter?: Participant; friends: LocatedFriend[]; suggestions: ReturnType<typeof discover>;
-  category: Category; edit: (friend: Participant) => void;
-  selectVoter: (id: string) => void; compare: (venue: Venue) => void; save: (meetup: Meetup) => void;
-  review: (venue: Venue) => void;
+  filters: ReactNode; selected?: string; selectVoter: (id: string) => void; editTrip: (venue: Venue, person: string) => void;
+  editFriend: (person?: Participant) => void; save: (meetup: Meetup) => void; select: (venue: Venue) => void;
 };
 
-export function NearbyPlaces({ meetup, voter, friends, suggestions, category, edit, selectVoter, compare, save, navigation, review }: Props) {
-  const missing = meetup.participants.filter(person => !friends.some(friend => friend.id === person.id));
-  const hasLimits = meetup.participants.some(person => person.budget !== undefined || person.maxMinutes !== undefined);
-  return <>
-    {!meetup.participants.length ? <Label>Add a friend and their starting point to find places.</Label> :
-      missing.length ? <Panel><Label>Choose a locality match or pin for each starting point to calculate suggestions.</Label>
-        <View style={layout.wrap}>{missing.map(friend => <Button key={friend.id} secondary onPress={() => edit(friend)}>Locate {friend.name}</Button>)}</View></Panel> :
-      !suggestions.length ? <Label>No mapped {category === 'All' ? 'places' : category.toLowerCase() + ' venues'} in this catalog are within 50 km of every starting point. Try another category or suggest your own place.</Label> : null}
-    <SuggestedPlaces navigation={navigation} suggestions={suggestions} friends={friends} actions={venue => <>
-      {hasLimits && <Label kind="detail">Enter trip estimates, then choose a place that meets everyone’s limits in Compare trips &amp; vote.</Label>}
-      {!hasLimits && voter && <>
-        {meetup.participants.length > 1 && <ChoiceField label="Record vote for" value={voter.id} change={selectVoter}
-          options={meetup.participants.map(friend => ({ value: friend.id, label: friend.name }))} />}
-        <VenueDecision meetup={meetup} venue={venue} voter={voter} save={updated => save(retainPlace(updated, venue))} onReview={review} />
-      </>}
-      <Button secondary={!hasLimits} onPress={() => compare(venue)}>Compare trips here</Button>
-    </>} />
-    {suggestions.length > 0 && <Label kind="detail">Ranked by distance from your group, with extra weight on the longest trip and nearby bus connections.</Label>}
-    {suggestions.length > 0 && <Chip onPress={() => void Linking.openURL('https://www.openstreetmap.org/copyright')}>Venue data © OpenStreetMap contributors</Chip>}
-  </>;
+export function NearbyPlaces({ meetup, voter, friends, suggestions, filters, selectVoter, editTrip, editFriend, save, navigation, selected, select }: Props) {
+  return <SuggestedPlaces navigation={navigation} suggestions={suggestions} friends={friends}
+    alternatives={[...meetup.customVenues ?? [], ...venues]} filters={filters} actions={(venue, close) => {
+      const ready = canConfirmLocal(retainPlace(meetup, venue), venue);
+      const hasLimits = meetup.participants.some(person => person.budget !== undefined || person.maxMinutes !== undefined);
+      const choose = () => { close(); select(venue); };
+      return <>
+        {voter && <>
+          {!ready && <Label kind="detail">{hasLimits ? 'Check the group’s travel limits before voting.' : 'Add trip estimates to vote.'}</Label>}
+          <TripComparison rows={localTripRows(meetup, venue)} editableIds={meetup.participants.map(person => person.id)}
+            edit={person => { close(); editTrip(venue, person); }}
+            changeTransport={id => { close(); editFriend(meetup.participants.find(person => person.id === id)); }} />
+          <FriendPicker label="Vote as" people={meetup.participants} selected={voter.id} change={selectVoter} />
+          <VenueDecision meetup={meetup} venue={venue} voter={voter} save={updated => save(retainPlace(updated, venue))}
+            select={choose} selected={selected === venue.id} voteDisabled={!ready} />
+        </>}
+      </>;
+    }} />;
 }

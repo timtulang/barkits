@@ -16,11 +16,11 @@ export function TripComparison({ rows, edit, editableIds, changeTransport }: {
     ['Group one-way fare', totals.fare === null ? 'Fare unavailable' : '₱' + totals.fare.toLocaleString('en-PH')],
   ];
   return <View style={{ gap: spacing.md }}>
-    <View style={layout.wrap}>{figures.map(([label, value]) => <View key={label} style={{ flexGrow: 1, flexBasis: 130, gap: spacing.xs }}>
+    <Button secondary expanded={expanded} onPress={() => setExpanded(!expanded)}>{expanded ? 'Hide trips' : 'Trip estimates'}</Button>
+    {expanded && <><View style={layout.wrap}>{figures.map(([label, value]) => <View key={label} style={{ flexGrow: 1, flexBasis: 130, gap: spacing.xs }}>
       <Label kind="detail">{label}</Label><Label kind="value">{value}</Label>
     </View>)}</View>
-    <Label kind="detail">{totals.ready} of {totals.count} travel times available. {totals.blocked ? 'Travel limits need attention.' : 'Compare estimates before choosing.'}</Label>
-    <Button secondary expanded={expanded} onPress={() => setExpanded(!expanded)}>{expanded ? 'Hide participant trips' : 'See each person’s trip'}</Button>
+    <Label kind="detail">{totals.ready} of {totals.count} travel times available.{totals.blocked ? ' Check travel limits.' : ''}</Label></>}
     {expanded && rows.map(row => <View key={row.person.id} style={{ borderTopWidth: 1, borderColor: colors.divider, paddingTop: spacing.md, gap: spacing.sm }}>
       <Label kind="value">{row.person.name}</Label>
       <Label kind="detail">{row.origin || 'Starting point pending'}{row.mode ? ' · ' + row.mode : ''}</Label>
@@ -32,8 +32,8 @@ export function TripComparison({ rows, edit, editableIds, changeTransport }: {
       </View>
       {row.issues.map(issue => <Label key={issue} kind="detail" color={colors.warning}>{issue}</Label>)}
       {editableIds.includes(row.person.id) && <View style={layout.wrap}>
-        <Button secondary accessibilityLabel={'Edit trip for ' + row.person.name} onPress={() => edit(row.person.id)}>Edit trip estimate</Button>
-        {changeTransport && <Button quiet onPress={() => changeTransport(row.person.id)}>Change {row.person.name}’s transport or start</Button>}
+        <Button secondary accessibilityLabel={'Edit trip for ' + row.person.name} onPress={() => edit(row.person.id)}>Edit trip</Button>
+        {changeTransport && <Button quiet accessibilityLabel={'Edit start for ' + row.person.name} onPress={() => changeTransport(row.person.id)}>Edit start</Button>}
       </View>}
     </View>)}
   </View>;

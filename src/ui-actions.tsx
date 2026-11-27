@@ -12,10 +12,10 @@ const variants = {
 } satisfies Record<ButtonVariant, { background: string; foreground: string; hover: string; pressed: string; border: string }>;
 
 export function Button({ children, icon, onPress, secondary = false, quiet = false, disabled = false,
-  accessibilityLabel, expanded, variant, busy = false, busyLabel }: {
+  accessibilityLabel, expanded, variant, busy = false, busyLabel, stretch }: {
   children: ReactNode; icon?: IconName; onPress: () => void; secondary?: boolean; quiet?: boolean;
   expanded?: boolean; disabled?: boolean; accessibilityLabel?: string; variant?: ButtonVariant;
-  busy?: boolean; busyLabel?: string;
+  busy?: boolean; busyLabel?: string; stretch?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
   const state = variants[variant ?? (quiet ? 'quiet' : secondary ? 'secondary' : 'primary')];
@@ -25,7 +25,7 @@ export function Button({ children, icon, onPress, secondary = false, quiet = fal
     accessibilityState={{ expanded, disabled: inactive, busy }} aria-busy={busy} aria-expanded={expanded}
     disabled={inactive} onPress={onPress}
     onHoverIn={() => setHovered(true)} onHoverOut={() => setHovered(false)}
-    style={({ pressed }) => [styles.button, { borderColor: disabled ? colors.disabled : state.border,
+    style={({ pressed }) => [styles.button, stretch && { alignSelf: 'stretch' }, { borderColor: disabled ? colors.disabled : state.border,
       backgroundColor: disabled ? colors.disabled : !inactive && pressed ? state.pressed : !inactive && hovered ? state.hover : state.background }]}>
     {busy ? <ActivityIndicator size="small" color={foreground} aria-hidden importantForAccessibility="no-hide-descendants" /> :
       icon && <Icon name={icon} size={control.icon} color={foreground} />}

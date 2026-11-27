@@ -49,8 +49,8 @@ function EstimateEditor({ candidate, current, trip, save, close }: {
   </EditorDialog>;
 }
 
-export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse, editStartingPoint, reviewCandidate }: Props & {
-  refresh: () => void; browse: () => void; editStartingPoint: () => void; reviewCandidate: (candidate: Candidate) => void;
+export function SharedBallot({ id, ballot, members, userId, owner, busy, run, refresh, browse, editStartingPoint, selected, selectCandidate }: Props & {
+  refresh: () => void; browse: () => void; editStartingPoint: () => void; selected?: string; selectCandidate: (candidate: Candidate) => void;
 }) {
   const [editing, setEditing] = useState<Candidate>();
   const myTrip = members.find(m => m.id === userId)?.trip;
@@ -78,11 +78,10 @@ export function SharedBallot({ id, ballot, members, userId, owner, busy, run, re
         </View>}
         <DecisionActions place={c.place.name} count={c.votes.length} votedHere={voted} hasVote={!!myChoice}
           vote={() => run(() => setSharedVote(id, voted ? null : c.venue_id))} busy={busy} blocked={!!blockers.length}
-          confirming={false} review={open => { if (open && owner) reviewCandidate(c); }} reviewLabel="Review destination"
-          confirm={owner ? () => reviewCandidate(c) : undefined} />
+          selected={selected === c.venue_id} select={owner ? () => selectCandidate(c) : undefined} />
         <View style={layout.wrap}>
-          {myTrip && <Button secondary disabled={busy} onPress={() => setEditing(c)}>My trip estimate</Button>}
-          {!myTrip && <Button secondary disabled={busy} onPress={editStartingPoint}>Add my starting point for trip estimates</Button>}
+          {myTrip && <Button secondary disabled={busy} onPress={() => setEditing(c)}>Edit my trip</Button>}
+          {!myTrip && <Button secondary disabled={busy} onPress={editStartingPoint}>Add my start</Button>}
           <GoogleMapsLink point={[c.place.latitude,c.place.longitude]} />
         </View>
       </View>;

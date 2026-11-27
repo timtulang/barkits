@@ -2,6 +2,7 @@
 
 ## Snapshot
 - 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at the end of each task.
+- 2026-11-27 [CODE] Planning now has a fixed Back/Next footer, a map-first place step with initials and fullscreen control, named voter avatars, and a shorter review. Trip estimates remain available per place. Native device and map tile rendering checks remain open.
 - 2026-11-27 [USER] Current scope supersedes the prior stop for this refinement. On `barkits-prototype`, simplify four-stage meetup creation with story-inspired progress and fix mobile inputs.
 - 2026-11-27 [CODE] Local and shared plans use four tappable progress bars, one task heading per stage, and brief reduced-motion-aware transitions. Compact web editors follow the keyboard viewport and keep the focused input in view. Native device and hosted acceptance remain open.
 - 2026-11-26 [USER] Current request explicitly authorizes sequential 4.5B/C/D with a commit at each boundary; original roadmap remains paused. Task clarity leads hierarchy, efficiency, consistency and decoration.
@@ -64,3 +65,4 @@
 - 2026-11-26 [TOOL] Ignored receipts: .expo/redesign/phase45b/, phase45c/, phase45d/. Metro required --clear to switch embedded fixture env; normal final export contains no fixture environment. No external model/provider changes.
 - 2026-11-26 [TOOL] D committed `0958b7a`; B `74c04b6`, C `4fce554`. Final normal export excludes fixture configuration. Stop at documented native/live-backend acceptance gates; no Phase 5/6 work or deployment.
 - 2026-11-27 [TOOL] Typecheck, 18 planner tests, web/Android/iOS exports, guest acceptance at 320/390/768/1440 px and synthetic shared acceptance passed. Chromium also verified form entry with a simulated keyboard viewport, touch, keyboard navigation and reduced motion.
+- 2026-11-27 [TOOL] Map-first follow-up passed types, 18 tests, four-width guest and synthetic shared journeys, including the fixed footer and overlapping origins. Cloud proxy returned HTTP 403 for OpenStreetMap tiles.

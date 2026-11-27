@@ -1,11 +1,12 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useImperativeHandle, useState, type Ref } from 'react';
 import { View } from 'react-native';
 import { readSchedule, scheduleProblem } from './meetup-schedule';
 import { ScheduleInput } from './schedule-input';
-import { Button, Feedback, Label, layout, Panel } from './ui';
+import { Button, Feedback, Label, Panel } from './ui';
 
-export function PlanningSchedule({ date, save, continuePlanning, reportDirty }: {
+export function PlanningSchedule({ date, save, continuePlanning, reportDirty, ref }: {
   date: string; save: (date: string) => void; continuePlanning: () => void; reportDirty: (dirty: boolean) => void;
+  ref: Ref<{ advance: () => void }>;
 }) {
   const [schedule, setSchedule] = useState(() => readSchedule(date));
   const [incomplete, setIncomplete] = useState({ date: false, time: false });
@@ -24,6 +25,7 @@ export function PlanningSchedule({ date, save, continuePlanning, reportDirty }: 
     if (dirty) save(value);
     continuePlanning();
   }
+  useImperativeHandle(ref, () => ({ advance }));
   return <Panel>
     <Label kind="detail">Add a date and time, or decide later.</Label>
     {!!legacy && !(day && time) && <Label>Saved schedule · {legacy}</Label>}
@@ -35,8 +37,5 @@ export function PlanningSchedule({ date, save, continuePlanning, reportDirty }: 
       setSchedule(readSchedule()); setIncomplete({ date: false, time: false }); setVersion(value => value + 1);
     }}>Clear schedule</Button>}
     {dirty && <Label kind="detail">Schedule changes are not saved yet. They stay here while you visit other planning stages.</Label>}
-    <View style={layout.wrap}>
-      <Button onPress={advance}>{dirty ? 'Save schedule & choose places' : value ? 'Choose meeting places' : 'Choose places — decide time later'}</Button>
-    </View>
   </Panel>;
 }

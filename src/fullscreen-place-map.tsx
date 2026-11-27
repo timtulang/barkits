@@ -32,7 +32,7 @@ export function FullscreenPlaceMap({ navigation, pins, select, children, detail,
   </Modal>;
 }
 
-export function PlaceListTray({ count, places, originControl }: { count: number; places: ReactNode; originControl: ReactNode }) {
+export function PlaceListTray({ count, places }: { count: number; places: ReactNode }) {
   const [listOpen, setListOpen] = useState(false);
   const { height } = useWindowDimensions();
   return <>
@@ -40,10 +40,9 @@ export function PlaceListTray({ count, places, originControl }: { count: number;
       <Button quiet expanded={listOpen} icon={listOpen ? 'chevron-down' : 'list'} onPress={() => setListOpen(!listOpen)}>
         {listOpen ? 'Hide places' : 'View places'} ({count})
       </Button>
-      {originControl}
     </View>
     {listOpen && <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: height * 0.33, flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.sm }}>
-      <Label kind="detail">Numbers match the map pins. Select a place to compare or vote.</Label>
+      <Label kind="detail">Numbers match the map pins. Select a place for details.</Label>
       {places}
     </ScrollView>}
   </>;

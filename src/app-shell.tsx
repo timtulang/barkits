@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, control, palette, radius, spacing } from './theme';
 import { Button, Icon, Label, layout } from './ui';
+
+export type RenderWorkspace = (content: ReactNode, footer?: ReactNode) => ReactNode;
 
 export function AppHeader({ signedIn, inMeetup, compact, home, account, create }: {
   signedIn: boolean; inMeetup: boolean; compact: boolean; home: () => void; account: () => void; create: () => void;

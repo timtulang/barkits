@@ -10,7 +10,7 @@ import { ParticipantEditor } from '../src/editor';
 import { Home } from '../src/home';
 import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
-import { AppFooter, AppHeader, shellStyles as styles } from '../src/app-shell';
+import { AppFooter, AppHeader, shellStyles as styles, type RenderWorkspace } from '../src/app-shell';
 import { Button, Feedback, Label, LoadingState } from '../src/ui';
 import { JoinDialog, SharedList } from '../src/shared-membership';
 import { SharedMeetupScreen } from '../src/shared-meetup-screen';
@@ -87,21 +87,29 @@ function Workspace({ user }: { user: User | null }) {
     setEditedFriend(undefined);
   }
 
-  return <SafeAreaView style={styles.safe}>
-    <AppHeader signedIn={!!user} inMeetup={!!selected || !!sharedId} compact={!wide}
-      home={() => navigateLocal(null)} account={() => setAccountOpen(true)} create={() => setEditor('new')} />
+  const renderWorkspace: RenderWorkspace = (content, footer) => <>
     <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
         action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
       {!ready && !storageError && <LoadingState label="Loading your meetups…" />}
-      {ready && (sharedId && user ? <SharedMeetupScreen key={sharedId} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> : selected ? <MeetupScreen key={index} reportDirty={setPlanningDirty} saveReady={savedMeetups === meetups && !storageError} saveStatus={saveStatus} scrollToTop={() => scroll.current?.scrollTo({ y: 0, animated: false })} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
-        <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
+      {content}
+      {!footer && <AppFooter />}
+    </ScrollView>
+    {footer}
+  </>;
+  const scrollToTop = () => scroll.current?.scrollTo({ y: 0, animated: false });
+
+  return <SafeAreaView style={styles.safe}>
+    <AppHeader signedIn={!!user} inMeetup={!!selected || !!sharedId} compact={!wide}
+      home={() => navigateLocal(null)} account={() => setAccountOpen(true)} create={() => setEditor('new')} />
+    {ready && sharedId && user ? <SharedMeetupScreen key={sharedId} frame={renderWorkspace} scrollToTop={scrollToTop} id={sharedId} userId={user.id} back={() => navigateLocal(null)} /> :
+      ready && selected ? <MeetupScreen key={index} frame={renderWorkspace} reportDirty={setPlanningDirty} saveReady={savedMeetups === meetups && !storageError} saveStatus={saveStatus}
+        scrollToTop={scrollToTop} meetup={selected} save={save} editDetails={() => setEditor('details')} editFriend={friend => { setEditedFriend(friend); setEditor('participant'); }} back={() => navigateLocal(null)} /> :
+      renderWorkspace(ready && <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={navigateLocal} signedIn={!!user} past={past} setPast={setPast}
           shared={user ? <SharedList past={past} open={openShared} join={() => setJoining(true)} /> : authSetup.client ?
             <View style={{ gap: 12 }}><Label kind="item" heading>With friends</Label><Label kind="detail">Sign in to create a shared plan or join your barkada with an invite code.</Label>
               <Button secondary icon="users" onPress={() => setAccountOpen(true)}>Sign in to join a meetup</Button></View> : undefined} />)}
-      <AppFooter />
-    </ScrollView>
     {pendingLocal !== undefined && <EditorDialog title="Unsaved planning edits" close={() => setPendingLocal(undefined)} actions={<>
       <Button onPress={() => setPendingLocal(undefined)}>Keep planning</Button>
       <Button secondary onPress={() => {

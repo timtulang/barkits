@@ -2,7 +2,7 @@ import type * as Leaflet from 'leaflet';
 import type { Point } from './geo';
 import { palette } from './theme';
 
-export type MapPin = { point: Point; label: string; kind: 'origin' | 'venue'; venueId?: string; number?: number };
+export type MapPin = { point: Point; label: string; kind: 'origin' | 'venue'; venueId?: string; number?: number; initials?: string };
 
 export function framePins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[]) {
   const interactive = pins.some(pin => pin.venueId !== undefined);
@@ -14,7 +14,7 @@ export function framePins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[]) {
 
 export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], select: (id: string) => void) {
   const layer = L.layerGroup().addTo(map);
-  const numbered: { marker: Leaflet.Marker; point: Point }[] = [];
+  const positioned: { marker: Leaflet.Marker; point: Point }[] = [];
   const leaders = L.layerGroup().addTo(layer);
   for (const pin of pins) {
     const pointer = document.createElement('span');
@@ -24,6 +24,9 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
       const number = document.createElement('b');
       number.textContent = String(pin.number);
       pointer.append(number);
+    } else if (pin.initials) {
+      pointer.classList.add('friend-pin');
+      pointer.textContent = pin.initials;
     } else if (isInteractive) {
       pointer.classList.add('confirmed-pin');
     }
@@ -36,9 +39,9 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
     const marker = L.marker(pin.point, { icon, title: pin.label, alt: pin.label, zIndexOffset: isInteractive ? 1000 : 0 }).addTo(layer);
     marker.getElement()?.setAttribute('aria-label', pin.label);
     const id = pin.venueId;
+    if (id !== undefined || pin.initials) positioned.push({ marker, point: pin.point });
     if (id !== undefined) {
       marker.getElement()?.addEventListener('mousedown', event => event.stopPropagation());
-      numbered.push({ marker, point: pin.point });
       marker.on('click', () => select(id));
       marker.on('keydown', (event: Leaflet.LeafletKeyboardEvent) => {
         if (event.originalEvent.key === 'Enter' || event.originalEvent.key === ' ') {
@@ -56,12 +59,18 @@ export function addPins(L: typeof Leaflet, map: Leaflet.Map, pins: MapPin[], sel
   function separateNearbyPins() {
     leaders.clearLayers();
     const occupied: Leaflet.Point[] = [];
-    for (const { marker, point } of numbered) {
+    for (const { marker, point } of positioned) {
       const anchor = map.latLngToLayerPoint(point);
       let display = anchor;
-      for (const offset of [[0, 0], [46, 0], [-46, 0], [0, 46], [0, -46]]) {
-        display = anchor.add(L.point(offset[0], offset[1]));
-        if (occupied.every(other => Math.abs(other.x - display.x) >= 44 || Math.abs(other.y - display.y) >= 44)) break;
+      for (const [x, y] of [[0, 0], [46, 0], [-46, 0], [0, 46], [0, -46], [46, 46], [-46, -46], [46, -46], [-46, 46]]) {
+        const candidate = anchor.add(L.point(x, y));
+        const screen = map.layerPointToContainerPoint(candidate);
+        const size = map.getSize();
+        if (screen.x < 22 || screen.y < 22 || screen.x > size.x - 22 || screen.y > size.y - 22) continue;
+        if (occupied.every(other => Math.abs(other.x - candidate.x) >= 44 || Math.abs(other.y - candidate.y) >= 44)) {
+          display = candidate;
+          break;
+        }
       }
       occupied.push(display);
       const position = map.layerPointToLatLng(display);
