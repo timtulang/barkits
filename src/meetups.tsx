@@ -1,15 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { User } from '@supabase/supabase-js';
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { shellStyles } from './app-shell';
 import { meetupStorageKey, readMeetups } from './meetup-storage';
+import type { Account } from './services/auth';
 import type { Meetup } from './planner';
 import { LoadingState } from './ui';
 import { useAccount } from './use-account';
 
 type MeetupStore = {
-  user: User | null;
+  user: Account | null;
+  accountError: string;
   joining: boolean;
   setJoining: (value: boolean) => void;
   past: boolean;
@@ -28,17 +29,18 @@ type MeetupStore = {
 const MeetupsContext = createContext<MeetupStore | null>(null);
 
 export function MeetupsProvider({ children }: { children: ReactNode }) {
-  const { ready, user } = useAccount();
+  const { ready, user, error, joinAfterSignIn } = useAccount();
   const [joining, setJoining] = useState(false);
+  useEffect(() => { if (joinAfterSignIn) setJoining(true); }, [joinAfterSignIn]);
   if (!ready) return <SafeAreaView style={shellStyles.safe}>
     <LoadingState label="Loading your account…" />
   </SafeAreaView>;
-  return <AccountMeetupStore key={user?.id ?? 'guest'} user={user} joining={joining} setJoining={setJoining}>
+  return <AccountMeetupStore key={user?.id ?? 'guest'} user={user} accountError={error} joining={joining} setJoining={setJoining}>
     {children}
   </AccountMeetupStore>;
 }
 
-function AccountMeetupStore({ children, user, joining, setJoining }: Pick<MeetupStore, 'user' | 'joining' | 'setJoining'> & { children: ReactNode }) {
+function AccountMeetupStore({ children, user, accountError, joining, setJoining }: Pick<MeetupStore, 'user' | 'accountError' | 'joining' | 'setJoining'> & { children: ReactNode }) {
   const storageKey = user ? `${meetupStorageKey}.${user.id}` : meetupStorageKey;
   const [past, setPast] = useState(false);
   const [sharedId, setSharedId] = useState<string>();
@@ -102,7 +104,7 @@ function AccountMeetupStore({ children, user, joining, setJoining }: Pick<Meetup
     if (latest.current) persist(latest.current);
   }
 
-  return <MeetupsContext.Provider value={{ user, joining, setJoining, past, setPast, sharedId, setSharedId,
+  return <MeetupsContext.Provider value={{ user, accountError, joining, setJoining, past, setPast, sharedId, setSharedId,
     meetups, savedMeetups, loadFailed, saveFailed, retryLoad, retrySave, saveMeetup }}>
     {children}
   </MeetupsContext.Provider>;

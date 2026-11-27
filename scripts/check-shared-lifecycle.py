@@ -23,7 +23,7 @@ def fits(browser, width):
 
 def check_invites(args, owner, member):
     owner.viewport(1440)
-    seed_session(owner, OWNER)
+    seed_session(owner, OWNER, args.app)
     owner.open(args.app)
     owner.click('[aria-label="Open Fixture shared meetup"]')
     owner.stage('who')
@@ -42,19 +42,8 @@ def check_invites(args, owner, member):
 
     member.open(args.app)
     member.tap('Join with code')
-    see(member, 'then you can enter your meetup invite')
-    member.tap('Send code')
-    see(member, 'Enter a valid email address.')
-    member.fill('Email address', 'member@example.invalid')
-    member.tap('Send code')
-    see(member, 'Check your email')
-    member.tap('Verify and continue')
-    see(member, 'Enter the numeric code from your email.')
-    member.fill('Email code', '111111')
-    member.tap('Verify and continue')
-    see(member, 'Invalid test sign-in code.')
-    member.fill('Email code', '123456')
-    member.tap('Verify and continue')
+    see(member, 'Sign in with Google to enter your meetup invite.')
+    member.tap('Sign in with Google')
     see(member, 'Join a meetup')
     member.snapshot('join-after-sign-in-390')
     member.tap('Join meetup')
@@ -157,7 +146,7 @@ def check_memories(args, owner, member):
     assert not fixture(args.fixture, '/fixture/state')['recaps']
     assert not fixture(args.fixture, '/fixture/state')['ratings']
     member.click('[aria-label="Your account"]')
-    see(member, 'On-device plans stay in this browser or app.')
+    see(member, 'Your on-device plans stay in this browser or app.')
     member.tap('Sign out of this device')
     see(member, 'Sign in')
 

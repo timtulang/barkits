@@ -23,7 +23,7 @@ function browserEntryIndex() {
 }
 
 export function Workspace({ meetupId }: { meetupId?: string }) {
-  const { user, joining, setJoining, meetups, savedMeetups, saveFailed, loadFailed, retrySave, retryLoad, saveMeetup,
+  const { user, accountError, joining, setJoining, meetups, savedMeetups, saveFailed, loadFailed, retrySave, retryLoad, saveMeetup,
     past, setPast, sharedId: openSharedId, setSharedId } = useMeetups();
   const scroll = useRef<ScrollView>(null);
   const navigation = useNavigation();
@@ -108,6 +108,7 @@ export function Workspace({ meetupId }: { meetupId?: string }) {
   const renderWorkspace: RenderWorkspace = (content, footer) => <>
     <ScrollView ref={scroll} role="main" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       key={sharedId ?? meetupId ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
+      {!!accountError && <Feedback tone="error">{accountError}</Feedback>}
       {loadFailed && <Feedback tone="error" title="Your meetups couldn’t load"
         action={<Button secondary onPress={retryLoad}>Try again</Button>}>Your saved data has not been replaced.</Feedback>}
       {saveFailed && selected?.status !== 'Completed' && selected?.status !== 'Archived' &&
@@ -132,7 +133,7 @@ export function Workspace({ meetupId }: { meetupId?: string }) {
           This meetup isn’t saved on this device for the current account.
         </EmptyState> :
         <Home wide={wide} meetups={meetups} create={() => setEditor('new')} open={openLocal} signedIn={!!user} past={past} setPast={setPast}
-          join={authSetup.client ? () => { setJoining(true); if (!user) setAccountOpen(true); } : undefined}
+          join={authSetup.enabled ? () => { setJoining(true); if (!user) setAccountOpen(true); } : undefined}
           shared={user ? <SharedList past={past} open={openShared} /> : undefined} />))}
     {pendingLeave && <EditorDialog title="Unsaved planning edits" close={keepPlanning} actions={<>
       <Button onPress={keepPlanning}>Keep planning</Button>

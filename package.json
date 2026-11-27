@@ -8,15 +8,15 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "build:web": "expo export --platform web --clear",
-    "test": "node --experimental-strip-types --test src/planner.test.mts"
+    "test": "node --experimental-strip-types --test src/planner.test.mts server/api.test.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/nunito": "^0.4.0",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.3",
+    "@neondatabase/serverless": "^1.2.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "^8.4.4",
-    "@supabase/supabase-js": "^2.119.2",
     "expo": "~54.0.36",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
@@ -27,6 +27,7 @@
     "expo-router": "~6.0.24",
     "expo-secure-store": "~15.0.8",
     "expo-status-bar": "~3.0.9",
+    "google-auth-library": "^11.3.4",
     "leaflet": "^1.9.4",
     "nativewind": "^4.2.0",
     "react": "19.1.0",

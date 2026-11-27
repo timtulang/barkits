@@ -4,7 +4,7 @@
 
 Start with four example participants from Caloocan, Quezon City, Makati and Pasig. Create a meetup with a name and optional activity, description, and target date and time. Save it as a draft to revisit on this device, or start planning immediately. Drafts can hold participant starting points and budgets. Starting planning opens comparisons and voting. Add friends with any starting place, transportation mode, optional fare limit and optional maximum trip duration. Pick a ranking, inspect each person's mocked trip, vote, and explicitly choose a venue. Complete the meetup to save an optional recap and individual ratings. Archived meetups retain their recap and rating summary.
 
-The Expo prototype supports guest planning and optional verified email accounts. On-device meetups support a manually entered roster. Signed-in organizers can also create a shared meetup. Single-use codes enroll real accounts, each with its own starting point and travel preferences. Shared membership and origins reload when the group opens, returns to the foreground, or a member selects Refresh group. Members shortlist venues and cast one changeable vote each. The organizer confirms the destination. The organizer can complete and archive the meetup. Members can write private drafts, explicitly publish a text recap to the group, and optionally give a 1–5 rating. Photo sharing, street address geocoding and live routing require later work. Keep personal addresses out of the prototype.
+The Expo prototype supports guest planning and optional Google accounts. On-device meetups support a manually entered roster. Signed-in organizers can also create a shared meetup. Single-use codes enroll real accounts, each with its own starting point and travel preferences. Shared membership and origins reload when the group opens, returns to the foreground, or a member selects Refresh group. Members shortlist venues and cast one changeable vote each. The organizer confirms the destination. The organizer can complete and archive the meetup. Members can write private drafts, explicitly publish a text recap to the group, and optionally give a 1–5 rating. Photo sharing, street address geocoding and live routing require later work. Keep personal addresses out of the prototype.
 
 ## Automatic place discovery
 
@@ -28,16 +28,15 @@ Participants can compare prices observed in the Angkas and Grab apps for the sam
 
 ## Data and permissions
 
-Account sign-in uses Supabase email codes for both registration and returning participants. Supabase stores the auth session in browser storage on web. Native builds use Expo SecureStore. Signing out ends the session on this device. Guest meetups keep their original storage key, so existing drafts reappear when a participant returns to guest planning. Shared meetups are available to the same signed-in account across devices. Local drafts stay on their original device.
+One Google account maps to one internal Barkits ID across platforms. The Barkits API verifies Google sign-in and keeps revocable sessions in Neon. Web uses an HttpOnly cookie. Native stores its session in Expo SecureStore. Guest meetups keep their original device storage key, and drafts stay on their original device. Shared meetups follow the signed-in account.
 
-The initial Supabase migration separates meetups, membership, invites, private origins, destination candidates, journey provenance, votes, recaps and ratings. Origins are available to members only. Recap records carry no origin fields, and group publication requires an explicit timestamp and a completed meetup. Ratings allow one optional 1–5 entry per participant. Only the author can write their own recap or rating. Database functions create the shared meetup and organizer membership atomically, issue an organizer-only code, and enroll the redeeming account. The database stores only a digest of the code. It expires after 24 hours. Redemption locks the invitation and a retry by the same account returns its meetup.
+The Neon schema separates accounts, membership, invites, starting points, destination candidates, journey provenance, votes, recaps and ratings. Shared data is available to members only. Recap records carry no origin fields, and group publication requires a completed meetup. Ratings allow one optional 1–5 entry per participant. Only the author can change their recap or rating. Meetup creation and invite redemption are transactional, and only an organizer can issue an expiring single-use invite.
 
 ## External tools
 
 | Resource | Reviewed decision |
 |---|---|
 | moizibnyousaf/ai-agent-skills | MIT library supports Codex. Evaluated database design and verification skills. Applied database design to the initial schema. No whole-library install. |
-| supabase/mcp | Apache 2.0. Hosted use requires an authorized development project and OAuth. Start project-scoped and read-only with database and docs features. No project is configured here. |
 | appeeky/aso-skills | MIT Agent Skills compatible with Codex. Reserve local guidance for store metadata. Hosted capabilities and free plans remain unverified and unused. |
 | truongduy2611/app-store-preflight-skills | MIT Agent Skill. Reserve for release privacy, permissions, moderation and metadata review. |
 | rorkai/App-Store-Connect-CLI | MIT Go CLI. Reserve for release preparation. App Store Connect operations need applicable credentials, permissions and enrollment. |
@@ -49,7 +48,7 @@ All five upstream repositories were reachable over Git and had their documentati
 | Workflow | Available in the current branch | Remaining work |
 |---|---|---|
 | Meetup lifecycle | Create and edit a local draft, start planning, decide, complete and archive. | Shared planning and organizer-confirmed decisions are persisted. Organizers can also complete and archive a decided meetup. |
-| Invitations and membership | Verified email sign-in, organizer ownership, expiring invitation codes, cross-device rosters, personal trip inputs and shared venue suggestions. Members can shortlist and vote, and organizers can finalize. | Optional recap media. |
+| Invitations and membership | Google sign-in, organizer ownership, expiring invitation codes, cross-device rosters, personal trip inputs and shared venue suggestions. Members can shortlist and vote, and organizers can finalize. | Optional recap media. |
 | Origins and destinations | Device location, manual input, offline locality search, map pins, custom venues and a group map. | Street-level geocoding and broader venue and transport coverage. |
 | Travel and ranking | Four ranking modes, per-person limits, fixture trips, user-entered times and ride fares, Google Maps directions, offline LRT-1 rail legs and group voting. | Supported real routes and mode coverage, accessibility and transfer details, walking legs, arrival times, traffic availability and routing cache. |
 | Completion and memories | Local completion, editable recap caption and optional ratings with a count and average. SQL policies have been exercised locally. | Group text publication and withdrawal are available. Optional media and tagging remain. |

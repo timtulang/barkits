@@ -1,6 +1,9 @@
 # Continuity ledger
 
 ## Snapshot
+- 2026-11-27 [USER] Start fresh on Neon without carrying Supabase accounts or shared meetup records over. Approved `@neondatabase/serverless` and `google-auth-library`.
+- 2026-11-27 [CODE] The replacement branch uses Neon for account sessions and shared meetups, with Google as the only sign-in provider. Guest plans retain the same device storage. The historical Supabase migrations remain in Git.
+- 2026-11-27 [TOOL] PostgreSQL migration and rollback checks, server and domain tests, synthetic shared browser flows, and a read-only transaction against the live pooled Neon endpoint passed. New migrations have only been applied to disposable local PostgreSQL. Hosted Google OAuth and native device sign-in await a configured preview.
 - 2026-11-27 [USER] Use Neon as the sole database and Google as the sole sign-in provider for Barkits.
 - 2026-11-27 [TOOL] Live Neon has the Phase 2 identity table. The configured runtime login passed the pooled HTTPS permissions check and the elevated operator failed it. Codex Cloud could not open PostgreSQL TCP port 5432. The saved runtime URL still uses the direct hostname. Google OAuth configuration and the disposition of existing Supabase data are UNCONFIRMED.
 - 2026-11-27 [CODE] Added `node db/cli.mjs check --https` for the same runtime role checks over port 443. The prototype’s Supabase flows are still serving existing users during the transition.
