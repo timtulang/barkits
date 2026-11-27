@@ -86,4 +86,10 @@ Use separate restricted keys for each app target and backend environment. Broker
 | 12 · Notifications and history | Verify persistent activity, completed meetup history and optional privacy-preserving recaps and ratings. |
 | 13 · Release readiness | Verify full multi-account journeys on Android, iOS and web. Review accessibility, privacy, migrations and actual provider usage. |
 
-Phase 1 can start with the existing checkout and no metered credentials. Use the [Google Cloud setup and troubleshooting guide](GOOGLE_CLOUD.md) before testing live Google integrations.
+## Phase 1 checkpoint
+
+The Expo shell now shares one device-local meetup store and opens meetups at `/meetups/[id]`. Legacy records gain stable IDs in the existing AsyncStorage key. The web export supports direct navigation through the host's single-page fallback. Both native targets have provisional app identifiers and the `barkits` scheme. The future dedicated Barkits domain can be passed to native builds through `BARKITS_LINK_HOST`. See [local builds and link setup](../README.md#run-locally).
+
+Type checking, six planner and storage tests, desktop and mobile-width Chromium flows, all three bundle exports, and native project generation passed. Signed builds, device runtime and verified HTTPS links remain pending. No backend, database or metered API configuration was required.
+
+Phase 2 starts by confirming whether the Supabase migration ever ran against hosted data and drafting the portable Neon baseline and least-privilege runtime role. Rehearse the first migration from empty PostgreSQL before any live data transfer. Use the [Google Cloud setup and troubleshooting guide](GOOGLE_CLOUD.md) before testing live Google integrations.

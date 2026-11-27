@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { example, recommend, ratingSummary } from './planner.ts';
+import { readMeetups } from './meetup-storage.ts';
 
 test('ranks Metro Manila candidates deterministically for four friends', () => {
   assert.equal(recommend(example.participants, 'Balanced')[0].venue.id, 'cub');
@@ -24,4 +25,34 @@ test('unknown motorcycle fares are never treated as verified or affordable', () 
 test('skipped ratings do not enter the average', () => {
   assert.equal(ratingSummary({}), null);
   assert.deepEqual(ratingSummary({ one: 4, three: 5, five: 5 }), { count: 3, average: 14 / 3 });
+});
+
+test('adds stable IDs to preexisting meetups without changing planner data', () => {
+  const { id: demoId, ...demo } = example;
+  const personal = {
+    ...demo,
+    name: 'After work',
+    status: 'Archived',
+    venue: 'cub',
+    votes: { '1': 'cub' },
+    manualFares: { cub: { '1': 85 } },
+    recap: 'Great evening',
+    ratings: { '1': 5 },
+  };
+  const upgraded = readMeetups(JSON.stringify([demo, personal]));
+  assert.equal(upgraded.upgraded, true);
+  assert.deepEqual(upgraded.meetups, [
+    { ...demo, id: demoId },
+    { ...personal, id: upgraded.meetups[1].id },
+  ]);
+  assert.notEqual(upgraded.meetups[1].id, demoId);
+  assert.deepEqual(readMeetups(JSON.stringify(upgraded.meetups)), {
+    meetups: upgraded.meetups, upgraded: false,
+  });
+});
+
+test('rejects damaged storage rather than substituting demo meetups', () => {
+  assert.throws(() => readMeetups('{'));
+  assert.throws(() => readMeetups('null'));
+  assert.throws(() => readMeetups(JSON.stringify([example, example])), /duplicate/);
 });

@@ -44,7 +44,7 @@ export function MeetupScreen({ meetup, save, editFriend, back }: {
   }
   return <>
     <Button secondary onPress={back} icon="arrow-left">Back to meetups</Button>
-    <View style={{ gap: 6 }}><View style={layout.wrap}><Label size={40} weight="title">{meetup.name}</Label><Chip selected>{meetup.status}</Chip></View>
+    <View style={{ gap: 6 }}><View style={layout.wrap}><Label size={40} weight="title" heading>{meetup.name}</Label><Chip selected>{meetup.status}</Chip></View>
       <Label color={palette.muted}>{meetup.date || 'Date to be decided'} · Local demo</Label></View>
     <Panel>
       <View style={layout.between}><Label size={23} weight="title">Your barkada</Label>{meetup.status === 'Planning' && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>

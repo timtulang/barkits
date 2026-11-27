@@ -1,6 +1,7 @@
+import { Link } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
-import { Meetup, venues } from './planner';
+import { example, Meetup, venues } from './planner';
 import { palette, radius, spacing } from './theme';
 import { Button, Chip, Icon, Label, layout, Panel } from './ui';
 
@@ -10,8 +11,8 @@ const steps = [
   { icon: 'heart', color: 'mint', title: 'Make it happen', text: 'Vote on a place, meet up, and save the memories.' },
 ] as const;
 
-export function Home({ wide, titleSize, meetups, create, open }: {
-  wide: boolean; titleSize: number; meetups: Meetup[]; create: () => void; open: (index: number) => void;
+export function Home({ wide, titleSize, meetups, create }: {
+  wide: boolean; titleSize: number; meetups: Meetup[]; create: () => void;
 }) {
   return <>
     <View style={[styles.hero, wide && styles.heroWide]}>
@@ -29,17 +30,19 @@ export function Home({ wide, titleSize, meetups, create, open }: {
         <View style={{ gap: 5 }}><Label size={29} weight="title" heading>Your meetups</Label><Label color={palette.muted}>Pick up where you left off.</Label></View>
         {wide && <Button onPress={create} icon="plus" secondary>New meetup</Button>}
       </View>
-      {meetups.map((meetup, index) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Open ${meetup.name}`} onPress={() => open(index)}>
-        <Panel style={styles.meetup}>
-          <View style={[styles.iconTile, { backgroundColor: palette.lavender }]}><Icon name="calendar" size={23} color={palette.plum} /></View>
-          <View style={{ flex: 1, gap: 5 }}>
-            <Label size={19} weight="title">{meetup.name}</Label>
-            <Label size={13} color={palette.muted}>{meetup.date || 'Date to be decided'} · {meetup.participants.length} {meetup.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
-            {!!meetup.venue && <Label size={13} weight="bold">{venues.find(venue => venue.id === meetup.venue)?.name}</Label>}
-          </View>
-          <Chip selected>{meetup.status}</Chip><Icon name="chevron-right" color={palette.muted} />
-        </Panel>
-      </Pressable>)}
+      {meetups.map(meetup => <Link key={meetup.id} href={{ pathname: '/meetups/[id]', params: { id: meetup.id } }} asChild>
+        <Pressable accessibilityRole="link" accessibilityLabel={`Open ${meetup.name}`}>
+          <Panel style={styles.meetup}>
+            <View style={[styles.iconTile, { backgroundColor: palette.lavender }]}><Icon name="calendar" size={23} color={palette.plum} /></View>
+            <View style={{ flex: 1, gap: 5 }}>
+              <Label size={19} weight="title">{meetup.name}</Label>
+              <Label size={13} color={palette.muted}>{meetup.date || 'Date to be decided'} · {meetup.participants.length} {meetup.participants.length === 1 ? 'friend' : 'friends'}{meetup.id === example.id ? ' · Demo' : ''}</Label>
+              {!!meetup.venue && <Label size={13} weight="bold">{venues.find(venue => venue.id === meetup.venue)?.name}</Label>}
+            </View>
+            <Chip selected>{meetup.status}</Chip><Icon name="chevron-right" color={palette.muted} />
+          </Panel>
+        </Pressable>
+      </Link>)}
     </View>
 
     <View style={styles.section}>

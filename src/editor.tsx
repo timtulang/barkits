@@ -4,9 +4,14 @@ import { Meetup, modes, origins, Participant } from './planner';
 import { Button, Chip, Field, Label, layout, Panel } from './ui';
 import { palette } from './theme';
 
-export function Editor({ kind, meetup, participant, close, save }: {
-  kind: 'new' | 'participant'; meetup: Meetup; participant?: Participant; close: () => void; save: (meetup: Meetup) => void;
-}) {
+type EditorProps = { close: () => void } & (
+  { kind: 'new'; save: (draft: Pick<Meetup, 'name' | 'date'>) => void } |
+  { kind: 'participant'; meetup: Meetup; participant?: Participant; save: (meetup: Meetup) => void }
+);
+
+export function Editor(props: EditorProps) {
+  const { kind, close } = props;
+  const participant = kind === 'participant' ? props.participant : undefined;
   const [name, setName] = useState(participant?.name ?? '');
   const [date, setDate] = useState('');
   const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? origins[0]);
@@ -16,10 +21,11 @@ export function Editor({ kind, meetup, participant, close, save }: {
   const [error, setError] = useState('');
   function submit() {
     if (!name.trim()) return setError('Enter a name to continue.');
-    if (kind === 'new') {
+    if (props.kind === 'new') {
       if (date.trim() && !Number.isFinite(Date.parse(date.trim()))) return setError('Use a date and time such as 2026-12-05 15:00.');
-      return save({ name: name.trim(), date: date.trim(), participants: [], status: 'Planning', votes: {}, ratings: {} });
+      return props.save({ name: name.trim(), date: date.trim() });
     }
+    const { meetup, save } = props;
     const limits = [budget, duration].map(value => value.trim() ? Number(value) : undefined);
     if (limits.some(value => value !== undefined && (!Number.isFinite(value) || value < 0)) || limits[1] === 0) {
       return setError('Enter a nonnegative fare and a positive travel time, or leave the fields blank.');
