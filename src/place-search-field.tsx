@@ -36,7 +36,8 @@ export function PlaceSearchField({ label, value, change, select }: {
     <View style={[styles.input, focused && { borderColor: colors.focus }]}>
       <Icon name="search" color={palette.muted} size={18} />
       <TextInput ref={field} accessibilityLabel={label} placeholder="Search by name, city, or barangay" placeholderTextColor={palette.muted}
-        returnKeyType="search" autoCorrect={false} value={value} onFocus={() => { setFocused(true); setOpen(true); }} onBlur={() => setFocused(false)} onChangeText={update}
+        returnKeyType="search" autoCorrect={false} underlineColorAndroid="transparent" selectionColor={colors.focus}
+        value={value} onFocus={() => { setFocused(true); setOpen(true); }} onBlur={() => setFocused(false)} onChangeText={update}
         accessibilityHint="Search the Philippine catalog. Choose a result to set its pin."
         {...(web ? { role: 'combobox' as const, 'aria-autocomplete': 'list' as const,
           onKeyUp: (event: KeyboardEvent) => {
@@ -63,7 +64,7 @@ export function PlaceSearchField({ label, value, change, select }: {
           }
         }}
         onSubmitEditing={() => { if (results[active]) pick(results[active]); else if (total === 1) pick(results[0]); else setOpen(true); }}
-        style={{ flex: 1, minWidth: 0, minHeight: control.minimum, fontFamily: font.regular, color: palette.ink, fontSize: 16 }} />
+        style={styles.text} />
       {!!value && <Pressable accessibilityRole="button" accessibilityLabel={'Clear ' + label.toLowerCase()} onPress={() => { update(''); field.current?.focus(); }} style={styles.clear}>
         <Icon name="x" size={16} />
       </Pressable>}
@@ -96,7 +97,9 @@ function ResultList({ id, children }: { id: string; children: ReactNode }) {
 
 const styles = StyleSheet.create({
   input: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingLeft: 12, paddingRight: 2,
-    borderWidth: 1, borderColor: colors.outline, backgroundColor: palette.white, borderRadius: radius.control },
+    borderWidth: 1, borderColor: colors.outline, backgroundColor: palette.white, borderRadius: radius.control, minWidth: 0 },
+  text: { flex: 1, minWidth: 0, minHeight: control.minimum, paddingVertical: spacing.sm, textAlignVertical: 'center',
+    fontFamily: font.regular, color: palette.ink, fontSize: 16 },
   clear: { width: control.minimum, height: control.minimum, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 10, gap: 5, borderColor: palette.line, borderWidth: 1, borderRadius: radius.control, backgroundColor: palette.paper },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingVertical: 6 },

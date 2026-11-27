@@ -21,7 +21,9 @@ export function Field({ label, value, onChange, placeholder, numeric, inputMode,
       editable={!disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       maxLength={maxLength} multiline={multiline} inputMode={inputMode ?? (numeric ? 'numeric' : 'text')}
       autoComplete={autoComplete} autoCapitalize={autoComplete ? 'none' : undefined} autoCorrect={autoComplete ? false : undefined}
-      selectionColor={colors.focus} style={[surfaces.input, multiline && { minHeight: 112, textAlignVertical: 'top' },
+      underlineColorAndroid="transparent" selectionColor={colors.focus}
+      style={[surfaces.input, { paddingVertical: multiline ? spacing.md : spacing.sm, textAlignVertical: multiline ? 'top' : 'center' },
+        multiline && { minHeight: 112 },
         focused && surfaces.focused, !!error && { borderColor: colors.error }, disabled && surfaces.disabled]} />
     {!!description && <View nativeID={id} accessibilityRole={error ? 'alert' : undefined}
       accessibilityLiveRegion={error ? 'polite' : undefined} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }}>

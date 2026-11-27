@@ -87,10 +87,9 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
     </View>
   </View>;
   return <EditorDialog title={meetup ? 'Edit meetup details' : 'Plan a meetup'} close={close} busy={busy} actions={footer}>
-    {!meetup && <Label kind="detail">Name your meetup to begin. Then add friends, decide when to meet, compare places and review the plan. {shared ? 'Shared plans also need your display name.' : 'Only the meetup name is required now.'}</Label>}
     <Field label="Meetup name" required placeholder="Saturday merienda" value={name} onChange={setName} maxLength={160} disabled={locked}
       error={submitted && invalidName ? 'Enter a meetup name of up to 160 characters.' : undefined} />
-    {!share && !meetup && <Label kind="detail">This plan stays on this device. You’ll add the group’s starting points.</Label>}
+    {!share && !meetup && <Label kind="detail">This plan stays on this device.</Label>}
     {share && <View style={{ gap: spacing.sm }}>
       <Label kind="label" color={colors.text}>Who’s planning?</Label>
       <View style={layout.wrap}>

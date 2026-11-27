@@ -70,7 +70,7 @@ function Workspace({ user }: { user: User | null }) {
     return () => { active = false; };
   }, [meetups, ready, storageKey, saveAttempt]);
   const saveStatus = storageError ? 'Changes are not saved. Use Try again above.' : savedMeetups === meetups ?
-    'Plan saved on this device. Save any form edits before leaving.' : 'Saving changes on this device…';
+    'Plan saved on this device' : 'Saving changes on this device…';
 
   function save(meetup: Meetup) {
     setMeetups(current => current.map((item, itemIndex) => itemIndex === index ? meetup : item));
@@ -90,7 +90,8 @@ function Workspace({ user }: { user: User | null }) {
   return <SafeAreaView style={styles.safe}>
     <AppHeader signedIn={!!user} inMeetup={!!selected || !!sharedId} compact={!wide}
       home={() => navigateLocal(null)} account={() => setAccountOpen(true)} create={() => setEditor('new')} />
-    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
+    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
+      key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
         action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
       {!ready && !storageError && <LoadingState label="Loading your meetups…" />}

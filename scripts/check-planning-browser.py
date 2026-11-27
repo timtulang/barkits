@@ -41,7 +41,7 @@ def guest(args):
             e = b.visible('input[aria-label="Starting place"]')
             b.command('/element/' + e['element-6066-11e4-a52e-4f735466cecf'] + '/value', {'text': '\ue015\ue007'})
             b.tap('Add friend')
-        b.wait(lambda: '2 friends ready' in b.body())
+        b.wait(lambda: '2 of 2 starting points on the map' in b.body())
         b.click('[aria-label="Edit Alex"]')
         b.js('window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith("barkits.meetups"))throw Error("synthetic storage rejection");return window.originalSetItem.call(this,k,v)}')
         b.tap('Save changes'); b.wait(lambda: 'Changes are not saved' in b.body())
@@ -90,6 +90,7 @@ def guest(args):
             for stage in ('who', 'when', 'where', 'review'):
                 b.stage(stage)
                 assert b.js('return document.documentElement.scrollWidth<=innerWidth'), (width, stage)
+                assert b.js('const progress=document.querySelector(\'[aria-label="Planning stages"]\'); return progress.querySelectorAll("button").length===4 && progress.querySelectorAll(\'[aria-current="step"]\').length===1 && !progress.innerText.trim()')
             b.snapshot('guest-review-' + str(width))
         b.tap('Confirm destination'); b.wait(lambda: 'Destination confirmed' in b.body())
         b.tap('Back to meetups'); b.command('/refresh', {}); b.wait(lambda: 'Acceptance catch-up' in b.body())

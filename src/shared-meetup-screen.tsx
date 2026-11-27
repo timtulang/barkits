@@ -10,7 +10,7 @@ import { ParticipantRoster } from './participant-roster';
 import { SuggestedPlaces } from './suggested-places';
 import { IconAction, ChoiceField } from './form-controls';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import { activityCategory, categories, type Category, discover } from './discovery';
 import { ParticipantEditor } from './editor';
 import { GoogleMapsLink } from './google-maps-link';
@@ -65,15 +65,16 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
   useEffect(() => {
     if (data && selectedStage === undefined) setStage(initialPlanningStage(data.summary.status, data.members.length, origins.length));
   }, [data, selectedStage, origins.length]);
-  function changeStage(next: PlanningStage) { setStage(next); setFullMap(false); requestAnimationFrame(scrollToTop); }
+  function changeStage(next: PlanningStage) {
+    Keyboard.dismiss();
+    setStage(next); setFullMap(false); requestAnimationFrame(scrollToTop);
+  }
   useEffect(() => {
     if (data?.summary.status === 'decided') { setStage('review'); setFullMap(false); }
   }, [data?.summary.status]);
   function openShortlist() {
-    setFullMap(false);
     setSection('shortlist');
-    setStage('where');
-    requestAnimationFrame(scrollToTop);
+    changeStage('where');
   }
   const plannerBusy = acting || loading || !!error;
   const refreshError = !!error && <Feedback tone="error" title="Couldn’t refresh the group"
@@ -95,30 +96,28 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
     {loading && <Label>Loading group…</Label>}{refreshError}
     {!!actionError && <View accessibilityRole="alert"><Label>{actionError}</Label></View>}
     {data && <>
-      <View style={layout.wrap}><View style={{ flexGrow: 1, flexBasis: 180 }}><Label kind={data.memories ? 'page' : 'item'} heading>{data.summary.name}</Label></View><StatusMark status={data.summary.status} /></View>
-      {!!data.summary.activity && (stage === 'review' || !!data.memories) && <Label>{data.summary.activity}</Label>}
+      <View style={layout.wrap}><View style={{ flexGrow: 1, flexBasis: 144, minWidth: 0 }}><Label kind={data.memories ? 'page' : 'item'} heading>{data.summary.name}</Label></View><StatusMark status={data.summary.status} /></View>
+      {!!data.summary.activity && !!data.memories && <Label>{data.summary.activity}</Label>}
       {!!schedule && !!data.memories && <Label>{schedule}</Label>}
-      {!!data.summary.description && (stage === 'review' || !!data.memories) && <Label>{data.summary.description}</Label>}
-      {!data.memories && <>
-      <PlanningJourney current={stage} change={changeStage} people={peopleProgress(data.members.length, origins.length)}
+      {!!data.summary.description && !!data.memories && <Label>{data.summary.description}</Label>}
+      {!data.memories && <PlanningJourney current={stage} change={changeStage} people={peopleProgress(data.members.length, origins.length)}
         scheduled={!!schedule} destination={!!chosen} saved={acting ? 'Saving changes to the group…' : loading ? 'Refreshing group…' :
-          error ? 'Group data may be out of date. Refresh before continuing.' : actionError ? 'The last change failed. See the error above.' :
-          'Group loaded. Changes take effect after saving; use Refresh group for updates.'} />
+          error ? 'Group data may be out of date. Refresh before continuing.' : undefined}>
       <View style={{ display: stage === 'who' ? 'flex' : 'none', gap: 16 }}>
-      <Label kind="detail">Each member needs a mapped starting point for nearby suggestions. Members edit their own starting points, transport and optional limits.</Label>
       <ParticipantRoster members={data.members} located={origins} myId={userId} ownerId={data.summary.owner_id}
         action={<View style={layout.wrap}>{planning && mine && <Button secondary={!!mine.trip && origins.some(friend => friend.id === userId)}
           onPress={() => setEditing(true)} icon="map-pin">{mine.trip ? 'Edit my starting point' : 'Add my starting point'}</Button>}
           <Button secondary={!mine?.trip} onPress={() => changeStage('when')}>Review meetup time</Button></View>} />
       {planning && data.summary.owner_id === userId && <InviteFriend id={id} />}
       </View>
-      {stage === 'when' && <Panel><Label kind="item" heading>Meetup time (optional)</Label>
-        <Label>{schedule || 'Date and time undecided'}</Label>
-        <Label kind="detail">The organizer sets the time when creating a shared meetup. Editing a shared schedule is not supported yet; you can still compare places.</Label>
+      {stage === 'when' && <Panel>
+        <Label kind="value">{schedule || 'Date and time undecided'}</Label>
+        <Label kind="detail">The organizer can set a time when creating the meetup.</Label>
         <Button onPress={() => changeStage(planning ? 'where' : 'review')}>{planning ? 'Choose meeting places' : 'Review confirmed plan'}</Button>
       </Panel>}
       {stage === 'review' && <>
         <PlanningReview people={data.members.length} mapped={origins.length} schedule={schedule}
+          activity={data.summary.activity} description={data.summary.description}
           pending={planning ? proposed?.place.name : undefined} destination={chosen?.name} change={changeStage} canEdit={planning} />
         {planning && proposed && data.summary.owner_id === userId && <DestinationReview name={proposed.place.name} busy={acting || loading}
           blocked={error ? 'Refresh the group successfully before confirming.' : proposalIssues.length ? proposalIssues.join('. ') : undefined}
@@ -128,7 +127,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
           <TripComparison rows={sharedTripRows(data.members, proposed.estimates)} editableIds={mine?.trip ? [userId] : []}
             edit={() => { changeStage('where'); setSection('shortlist'); }} />
         </DestinationReview>}
-        {planning && data.summary.owner_id !== userId && <Label>The organizer confirms the destination. Your vote remains changeable in Where while planning is open.</Label>}
+        {planning && data.summary.owner_id !== userId && <Label>The organizer confirms the destination. You can change your vote on the shortlist while planning is open.</Label>}
         <PlanningVotes people={data.members} choices={data.summary.ballot.map(candidate => ({
           id: candidate.venue_id, name: candidate.place.name, voters: candidate.votes.map(vote => vote.user_id),
         }))} />
@@ -171,7 +170,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop }: { id: stri
       </>}{!planning && chosen && <Label>The venue is confirmed. After the meetup, the organizer can mark it completed.</Label>}</View>
       {planning && editing && mine && <ParticipantEditor member={mine} participant={mine.trip} close={() => setEditing(false)}
         saveTrip={async trip => { await saveOwnTrip(id, trip); setEditing(false); refresh(); }} />}
-      </>}
+      </PlanningJourney>}
       {data.memories && <SharedMemories id={id} userId={userId} venue={chosen?.name ?? data.summary.name} point={chosen ? [chosen.latitude,chosen.longitude] : undefined} members={data.members}
         archived={data.summary.status === 'archived'} data={data.memories} refresh={refresh} run={run} busy={acting || loading}
         archiveAction={data.summary.status === 'completed' && data.summary.owner_id === userId ? lifecycle : undefined} />}

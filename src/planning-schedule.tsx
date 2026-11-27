@@ -25,8 +25,7 @@ export function PlanningSchedule({ date, save, continuePlanning, reportDirty }: 
     continuePlanning();
   }
   return <Panel>
-    <Label kind="item" heading>Meetup time (optional)</Label>
-    <Label kind="detail">Use Philippine time. Enter both a date and time, or leave both blank. This does not change trip estimates.</Label>
+    <Label kind="detail">Add a date and time, or decide later.</Label>
     {!!legacy && !(day && time) && <Label>Saved schedule · {legacy}</Label>}
     <ScheduleInput key={version} day={day} time={time} disabled={false} error={submitted ? issue : undefined} errorId={errorId}
       reportIncomplete={(part, value) => setIncomplete(current => current[part] === value ? current : { ...current, [part]: value })}
