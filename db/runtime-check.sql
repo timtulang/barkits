@@ -29,5 +29,3 @@ begin
   end if;
 end;
 $$;
-
-select current_database() as database, current_user as verified_runtime;

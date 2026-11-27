@@ -1,10 +1,13 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import * as http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
 const command = process.argv[2];
 const commands = ['migrate', 'check', 'shell', 'backup', 'restore'];
-if (!commands.includes(command) || process.argv.length !== 3) {
-  console.error('Usage: node db/cli.mjs <migrate|check|shell|backup|restore>');
+const checkOverHttps = command === 'check' && process.argv.length === 4 && process.argv[3] === '--https';
+if (!commands.includes(command) || (process.argv.length !== 3 && !checkOverHttps)) {
+  console.error('Usage: node db/cli.mjs <migrate|check|shell|backup|restore> or node db/cli.mjs check --https');
   process.exit(1);
 }
 
@@ -57,20 +60,51 @@ function connectionEnvironment(value) {
   };
 }
 
+async function checkNeonOverHttps(url, host) {
+  if (!host.endsWith('.neon.tech')) throw new Error('The HTTPS runtime check requires a pooled Neon URL.');
+  http.setGlobalProxyFromEnv?.();
+  const query = readFileSync(path('runtime-check.sql'), 'utf8');
+  let response;
+  try {
+    response = await fetch(`https://${host}/sql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Neon-Connection-String': url },
+      body: JSON.stringify({ query, params: [] }),
+      redirect: 'error',
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    throw new Error('Could not reach the Neon SQL endpoint over HTTPS.');
+  }
+  const result = await response.json().catch(() => null);
+  if (result?.code === '28P01') throw new Error('Neon rejected the runtime login credentials.');
+  if (result?.code === 'P0001') throw new Error('The Neon login did not pass the Phase 2 runtime permissions check.');
+  if (!response.ok || result?.command !== 'DO') {
+    throw new Error(`The Neon HTTPS runtime check failed (HTTP ${response.status}).`);
+  }
+  console.log('Neon HTTPS runtime permissions check passed.');
+}
+
 try {
-  const env = connectionEnvironment(process.env[source]);
+  const url = process.env[source];
+  const env = connectionEnvironment(url);
   const psql = ['-X', '--no-password', '--set=ON_ERROR_STOP=1'];
   const invocations = {
     migrate: ['psql', [...psql, '--single-transaction', '--file', path('migrate.sql')]],
-    check: ['psql', [...psql, '--single-transaction', '--file', path('runtime-check.sql')]],
+    check: ['psql', [...psql, '--single-transaction', '--file', path('runtime-check.sql'),
+      '--command', 'select current_database() as database, current_user as verified_runtime;']],
     shell: ['psql', psql],
     backup: ['pg_dump', ['--no-password', '--format=custom', '--schema=barkits', '--schema=barkits_meta', '--no-owner']],
     restore: ['pg_restore', ['--no-password', '--dbname', '', '--single-transaction', '--exit-on-error', '--no-owner']],
   };
-  const [program, args] = invocations[command];
-  const result = spawnSync(program, args, { env, stdio: 'inherit' });
-  if (result.error) throw new Error(`Could not run ${program}. Install the PostgreSQL client tools and check PATH.`);
-  process.exitCode = result.status ?? 1;
+  if (checkOverHttps) {
+    await checkNeonOverHttps(url, env.PGHOST);
+  } else {
+    const [program, args] = invocations[command];
+    const result = spawnSync(program, args, { env, stdio: 'inherit' });
+    if (result.error) throw new Error(`Could not run ${program}. Install the PostgreSQL client tools and check PATH.`);
+    process.exitCode = result.status ?? 1;
+  }
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

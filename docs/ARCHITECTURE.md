@@ -1,6 +1,6 @@
 # Barkits cross-platform architecture
 
-This roadmap is for the collaborative platform. The prototype branch also has a separate [redesign roadmap](REDESIGN_PLAN.md) with its own phase numbers. The redesigned prototype currently uses Supabase for email sign-in and shared meetups. The Phase 2 Neon schema is the foundation for a future backend and has no app traffic yet.
+This roadmap is for the collaborative platform. The prototype branch also has a separate [redesign roadmap](REDESIGN_PLAN.md) with its own phase numbers. The target platform uses Neon as its sole database and Google as its sole sign-in provider. The current prototype still serves email sign-in and shared meetups through Supabase. Retire that integration after Google sign-in and the Neon-backed shared workflows pass acceptance and the disposition of existing accounts and meetups is confirmed.
 
 ## Phase 0 audit
 
@@ -98,4 +98,4 @@ Type checking, six planner and storage tests, desktop and mobile-width Chromium 
 
 The user confirmed there was no hosted Supabase data on the original Phase 2 branch. The portable SQL baseline, direct migration connection, restricted runtime role and backup tooling are in `db/`. Existing app saves remain in AsyncStorage. [Database setup and recovery](DATABASE.md)
 
-Local PostgreSQL 17 and PgBouncer passed the migration, concurrent application, rollback, constraint, role and backup restoration checks. The live Neon development branch and direct and pooled credential checks are pending. The first backend identity operations and their scoped database grants belong to Phase 3, after the Neon development check. [Google Cloud setup and troubleshooting](GOOGLE_CLOUD.md)
+Local PostgreSQL 17 and PgBouncer passed the migration, concurrent application, rollback, constraint, role and backup restoration checks. In Codex Cloud, the configured Neon database exposes the Phase 2 identity table and accepts the restricted runtime login through the pooled HTTPS endpoint. TCP port 5432 remains unreachable from that environment. The first backend identity operations and their scoped database grants belong to Phase 3. [Google Cloud setup and troubleshooting](GOOGLE_CLOUD.md)

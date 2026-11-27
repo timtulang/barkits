@@ -1,6 +1,9 @@
 # Continuity ledger
 
 ## Snapshot
+- 2026-11-27 [USER] Use Neon as the sole database and Google as the sole sign-in provider for Barkits.
+- 2026-11-27 [TOOL] Live Neon has the Phase 2 identity table. The configured runtime login passed the pooled HTTPS permissions check and the elevated operator failed it. Codex Cloud could not open PostgreSQL TCP port 5432. The saved runtime URL still uses the direct hostname. Google OAuth configuration and the disposition of existing Supabase data are UNCONFIRMED.
+- 2026-11-27 [CODE] Added `node db/cli.mjs check --https` for the same runtime role checks over port 443. The prototype’s Supabase flows are still serving existing users during the transition.
 - 2026-11-27 [USER] Merge collaborative platform phases 0, 1, and 2 into `barkits-prototype` and review the phase documentation for functional parity.
 - 2026-11-27 [CODE] The phases are stacked through `42100d3`. The merge preserves the redesigned local and Supabase shared flows and adds the phase roadmaps, account-scoped local meetup URLs, native link configuration, and the portable Neon foundation.
 - 2026-11-27 [TOOL] TypeScript, 20 domain tests, web/Android/iOS bundles, Chromium guest and synthetic shared flows, and PostgreSQL 17/PgBouncer migration, runtime role and backup recovery checks passed. Live Neon, signed native builds, and device link verification remain open.
@@ -25,6 +28,7 @@
 - 2026-11-26 [CODE] Expo 54 / React Native 0.81 / Expo Router / strict TypeScript verified in package/config. Supabase operations live in `src/services/`; actual UI uses theme/StyleSheet with NativeWind configured (D003 preserves this variance). No initialization changes to application code.
 
 ## Decisions
+- 2026-11-27 [USER] D009 ACTIVE: Neon is the sole target database and Google is the sole target identity provider. Supabase retirement follows replacement acceptance and a decision about existing data.
 - 2026-11-25 [USER] D001 ACTIVE: one phase/subphase per request; checkpoint and stop. Explicit Phase 2 request supersedes previous lack of authorization, not unavailable native checks.
 - 2026-11-25 [USER] D002 ACTIVE: preserve business rules/storage/services; modules under 300 lines; no silent fallbacks, empty catches or unnecessary dependencies.
 - 2026-11-25 [CODE] D003 ACTIVE: extend existing theme/StyleSheet architecture behind stable UI exports; NativeWind configuration preserved.

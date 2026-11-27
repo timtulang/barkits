@@ -36,7 +36,9 @@ Open **Saturday catch-up → Where → Compare**, choose a place, then open **Tr
 
 With a starting pin and a destination near different LRT-1 stations, **Check your trip** suggests boarding and exit stations, direction and the regular single-journey fare. You can also use **LRT-1 fares** to search any two stations. Enter the full one-way amount when connecting by jeepney, bus or another paid leg. **Transit directions** opens the selected trip in Google Maps without a Google Cloud key.
 
-## Enable email sign-in
+## Existing Supabase prototype
+
+Google sign-in and Neon are the target account and database services. The setup below applies to the existing shared-meetup prototype until that migration is complete. See [Neon setup and runtime verification](docs/DATABASE.md) and [Google sign-in setup](docs/GOOGLE_CLOUD.md).
 
 Barkits supports guest planning immediately. When email sign-in is enabled, choose **Sign in**, enter your email, then enter the code from your inbox. Choosing **Join with code** opens the invite form after sign-in. On-device meetups are saved separately for guests and each account. Signing out restores the guest list.
 

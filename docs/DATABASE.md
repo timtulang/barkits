@@ -36,7 +36,9 @@ grant barkits_runtime to barkits_api;
 \password barkits_api
 ```
 
-4. Select the same development branch and database with pooling enabled and set `DATABASE_URL` for this runtime login. Run `node db/cli.mjs check` to test the connection, inherited runtime membership, schema access and absence of elevated or table privileges. The database currently gives the runtime role schema usage. Later migrations add only the table permissions required by authenticated backend operations. Use short transactions, parameterized queries and request-scoped or bounded connections in the API.
+4. Select the same development branch, database and restricted runtime login in Neon’s Connect dialog. Enable pooling and save that URL as `DATABASE_URL`. The host has a `-pooler` suffix before its first dot. Run `node db/cli.mjs check` to test the PostgreSQL TCP connection, inherited runtime membership, schema access and absence of elevated or table privileges. If your environment can reach Neon over HTTPS but cannot open TCP port 5432, run `node db/cli.mjs check --https` for the same permissions check over port 443. The database currently gives the runtime role schema usage. Later migrations add only the table permissions required by authenticated backend operations.
+
+The HTTPS check runs without `psql`. Operator commands such as `migrate`, `backup` and `restore` use the direct URL and require a machine or runner that can reach Neon on TCP port 5432.
 
 On a disposable development database, run `node db/cli.mjs shell < db/test-core.sql` to check identity uniqueness, organizer membership, duplicate protection and deletion behavior. The rehearsal rolls back its fixture records.
 
