@@ -30,4 +30,4 @@ Open the Saturday catch-up demo to compare four friends' trips, try ranking mode
 
 See [design system](docs/DESIGN_SYSTEM.md), [product and integration decisions](docs/PRODUCT.md), and [cost audit](docs/COST_AUDIT.md).
 
-The collaborative platform migration begins with the [Phase 0 audit and architecture plan](docs/ARCHITECTURE.md) and [Google Cloud setup guide](docs/GOOGLE_CLOUD.md).
+The collaborative platform migration begins with the [audit and architecture plan](docs/ARCHITECTURE.md), [Neon database runbook](docs/DATABASE.md), and [Google Cloud setup guide](docs/GOOGLE_CLOUD.md).

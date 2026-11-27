@@ -4,3 +4,6 @@ dist/
 expo-env.d.ts
 /android/
 /ios/
+.env
+.env.*
+!.env.example

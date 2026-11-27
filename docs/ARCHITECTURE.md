@@ -92,4 +92,8 @@ The Expo shell now shares one device-local meetup store and opens meetups at `/m
 
 Type checking, six planner and storage tests, desktop and mobile-width Chromium flows, all three bundle exports, and native project generation passed. Signed builds, device runtime and verified HTTPS links remain pending. No backend, database or metered API configuration was required.
 
-Phase 2 starts by confirming whether the Supabase migration ever ran against hosted data and drafting the portable Neon baseline and least-privilege runtime role. Rehearse the first migration from empty PostgreSQL before any live data transfer. Use the [Google Cloud setup and troubleshooting guide](GOOGLE_CLOUD.md) before testing live Google integrations.
+## Phase 2 checkpoint
+
+The user confirmed there is no hosted Supabase data to migrate. The portable SQL baseline, direct migration connection, restricted runtime role and backup tooling are in `db/`. Existing app saves remain in AsyncStorage. [Database setup and recovery](DATABASE.md)
+
+Local PostgreSQL 17 and PgBouncer passed the migration, concurrent application, rollback, constraint, role and backup restoration checks. The live Neon development branch and direct and pooled credential checks are pending. The first backend identity operations and their scoped database grants belong to Phase 3, after the Neon development check. [Google Cloud setup and troubleshooting](GOOGLE_CLOUD.md)
