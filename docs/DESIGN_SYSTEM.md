@@ -8,7 +8,7 @@ The story starts with rounding up friends and ends when everyone has a place to 
 
 ## Kits
 
-Kits is an original, waving coral location pin with a cream face, deep-ink outlines, and plum shoes. The source artwork is `assets/kits.png`. Use Kits to welcome people, soften an empty state, celebrate a completed meetup, or introduce a recap. Keep the mascot out of trip comparisons, voting, permission prompts, and confirmations. Place accompanying instructions in live text and treat decorative art as inaccessible to screen readers.
+Kits is an original, waving coral location pin with a cream face, deep-ink outlines, and plum shoes. The source artwork is `assets/kits.png`. Use the display-sized `assets/ui/kits.png` in the app. Use Kits to welcome people, soften an empty state, celebrate a completed meetup, or introduce a recap. Keep the mascot out of trip comparisons, voting, permission prompts, and confirmations. Place accompanying instructions in live text and treat decorative art as inaccessible to screen readers.
 
 ## Tokens
 
@@ -80,7 +80,7 @@ Use the role scale in `src/theme.ts` with the shared Label. Page titles are 40 p
 
 - Write short English labels for actions and navigation. Use natural Filipino-English in welcome copy, empty states, and recap prompts. “Kita-kits, barkada!” works as a greeting. “Finalize location” names the action clearly.
 - Use sentence case and show minutes and Philippine pesos beside their values. Use “Fare unavailable” when a fare is missing. Keep demo labels visible near route data.
-- Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus.
+- Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus. On web, name dialogs and keep the header and main workspace navigable as landmarks.
 - Keep essential information in text. Move only the stage heading by 3 points over 150 ms. The checked pin settles over 220 ms after confirmation. Kits rises over 130 ms and settles over 170 ms once for a newly completed meetup. With reduced motion, controls, checks and messages appear immediately.
 - Use `StatusLine` for confirmed saves, audience changes and recoverable failures near the relevant task. Keep the draft open if a save fails and put validation beside the affected field. Show success after persistence confirms it.
 

@@ -1,6 +1,63 @@
 # Barkits redesign plan
 
-## Current brief · Phase 5 personality and interaction polish
+## Current brief · Phase 6 validation and refinement
+
+**Checkpoint · 27 November 2026.** The final redesign pass checked guest planning, shared coordination and memories against the Phase 1 starting screens.
+
+- **Accessibility.** The app header and workspace expose banner and main landmarks. Editors and full-screen maps have names in the accessibility tree. The web stylesheet keeps placeholder text in the muted plum role. Escape closes visible place suggestions first and closes the editor when the popup is gone.
+- **Visual consistency.** The header and welcome keep Barkits’ voice. The footer slogan was removed so Home and Memories end with the last task. The route, map initials and checked pin provide recurring visual cues across local and shared planning.
+- **Artwork.** The application ships an 810 × 540 PNG of Kits. The largest instance displays at 270 × 180, so the asset covers 3× density at that size. It saves 1,010,317 bytes per first download. The full-resolution master remains in `assets/kits.png`.
+
+### Verification
+
+- Chromium guest journeys passed at 320, 390, 768 and 1440 px with standard and reduced motion. Reviewed phone and desktop captures for Home, setup, place discovery and comparison, pending and confirmed Review, the shared ballot and recaps. The 320 × 425 CSS px reflow check represents a 640 × 850 window at 200%. A separate text enlargement check on Home and the reflow checks showed no horizontal overflow.
+- The targeted browser suite checked visible keyboard focus, focus containment and return, Escape at both levels of the place editor, named dialogs, landmarks, and place selection with blocked map tiles. Axe 4.10.3 reported zero violations in the sampled Home, creation, map, place list, comparison, schedule, review, friend, account and sign-in states. Manual keyboard and accessibility-tree checks covered behavior outside the scanner.
+- Organizer and member fixture journeys passed for sign-in, invite handoff, trip ownership, voting and confirmation recovery, directions, recap visibility and archive. A separate browser run exercised shared creation validation, retry with the same request ID, and sign-out with synthetic responses. An isolated PostgreSQL 17.12 database ran every checked-in migration and the rollback permissions suite using the `auth.uid()` claims contract. This exercised the actual SQL and row-level policies locally.
+- TypeScript, all 18 planner tests, Python syntax and the web, Android and iOS Expo exports passed. The final normal web export excludes fixture configuration.
+
+### Cold web load
+
+Compared the guest exports for the Phase 1 starting commit `2d0348e` and Phase 6 in Chromium at 390 px. Five alternating cold runs per build used fresh profiles, disabled caching, a 4× CPU slowdown, 120 ms network latency, a 400 kB/s download cap, and identical local servers with gzip for text assets.
+
+| Measure | Starting build | Phase 6 |
+|---|---:|---:|
+| Encoded resources transferred | 3.83 MB | 2.82 MB |
+| Kits image transfer size | 1.40 MB | 0.39 MB |
+| Kits image download complete, median | 11.61 s | 9.29 s |
+| First contentful paint, median | 5.03 s | 5.13 s |
+| Largest contentful paint, median | 7.02 s | 7.17 s |
+| Plan a meetup appears, median | 6.99 s | 7.15 s |
+
+The home page transferred 26% less data and finished downloading Kits 2.32 s earlier. Paint and primary-action timings stayed within the variation observed across runs. The compressed entry script remained about 1.57 MB.
+
+### Final screen comparison
+
+The scores below use the same criteria and six surfaces as the Phase 1 baseline. They reflect the phone and desktop walkthroughs. The largest gains came from visible stage names, the place list and comparison entry beside the map, and directions at the top of confirmed Review. Map discovery and the shared ballot still depend on reachable tiles for geographic context. Screen-reader and native-device validation remain open.
+
+| Criterion | Home | Create and setup | Map and compare | Review and attend | Shared ballot | Local memories |
+|---|---:|---:|---:|---:|---:|---:|
+| Recognizable personality | 8 | 8 | 8 | 8 | 7 | 9 |
+| Purpose is obvious | 9 | 9 | 8 | 9 | 8 | 9 |
+| Visual hierarchy | 8 | 8 | 8 | 9 | 8 | 8 |
+| Intentional composition | 8 | 8 | 8 | 8 | 8 | 8 |
+| Necessary containers only | 8 | 8 | 8 | 8 | 8 | 8 |
+| Typography supports the brand | 8 | 8 | 8 | 8 | 8 | 8 |
+| Purposeful palette | 8 | 8 | 8 | 8 | 8 | 8 |
+| Obvious next action | 9 | 9 | 8 | 9 | 8 | 9 |
+| Features discoverable | 8 | 8 | 8 | 8 | 8 | 8 |
+| Enjoyable to use | 8 | 8 | 7 | 8 | 8 | 8 |
+| Accessible and responsive | 8 | 8 | 7 | 8 | 7 | 8 |
+| Recognizable without logo | 8 | 8 | 8 | 8 | 7 | 9 |
+
+### Acceptance still open
+
+- Actual iOS and Android behavior and real screen-reader sessions need a device or compatible runtime. Browser accessibility-tree evidence covers roles and names.
+- Hosted email delivery, sign-in and deployment-specific Supabase policy configuration need a configured test project. The local SQL check uses a stand-in for the Auth claims contract.
+- The network proxy returned HTTP 403 for OpenStreetMap tiles. The browser exercised the map error and the independent place list. Successful live tile rendering remains open.
+
+**Handoff.** Phase 6 is the final phase in this redesign brief. Carry the open checks into release acceptance when the required environment is available.
+
+## Phase 5 checkpoint · Personality and interaction polish
 
 **Checkpoint · 27 November 2026.** The route gives confirmed milestones more emphasis. Save and recovery feedback stays beside the task that produced it.
 
@@ -13,7 +70,7 @@
 - Chromium guest journeys cover four planning widths from 320 to 1440 px with standard and reduced motion, including confirmation recovery, field validation, trip and recap retries, and reopening a completed meetup. Captures cover the confirmed route, recap save and retry on phones, and confirmed and shared memory layouts on desktop.
 - The local shared fixture covers organizer and member behavior, confirmation and recap retries, and private and published feedback. TypeScript, 18 planner tests, Python syntax and Expo web, Android and iOS exports passed. Device behavior, screen readers, hosted Auth and database policies, and working map tiles remain open.
 
-**Next approval gate · Phase 6, Validation and refinement.** Carry out cross-app journey checks, performance measurement and the final comparison against the starting screens.
+**Phase 5 handoff · Phase 6, Validation and refinement.** Carry out cross-app journey checks, performance measurement and the final comparison against the starting screens.
 
 ## Phase 4 checkpoint · Remaining screens and workflows
 

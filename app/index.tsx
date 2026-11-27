@@ -10,7 +10,7 @@ import { ParticipantEditor } from '../src/editor';
 import { Home } from '../src/home';
 import { MeetupScreen } from '../src/meetup';
 import { example, Meetup, Participant } from '../src/planner';
-import { AppFooter, AppHeader, shellStyles as styles, type RenderWorkspace } from '../src/app-shell';
+import { AppHeader, shellStyles as styles, type RenderWorkspace } from '../src/app-shell';
 import { Button, Feedback, Label, LoadingState } from '../src/ui';
 import { JoinDialog, SharedList } from '../src/shared-membership';
 import { SharedMeetupScreen } from '../src/shared-meetup-screen';
@@ -88,14 +88,13 @@ function Workspace({ user, joining, setJoining }: { user: User | null; joining: 
   }
 
   const renderWorkspace: RenderWorkspace = (content, footer) => <>
-    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
+    <ScrollView ref={scroll} role="main" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       key={sharedId ?? index ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
       {!!storageError && selected?.status !== 'Completed' && selected?.status !== 'Archived' &&
         <Feedback tone="error" title={ready ? 'Changes are not saved' : 'Your meetups couldn’t load'}
         action={<Button secondary onPress={() => ready ? setSaveAttempt(value => value + 1) : setLoadAttempt(value => value + 1)}>Try again</Button>}>{storageError}</Feedback>}
       {!ready && !storageError && <LoadingState label="Loading your meetups…" />}
       {content}
-      {!footer && <AppFooter />}
     </ScrollView>
     {footer}
   </>;

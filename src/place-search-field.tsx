@@ -18,6 +18,7 @@ export function PlaceSearchField({ label, value, change, select }: {
   const [limit, setLimit] = useState(5);
   const query = open ? value.trim() : '';
   const { results, total } = useMemo(() => findPlaces(query, limit), [query, limit]);
+  const expanded = open && results.length > 0;
   function update(text: string) {
     change(text);
     setLimit(5);
@@ -46,12 +47,12 @@ export function PlaceSearchField({ label, value, change, select }: {
               dismissedResults.current = false;
             }
           },
-          'aria-expanded': open && results.length > 0, 'aria-controls': open && results.length ? listId : undefined,
+          'aria-expanded': expanded, 'aria-controls': expanded ? listId : undefined,
           'aria-activedescendant': open && results[active] ? listId + '-' + active : undefined } : {})}
         onKeyPress={event => {
           if (!web) return;
           const key = event.nativeEvent.key;
-          if (key === 'Escape' && open) {
+          if (key === 'Escape' && expanded) {
             dismissedResults.current = true;
             event.preventDefault(); setOpen(false); setActive(-1);
           } else if (key === 'ArrowDown' || key === 'ArrowUp') {

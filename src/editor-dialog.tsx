@@ -37,7 +37,7 @@ export function EditorDialog({ title, close, busy, actions, children }: {
     }
   }, [compact, visibleArea?.height]);
 
-  return <Modal transparent animationType="none" visible onRequestClose={() => { if (!busy) close(); }}>
+  return <Modal accessibilityLabel={title} transparent animationType="none" visible onRequestClose={() => { if (!busy) close(); }}>
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }]} />
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[{ flex: 1,
       justifyContent: compact ? 'flex-end' : 'center', paddingHorizontal: compact ? 0 : spacing.lg,

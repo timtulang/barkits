@@ -12,4 +12,5 @@
 :focus-visible { outline: 3px solid var(--barkits-focus); outline-offset: 3px; box-shadow: 0 0 0 3px var(--barkits-canvas); }
 ::selection { background: var(--barkits-mango); color: var(--barkits-ink); }
 input, textarea { caret-color: var(--barkits-focus); }
+input::placeholder, textarea::placeholder { color: var(--placeholderTextColor, var(--barkits-muted)); }
 * { scrollbar-color: var(--barkits-muted) var(--barkits-canvas); }

@@ -95,6 +95,8 @@ chromedriver --port=9515 --allowed-ips=127.0.0.1
 
 Then run `python3 scripts/check-planning-browser.py guest --app http://127.0.0.1:5179/`. Each run creates an isolated temporary browser profile. Screenshots go to ignored `.expo/redesign/phase45d/`. This checks setup, scheduling, place/trip comparison, corrections, confirmation, resume, save failure/retry, unsaved-edit protection and small/wide layouts. Repeat with `--reduced-motion` to check the same journey with motion disabled.
 
+Run `python3 scripts/check-redesign-browser.py --app http://127.0.0.1:5179/` to check web landmarks, dialog names, keyboard focus and Escape behavior, place selection during a tile outage, and the friend editor at a 320 CSS px reflow viewport.
+
 For synthetic shared-role UI checks, export a separate fixture build. `--clear` is required when switching these build-time public environment values, because Metro can retain inlined values:
 
 ```sh

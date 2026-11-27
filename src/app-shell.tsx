@@ -9,7 +9,7 @@ export function AppHeader({ signedIn, inMeetup, compact, home, account, create }
   signedIn: boolean; inMeetup: boolean; compact: boolean; home: () => void; account: () => void; create: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
-  return <View style={styles.header}><View style={[shellStyles.container, styles.headerInner, compact && styles.headerCompact]}>
+  return <View role="banner" style={styles.header}><View style={[shellStyles.container, styles.headerInner, compact && styles.headerCompact]}>
     <View style={styles.identity}>
       <Pressable accessibilityRole="button" accessibilityLabel="Barkits home" onPress={home}
         onHoverIn={() => setHovered(true)} onHoverOut={() => setHovered(false)}
@@ -28,12 +28,6 @@ export function AppHeader({ signedIn, inMeetup, compact, home, account, create }
   </View></View>;
 }
 
-export function AppFooter() {
-  return <View style={styles.footer}><Icon name="map-pin" size={16} color={colors.info} />
-    <Label kind="caption">Good plans start with the barkada.</Label>
-  </View>;
-}
-
 export const shellStyles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.canvas },
   container: { width: '100%', maxWidth: 1112, alignSelf: 'center', paddingHorizontal: spacing.lg },
@@ -48,5 +42,4 @@ const styles = StyleSheet.create({
   identity: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg },
   brand: { minHeight: control.minimum, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderRadius: radius.control },
   logo: { backgroundColor: palette.coral, width: 36, height: 36, borderRadius: radius.control, alignItems: 'center', justifyContent: 'center' },
-  footer: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 'auto', paddingTop: spacing.xl },
 });

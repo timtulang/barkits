@@ -13,7 +13,7 @@ export function FullscreenPlaceMap({ navigation, pins, select, children, detail,
   children: ReactNode; detail: ReactNode; mapLabel?: string;
 }) {
   const [mapHeight, setMapHeight] = useState(0);
-  return <Modal visible animationType="none" onRequestClose={() => navigation.setExpanded(false)}>
+  return <Modal accessibilityLabel={mapLabel ?? 'Meetup map'} visible animationType="none" onRequestClose={() => navigation.setExpanded(false)}>
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.paper }}>
         <View style={[layout.wrap, { padding: spacing.sm, borderBottomWidth: 1, borderColor: palette.line }]}>
           <View style={[layout.row, { flexGrow: 1, flexBasis: 180, minWidth: 0 }]}>

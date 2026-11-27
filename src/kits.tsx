@@ -24,6 +24,6 @@ export function Kits({ style, celebrate = false }: { style?: StyleProp<ImageStyl
     return () => { bounce.stop(); lift.setValue(0); };
   }, [celebrate, lift, allowed]);
 
-  return <Animated.Image source={require('../assets/kits.png')} accessible={false} resizeMode="contain"
+  return <Animated.Image source={require('../assets/ui/kits.png')} accessible={false} resizeMode="contain"
     style={celebrate ? [style, { transform: [{ translateY: lift }] }] : style} />;
 }
