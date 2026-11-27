@@ -1,8 +1,45 @@
 # Barkits redesign plan
 
-## Current brief · Phase 2 visual identity and design foundations
+## Current brief · Phase 3 primary experience redesign
 
-**Checkpoint · 27 November 2026.** The approved direction brings more color and a clearer sense of progress to Barkits. Phase 2 applies the foundations and exercises them on Home and in the existing planning flow. Phase 3 requires approval.
+**Checkpoint · 27 November 2026.** Phase 3 delivers the guest vertical slice. Phase 4 requires approval.
+
+- **Home and setup.** The first visit keeps Kits and the welcome. After someone makes a plan, Home leads with their plans, newest first, and retains the labeled demo. The compact header gives setup more room, Add friend leads the empty roster, and schedule copy explains when Next skips the optional date and time.
+- **Discovery and comparison.** Where opens at the map. Places and Compare are available above it, and a wide screen keeps the map beside the active view. Map pins, list rows and comparison results open the same detail sheet. Balanced, Fairest, Fastest and Cheapest use the existing ranking and limit rules. Results show one-way group minutes, trip gap, fares, and estimate sources. Places that need more data or exceed limits remain available for correction. The selected ranking survives a trip edit within the same plan.
+- **Review and arrival.** The venue and its blockers precede general meetup details. Users can change the place or edit its trips before explicitly confirming. Review shows a pending save when local persistence fails. After success, a checked route and Get directions lead for venues with saved coordinates. Map, completion and memories remain available.
+
+Implementation includes `src/home.tsx`, `src/app-shell.tsx`, `src/planning-schedule.tsx`, `src/meetup.tsx`, `src/nearby-places.tsx`, `src/suggested-places.tsx`, `src/place-rankings.tsx`, `src/destination-review.tsx`, and `src/planning-journey.tsx`. The browser suite, design system, README and continuity ledger record the updated flow.
+
+### Phase 3 validation
+
+- Chromium guest coverage includes first and returning Home, setup and schedule correction, list and full-screen map navigation, four ranking modes, zero and unknown fares, per-person drafts, voting, pending review and correction, injected save failures and retries, venue directions, reload and completion. Directions were checked against the saved coordinates.
+- Screen captures cover 320, 390, 768 and 1440 px. The narrow comparison keeps a visible Rank by control and the leading result above the footer. The four planning stages retain labels, 48-point targets and a fixed footer. The shared organizer and member regression suite passed against a localhost fixture.
+- TypeScript, all 18 planner tests, and Expo exports for web, Android and iOS passed. Native devices, screen readers and hosted shared permissions remain unverified. The browser showed the map tile failure state, and pins, attribution, and the independent place list remained available.
+
+### Updated guest screen scores
+
+Scores reflect the browser walkthrough and captures. The observed tile failure and unavailable native and screen-reader checks limit the scores for discovery and accessibility.
+
+| Criterion | Home | Setup | Where and Compare | Review and directions |
+|---|---:|---:|---:|---:|
+| Recognizable personality | 8 | 7 | 8 | 8 |
+| Purpose is obvious | 9 | 9 | 8 | 9 |
+| Visual hierarchy | 8 | 8 | 8 | 9 |
+| Intentional composition | 8 | 7 | 8 | 8 |
+| Necessary containers only | 8 | 8 | 8 | 8 |
+| Typography supports the brand | 8 | 8 | 8 | 8 |
+| Purposeful palette | 8 | 8 | 8 | 8 |
+| Obvious next action | 9 | 8 | 8 | 9 |
+| Features discoverable | 8 | 8 | 8 | 8 |
+| Enjoyable to use | 8 | 7 | 7 | 8 |
+| Accessible and responsive | 8 | 7 | 7 | 8 |
+| Recognizable without logo | 8 | 7 | 8 | 8 |
+
+**Next approval gate · Phase 4, Remaining screens and workflows.** Extend the design to account and invite entry, organizer and member planning, and local and shared completion and memories. Verify role-specific actions, recap audience, and archived states.
+
+## Phase 2 checkpoint · Visual identity and design foundations
+
+**Checkpoint · 27 November 2026.** The approved direction brings more color and a clearer sense of progress to Barkits. Phase 2 applied the foundations and exercised them on Home and in the existing planning flow before the Phase 3 redesign.
 
 - **Color and type.** Mango leads the welcome and current stop. Coral marks people. Grape-purple gives primary actions a consistent, high-contrast color. Cream and paper support dense content. The shared Nunito scale gives page titles more presence while retaining aligned numeric text and readable form labels.
 - **Shape and motion.** Shared fields retain 48-point targets and 12-point corners. Panels use 16-point corners, with elevation reserved for sheets. Named timing and easing values govern stage reveals and Kits’ short celebration. The system reduced-motion setting skips both.
@@ -16,7 +53,7 @@ The implementation lives in `src/theme.ts`, `global.css`, `src/planning-route.ts
 - Chromium captures cover phone and desktop Home and planning, including validation, empty setup, discovery and confirmed arrival. Guest planning passed at 320, 390, 768 and 1440 px with visible stage names, one active stage, 48-point targets, a fixed footer and no horizontal page overflow. Keyboard focus and reduced motion passed. An injected local save failure kept the arrival pin unchecked until retry succeeded.
 - TypeScript, all 18 planner tests and Expo exports for web, Android and iOS passed. The shared Chromium check passed member voting, organizer-only confirmation, busy feedback and refreshed arrival using a localhost fixture. Native device behavior, screen readers, hosted shared permissions and map tiles remain open.
 
-**Next approval gate · Phase 3, Primary experience redesign.** Build the guest vertical slice around Home, setup, map-first discovery, cross-place rankings, review and directions. Bring the place list and comparison within reach without losing the map or the fixed step actions. Lead review with the proposed or confirmed venue.
+**Phase 2 handoff · Phase 3, Primary experience redesign.** Build the guest vertical slice around Home, setup, map-first discovery, cross-place rankings, review and directions. Bring the place list and comparison within reach without losing the map or the fixed step actions. Lead review with the proposed or confirmed venue.
 
 ## Phase 1 baseline · Design and UX audit
 

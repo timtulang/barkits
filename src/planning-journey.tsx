@@ -74,12 +74,12 @@ export function PlanningStepActions({ stage, change, onNext, disabled, busy, sel
   </View>;
 }
 
-export function PlanningReview({ people, mapped, schedule, destination, change, canEdit = true, pending, activity, description }: {
+export function PlanningReview({ people, mapped, schedule, destination, change, canEdit = true, pending, activity, description, heading }: {
   people: number; mapped: number; schedule?: string; destination?: string; activity?: string | null; description?: string | null;
-  change: (stage: PlanningStage) => void; canEdit?: boolean; pending?: string;
+  change: (stage: PlanningStage) => void; canEdit?: boolean; pending?: string; heading?: string;
 }) {
   return <Panel>
-    <Label kind="item" heading>{destination ? 'Destination confirmed' : pending ? 'Meetup details' : 'Pick a place'}</Label>
+    <Label kind="item" heading>{heading ?? (destination ? 'Destination confirmed' : pending ? 'Meetup details' : 'Pick a place')}</Label>
     <Label>{people} {people === 1 ? 'friend' : 'friends'}{mapped < people ? ' · ' + (people - mapped) + ' missing a start' : ''}</Label>
     <Label>{schedule || 'Time undecided'}</Label>
     {!!activity && <Label>Activity · {activity}</Label>}

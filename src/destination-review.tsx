@@ -2,11 +2,12 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { Feedback, Label, Panel } from './ui';
 
-export function DestinationReview({ name, children, blocked }: {
-  name: string; children: ReactNode; blocked?: string;
+export function DestinationReview({ name, area, children, blocked, prominent }: {
+  name: string; area?: string; children: ReactNode; blocked?: string; prominent?: boolean;
 }) {
   return <Panel>
-    <Label kind="item" heading>{name}</Label>
+    <Label kind={prominent ? 'section' : 'item'} heading>{name}</Label>
+    {!!area && <Label>{area}</Label>}
     <Label kind="detail">Confirming closes voting.</Label>
     {!!blocked && <Feedback tone="warning">{blocked}</Feedback>}
     {children}

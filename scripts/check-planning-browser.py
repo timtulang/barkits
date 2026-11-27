@@ -24,11 +24,46 @@ def selected_value(browser, label):
 def date_value(browser, kind, value):
     browser.js('const e=document.querySelector(arguments[0]);Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set.call(e,arguments[1]);e.dispatchEvent(new Event("input",{bubbles:true}));e.dispatchEvent(new Event("change",{bubbles:true}));', 'input[type=' + kind + ']', value)
 
+def ranking(browser, place):
+    return browser.js('return document.querySelector("[aria-label^=\'Compare \']").getAttribute("aria-label")') == 'Compare ' + place
+
+def reject_storage_writes(browser):
+    browser.js('window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith("barkits.meetups"))throw Error("synthetic storage rejection");return window.originalSetItem.call(this,k,v)}')
+
+def retry_storage(browser):
+    browser.js('Storage.prototype.setItem=window.originalSetItem')
+    browser.tap('Try again')
+
 def guest(args):
     b = Browser(args.driver, args.artifacts, 'guest')
     try:
         b.open(args.app)
         b.wait(lambda: 'Plan a meetup' in b.body())
+        b.snapshot('guest-home-first-390')
+        b.click('[aria-label="Open Saturday catch-up"]')
+        b.tap('Places')
+        assert b.visible('[aria-label^="View details for "]') and not b.visible('[aria-label="Suggested places map"]')
+        b.tap('Compare')
+        for mode, place in [('Balanced', 'Gateway Mall'), ('Fairest', 'Gateway Mall'), ('Fastest', 'SM Megamall'), ('Cheapest', 'SM Megamall')]:
+            b.tap(mode)
+            assert ranking(b, place), mode
+        assert 'Demo estimates' in b.body() and 'Travel times incomplete' in b.body()
+        b.viewport(320)
+        b.wait(lambda: b.visible('[aria-label="Rank by"]'))
+        b.select('Rank by', 'Fairest')
+        assert ranking(b, 'Gateway Mall')
+        b.select('Rank by', 'Cheapest')
+        assert ranking(b, 'SM Megamall')
+        assert b.js('''const top=document.querySelector('[aria-label="Compare SM Megamall"]').getBoundingClientRect().top;
+          const footer=document.querySelector('[aria-label="Planning navigation"]').getBoundingClientRect().top;
+          return top + 48 < footer;''')
+        b.snapshot('guest-compare-320')
+        b.viewport(1440)
+        b.wait(lambda: b.visible('[aria-label="Suggested places map"]'))
+        assert ranking(b, 'SM Megamall')
+        b.snapshot('guest-compare-1440')
+        b.viewport(390)
+        b.tap('Back to meetups')
         b.tap('Plan a meetup'); b.tap('Create meetup & add friends')
         assert 'Enter a meetup name' in b.body()
         b.fill('Meetup name', 'Acceptance catch-up'); b.tap('Create meetup & add friends')
@@ -44,9 +79,9 @@ def guest(args):
         b.wait(lambda: '2 of 2 starting points on the map' in b.body())
         b.click('[aria-label="Edit Alex"]')
         b.fill('Maximum fare (₱)', '50')
-        b.js('window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith("barkits.meetups"))throw Error("synthetic storage rejection");return window.originalSetItem.call(this,k,v)}')
+        reject_storage_writes(b)
         b.tap('Save changes'); b.wait(lambda: 'Changes are not saved' in b.body())
-        b.js('Storage.prototype.setItem=window.originalSetItem'); b.tap('Try again')
+        retry_storage(b)
         b.wait(lambda: 'Plan saved on this device' in b.body())
         b.tap('Next'); date_value(b, 'date', '2026-12-05')
         b.tap('Next'); assert 'Choose a time' in b.body()
@@ -64,12 +99,13 @@ def guest(args):
         b.click('.map-expand'); b.wait(lambda: 'Back to planning' in b.body())
         b.wait(lambda: b.js('return document.querySelectorAll(".friend-pin").length===2'))
         b.tap('Back to planning')
-        assert 'Compare places & vote' not in b.body()
+        assert b.visible('[aria-label="Where views"]')
         b.click('[aria-label^="Open place 1:"]')
+        place = b.js('return document.querySelector("[aria-label^=\'Select destination, \']").getAttribute("aria-label").slice(20)')
         b.click('[aria-label^="Select destination,"]'); b.tap('Review')
         b.wait(lambda: 'Check the group’s trip estimates and limits.' in b.body())
         assert b.js('return document.querySelector(\'[aria-label="Confirm destination"]\').disabled')
-        b.tap('Back'); b.click('[aria-label^="Open place 1:"]')
+        b.tap('Change place'); b.click('[aria-label^="Open place 1:"]')
         b.tap('Trip estimates')
         assert 'Time incomplete' in b.body() and 'Fare unavailable' in b.body()
         b.click('[aria-label="Edit trip for Alex"]')
@@ -88,14 +124,20 @@ def guest(args):
         b.tap('Transit directions'); assert 'origin=' in b.js('return window.lastDirections')
         b.js('window.open=window.realOpen')
         b.click('[aria-label="Trip for Bo"]'); b.fill('Travel fare (₱, optional)', '50'); b.tap('Save trip details')
-        b.tap('Map')
-        b.click('[aria-label^="View details for "]')
+        b.tap('Map'); b.tap('Compare'); b.tap('Cheapest')
+        assert ranking(b, place)
+        result = '[aria-label=' + json.dumps('Compare ' + place) + ']'
+        b.click(result); b.tap('Trip estimates'); b.click('[aria-label="Edit trip for Alex"]')
+        b.tap('Back to comparison')
+        assert ranking(b, place) and 'Lowest combined fare' in b.body()
+        b.click(result)
         b.click('[aria-label="Vote as Alex"]')
         assert b.js('return document.querySelector(\'[aria-label="Vote as Alex"]\').getAttribute("aria-pressed")==="true"')
         b.tap('Vote')
         b.click('[aria-label^="Select destination,"]')
         b.wait(lambda: 'Selected · ' in b.body())
         b.tap('Review'); b.wait(lambda: 'Confirming closes voting.' in b.body())
+        assert b.js('return document.body.innerText.indexOf(arguments[0]) < document.body.innerText.indexOf("Meetup details")', place)
         b.tap('Back'); b.wait(lambda: 'Where should you meet?' in b.body())
         assert 'Destination confirmed' not in b.body()
         b.tap('Review'); b.wait(lambda: 'Confirming closes voting.' in b.body())
@@ -114,11 +156,27 @@ def guest(args):
                   return nav.getBoundingClientRect().bottom===innerHeight && (!right ||
                     (left.x<right.x && left.y===right.y && left.width===right.width && left.height===right.height))'''), (width, stage)
             b.snapshot('guest-review-' + str(width))
-        b.tap('Confirm'); b.wait(lambda: 'Destination confirmed' in b.body())
+        reject_storage_writes(b)
+        b.tap('Confirm'); b.wait(lambda: 'Changes are not saved' in b.body() and 'Confirmation pending save' in b.body())
+        assert 'Destination confirmed' not in b.body()
+        retry_storage(b)
+        b.wait(lambda: 'Destination confirmed' in b.body())
+        b.snapshot('guest-confirmed-1440')
+        b.js('window.realOpen=window.open;window.open=(url)=>{window.lastDirections=url;return {}}')
+        b.tap('Get directions')
+        assert b.js('''const meetup=JSON.parse(localStorage.getItem("barkits.meetups.v1")).at(-1);
+          const venue=meetup.customVenues.find(item=>item.id===meetup.venue);
+          const link=new URL(window.lastDirections);
+          return link.pathname==="/maps/dir/" && link.searchParams.get("destination")===venue.point.join(",");''')
+        b.js('window.open=window.realOpen')
         b.tap('Back to meetups'); b.command('/refresh', {}); b.wait(lambda: 'Acceptance catch-up' in b.body())
+        assert b.js('return document.querySelector("[aria-label^=\'Open \']").getAttribute("aria-label") === "Open Acceptance catch-up"')
+        b.viewport(390)
+        b.snapshot('guest-home-returning-390')
         b.click('[aria-label="Open Acceptance catch-up"]')
         b.wait(lambda: 'Destination confirmed' in b.body())
         assert 'Dec 5' in b.body() and not b.visible('[aria-label="Confirm destination"]')
+        b.snapshot('guest-confirmed-390')
         b.tap('View venue map'); b.tap('Back to planning')
         b.tap('Mark completed'); b.wait(lambda: 'Save the memory' in b.body())
         b.snapshot('guest-completed')
@@ -127,7 +185,7 @@ def guest(args):
         b.tap('Back to meetups'); b.wait(lambda: 'Unsaved planning edits' in b.body()); b.tap('Discard unsaved edits & leave')
         b.click('[aria-label="Open Unfinished draft"]'); b.wait(lambda: 'Who is joining?' in b.body()); b.stage('when')
         assert b.js('return document.querySelector("input[type=date]").value') == ''
-        print('PASS guest: new/incomplete setup, schedule recovery, map-first discovery, zero/unknown fares, per-person drafts, correction, selection/review/back/confirm, four widths, failed save/retry, hard-reload resume, leave protection/discard, map/back and completion')
+        print('PASS guest: setup, recovery, map and list, four rankings, trip estimates, vote, venue-first review, directions, four widths, resume and completion')
     finally:
         b.close()
 

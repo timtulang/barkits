@@ -127,7 +127,9 @@ Show selected coordinates below the place field. Keep manual coordinates optiona
 
 ## Voting and choosing a destination
 
-Use labeled section controls for the planner. Within Where, on-device plans have Explore places and Compare places & vote; person/destination trip editing opens within comparisons. Shared plans have Explore places and Shortlist & vote with its count. Once a member adds a venue from its map sheet, keep the result visible and offer View shortlist.
+Within an on-device plan, Where opens at the map. Map, Places, and Compare appear above the map on phones. On wide screens the map shares a row with Places or Compare. Numbered map pins, venue rows, and ranking results open the same details. Use Balanced, Fairest, Fastest, or Cheapest to order eligible venues, and keep incomplete or over-limit places available for correction. Display group time, trip gap and fare, with the source of the figures beside the relevant results. Shared plans keep the discovery map and shortlist count.
+
+Review leads with the proposed or confirmed venue. Keep blockers and trip edits next to the pending venue. After local confirmation saves, show the checked route and make Get directions the main action when a pin is available. Time, people and votes provide context beside the venue on wide screens and below it on phones.
 
 Tie the vote action to its owner. On this device, name the selected friend in the action and let the organizer switch voters in the eligible place sheet. In shared plans, use “my vote” for the signed-in member. Show the tally as text and distinguish moving an existing vote from withdrawing it.
 

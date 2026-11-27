@@ -22,13 +22,13 @@ EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npm run web
 
 For a static web export, run `npm run build:web`. Run `npm start` to use a compatible Expo Go client or an existing development build. Native device verification is pending.
 
-Open the Saturday catch-up demo to compare four friends' trips, try ranking modes, cast votes, finalize a venue, complete the meetup, and save a recap or optional ratings. A new meetup starts with an empty group.
+Open the Saturday catch-up demo and choose **Where → Compare** to try the four ranking modes. Open a place to check estimates, cast votes, and select it for Review. A new meetup starts with an empty group.
 
-Once a venue is confirmed, reopen the meetup at Review and choose View venue map. Tap the checked pin for details or **Get directions** to route to that spot in Google Maps. This works without a Google Cloud key.
+Once a venue with a map pin is confirmed, reopen the meetup at Review and choose **Get directions** to route to that spot in Google Maps. **View venue map** opens the checked pin and the same directions action. Both work without a Google Cloud key.
 
 ## Try trip options
 
-Open **Saturday catch-up → Where → Compare places & vote → See each person’s trip → Edit trip estimate**, pick a friend and a venue, then open **Compare ride fares**. Enter the prices shown for the same trip in Angkas and Grab, choose one, and save the trip. In a shared meetup, use **Where → Shortlist & vote → My trip estimate**. The saved fare shows its provider and when the estimate was saved. Live provider prices require approved access.
+Open **Saturday catch-up → Where → Compare**, choose a place, then open **Trip estimates → Edit trip** for a friend. Under **Compare ride fares**, enter the prices shown for the same trip in Angkas and Grab, choose one, and save the trip. In a shared meetup, open the shortlist and choose your own trip estimate. The saved fare shows its provider and when the estimate was saved. Live provider prices require approved access.
 
 With a starting pin and a destination near different LRT-1 stations, **Check your trip** suggests boarding and exit stations, direction and the regular single-journey fare. You can also use **LRT-1 fares** to search any two stations. Enter the full one-way amount when connecting by jeepney, bus or another paid leg. **Transit directions** opens the selected trip in Google Maps without a Google Cloud key.
 

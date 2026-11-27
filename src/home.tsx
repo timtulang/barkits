@@ -12,9 +12,11 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
   open: (index: number) => void; past: boolean; setPast: (past: boolean) => void;
 }) {
   const rows = meetups.map((item, index) => ({ item, index }))
-    .filter(({ item }) => ['Completed', 'Archived'].includes(item.status) === past);
+    .filter(({ item }) => ['Completed', 'Archived'].includes(item.status) === past)
+    .sort((a, b) => b.index - a.index);
+  const returning = meetups.length > 1;
   return <View style={styles.board}>
-    <View style={[styles.welcome, wide && styles.welcomeWide]}>
+    {!returning && <View style={[styles.welcome, wide && styles.welcomeWide]}>
       <View style={styles.intro}>
         <View style={layout.row}><Label kind={wide ? 'page' : 'section'} heading>Tara, kita-kits!</Label>
           {!wide && <Kits style={styles.artSmall} />}</View>
@@ -22,10 +24,13 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
         <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button></View>
       </View>
       {wide && <Kits style={styles.artWide} />}
-    </View>
+    </View>}
     <View style={styles.plans}>
       <View style={[styles.listHeader, wide && styles.listHeaderWide]}>
-        <Label kind="section" heading>Your meetups</Label>
+        <View style={[layout.wrap, { justifyContent: 'space-between' }]}>
+          <Label kind={returning && wide ? 'page' : 'section'} heading>Your meetups</Label>
+          {returning && <Button icon="plus" onPress={create}>Plan a meetup</Button>}
+        </View>
         <View style={layout.wrap}>
           <Chip selected={!past} onPress={() => setPast(false)}>Active plans</Chip>
           <Chip selected={past} onPress={() => setPast(true)}>Past meetups</Chip>
@@ -41,8 +46,8 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
             demo={index === 0}
             venue={item.venue ? [...venues, ...item.customVenues ?? []].find(venue => venue.id === item.venue)?.name : undefined}
             onPress={() => open(index)} />)}
-          {!rows.length && <EmptyState title={past ? 'No past meetups yet' : 'Your next catch-up starts here'}>
-            {past ? 'Completed and archived plans will appear here, along with their memories.' : 'Choose “Plan a meetup” to bring your barkada together.'}
+          {!rows.length && <EmptyState title={past ? 'No past meetups yet' : 'No active meetups'}>
+            {past ? 'Completed and archived plans will appear here, along with their memories.' : 'Start a new plan to bring your barkada together.'}
           </EmptyState>}
         </View>
         {!!shared && <View style={[styles.group, wide && !!shared && { flex: 1 }]}>{shared}</View>}

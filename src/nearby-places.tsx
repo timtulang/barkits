@@ -1,10 +1,11 @@
 import { canConfirmLocal } from './destination-eligibility';
 import type { MapNavigation } from './fullscreen-place-map';
 import { FriendPicker } from './friend-picker';
-import { SuggestedPlaces } from './suggested-places';
+import { SuggestedPlaces, type PlaceBrowseView } from './suggested-places';
 import type { ReactNode } from 'react';
 import type { LocatedFriend, discover } from './discovery';
-import { type Meetup, type Participant, type Venue, retainPlace, venues } from './planner';
+import { type Meetup, type Participant, type Ranking, type Venue, retainPlace, venues } from './planner';
+import { PlaceRankings } from './place-rankings';
 import { localTripRows } from './trip-evidence';
 import { TripComparison } from './trip-comparison';
 import { Label } from './ui';
@@ -14,10 +15,15 @@ type Props = {
   navigation: MapNavigation; meetup: Meetup; voter?: Participant; friends: LocatedFriend[]; suggestions: ReturnType<typeof discover>;
   filters: ReactNode; selected?: string; selectVoter: (id: string) => void; editTrip: (venue: Venue, person: string) => void;
   editFriend: (person?: Participant) => void; save: (meetup: Meetup) => void; select: (venue: Venue) => void;
+  view: PlaceBrowseView; changeView: (view: PlaceBrowseView) => void;
+  ranking: Ranking; changeRanking: (ranking: Ranking) => void;
 };
 
-export function NearbyPlaces({ meetup, voter, friends, suggestions, filters, selectVoter, editTrip, editFriend, save, navigation, selected, select }: Props) {
+export function NearbyPlaces({ meetup, voter, friends, suggestions, filters, selectVoter, editTrip, editFriend, save, navigation,
+  selected, select, view, changeView, ranking, changeRanking }: Props) {
   return <SuggestedPlaces navigation={navigation} suggestions={suggestions} friends={friends}
+    browser={{ view, change: changeView, compare: (places, open) =>
+      <PlaceRankings meetup={meetup} places={places} open={open} selected={selected} ranking={ranking} changeRanking={changeRanking} /> }}
     alternatives={[...meetup.customVenues ?? [], ...venues]} filters={filters} actions={(venue, close) => {
       const ready = canConfirmLocal(retainPlace(meetup, venue), venue);
       const hasLimits = meetup.participants.some(person => person.budget !== undefined || person.maxMinutes !== undefined);

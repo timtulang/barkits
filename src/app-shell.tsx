@@ -9,19 +9,19 @@ export function AppHeader({ signedIn, inMeetup, compact, home, account, create }
   signedIn: boolean; inMeetup: boolean; compact: boolean; home: () => void; account: () => void; create: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
-  return <View style={styles.header}><View style={[shellStyles.container, styles.headerInner]}>
+  return <View style={styles.header}><View style={[shellStyles.container, styles.headerInner, compact && styles.headerCompact]}>
     <View style={styles.identity}>
       <Pressable accessibilityRole="button" accessibilityLabel="Barkits home" onPress={home}
         onHoverIn={() => setHovered(true)} onHoverOut={() => setHovered(false)}
         style={({ pressed }) => [styles.brand, hovered && { backgroundColor: colors.hover }, pressed && { backgroundColor: colors.pressed }]}>
         <View style={styles.logo}><Icon name="map-pin" size={21} /></View>
-        <Label kind="section">barkits.</Label>
+        <Label kind={compact ? 'item' : 'section'}>barkits.</Label>
       </Pressable>
       {!compact && <Label kind="detail">Made for the barkada.</Label>}
     </View>
-    <View style={layout.wrap}>
-      {inMeetup && <Button secondary icon="plus" onPress={create} accessibilityLabel="New meetup">{compact ? 'New' : 'New meetup'}</Button>}
-      <Button quiet icon="user" onPress={account} accessibilityLabel={signedIn ? 'Your account' : 'Sign in'}>
+    <View style={[layout.wrap, compact && { gap: spacing.xs }]}>
+      {inMeetup && <Button secondary icon={compact ? undefined : 'plus'} onPress={create} accessibilityLabel="New meetup">{compact ? 'New' : 'New meetup'}</Button>}
+      <Button quiet icon={compact ? undefined : 'user'} onPress={account} accessibilityLabel={signedIn ? 'Your account' : 'Sign in'}>
         {signedIn ? 'Account' : 'Sign in'}
       </Button>
     </View>
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
   header: { backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.divider },
   headerInner: { minHeight: 80, paddingVertical: spacing.sm, flexDirection: 'row', flexWrap: 'wrap',
     alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+  headerCompact: { minHeight: control.minimum + 2 * spacing.sm, gap: spacing.xs },
   identity: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg },
   brand: { minHeight: control.minimum, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderRadius: radius.control },
   logo: { backgroundColor: palette.coral, width: 36, height: 36, borderRadius: radius.control, alignItems: 'center', justifyContent: 'center' },

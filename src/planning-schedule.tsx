@@ -27,7 +27,7 @@ export function PlanningSchedule({ date, save, continuePlanning, reportDirty, re
   }
   useImperativeHandle(ref, () => ({ advance }));
   return <Panel>
-    <Label kind="detail">Add a date and time, or decide later.</Label>
+    <Label kind="detail">Add both a date and time, or choose Next to decide later.</Label>
     {!!legacy && !(day && time) && <Label>Saved schedule · {legacy}</Label>}
     <ScheduleInput key={version} day={day} time={time} disabled={false} error={submitted ? issue : undefined} errorId={errorId}
       reportIncomplete={(part, value) => setIncomplete(current => current[part] === value ? current : { ...current, [part]: value })}
