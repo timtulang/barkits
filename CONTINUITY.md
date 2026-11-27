@@ -1,6 +1,9 @@
 # Continuity ledger
 
 ## Snapshot
+- 2026-11-27 [USER] Merge collaborative platform phases 0, 1, and 2 into `barkits-prototype` and review the phase documentation for functional parity.
+- 2026-11-27 [CODE] The phases are stacked through `42100d3`. The merge preserves the redesigned local and Supabase shared flows and adds the phase roadmaps, account-scoped local meetup URLs, native link configuration, and the portable Neon foundation.
+- 2026-11-27 [TOOL] TypeScript, 20 domain tests, web/Android/iOS bundles, Chromium guest and synthetic shared flows, and PostgreSQL 17/PgBouncer migration, runtime role and backup recovery checks passed. Live Neon, signed native builds, and device link verification remain open.
 - 2026-11-27 [USER] Approved Phase 6, the final phase in the current UI/UX brief.
 - 2026-11-27 [CODE] Phase 6 delivered browser accessibility fixes, a display-sized Kits asset and a final comparison against the starting screens. No further redesign phase is pending. Actual native devices, real screen readers, hosted sign-in and database configuration, and live map tiles remain open for release acceptance. See `docs/REDESIGN_PLAN.md`.
 - 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at the end of each task.

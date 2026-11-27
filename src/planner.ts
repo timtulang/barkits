@@ -62,6 +62,7 @@ export function recommend(participants: Participant[], ranking: Ranking, manualF
   return candidates.sort((a, b) => a.score - b.score || a.venue.id.localeCompare(b.venue.id));
 }
 export type Meetup = {
+  id: string;
   name: string;
   activity?: string;
   description?: string;
@@ -78,6 +79,7 @@ export type Meetup = {
   ratings: Record<string, number>;
 };
 export const example: Meetup = {
+  id: 'demo',
   name: 'Saturday catch-up',
   date: '',
   participants: [

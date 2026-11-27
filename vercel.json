@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/meetups/:id", "destination": "/index.html" }
+  ]
+}

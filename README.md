@@ -20,7 +20,11 @@ npm_config_cache=/tmp/barkits-npm-cache npm ci
 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npm run web
 ```
 
-For a static web export, run `npm run build:web`. Run `npm start` to use a compatible Expo Go client or an existing development build. Native device verification is pending.
+For a static web export, run `npm run build:web`. Device-local meetups open at `/meetups/[id]` and can be refreshed or reopened on the same browser or app installation under the same account. The included Vercel rewrite serves `index.html` for meetup routes. Configure the same fallback on other static hosts.
+
+Run `npm start` with compatible Expo Go or a development build. Build locally with `npx expo run:android` using the Android SDK or `npx expo run:ios` using macOS and Xcode. Both use the development identifier `com.timtulang.barkits`. A development build can open `barkits://meetups/demo`. Confirm app IDs and signing before registering production credentials.
+
+To prepare HTTPS links for a dedicated domain, set `BARKITS_LINK_HOST` to its hostname at native build time. Publish the Android `assetlinks.json` and Apple `apple-app-site-association` files under `/.well-known/`, with the matching signing identities and iOS path `/meetups/*`. Verify both signed builds on devices. [Android App Links](https://docs.expo.dev/linking/android-app-links/) · [iOS Universal Links](https://docs.expo.dev/linking/ios-universal-links/)
 
 Open the Saturday catch-up demo and choose **Where → Compare** to try the four ranking modes. Open a place to check estimates, cast votes, and select it for Review. A new meetup starts with an empty group.
 
@@ -61,7 +65,7 @@ Apply the SQL migrations in `supabase/migrations` in timestamp order to the same
 
 8. After the gathering, the organizer selects **Mark completed → Confirm completion**. In **Write a recap**, choose **Only me** or **Meetup members** before saving. Ratings are optional. Organizers can archive the meetup. Find completed and archived plans under **Past meetups**. Authors can still make a recap private or remove a recap or rating after archiving.
 
-For database verification against a migrated local Supabase database, run `psql "$DATABASE_URL" -f scripts/check-shared-meetups.sql`. The script uses temporary fixtures inside a rolled-back transaction.
+For database verification against a migrated local Supabase database, run `psql "$SUPABASE_DATABASE_URL" -f scripts/check-shared-meetups.sql`. The script uses temporary fixtures inside a rolled-back transaction.
 
 Guest planning, the form improvements, and offline venue search work without Supabase or a Google Maps key.
 
@@ -70,6 +74,8 @@ Guest planning, the form improvements, and offline venue search work without Sup
 From the repo root, start Docker and run `supabase start` with the Supabase CLI. Copy the API URL and publishable key from `supabase status` into the corresponding variables in `.env.local`, then restart Expo. Open the local mail inbox URL printed by the CLI to retrieve codes. The checked-in Supabase configuration sets both local email templates.
 
 See [design system](docs/DESIGN_SYSTEM.md), [product and integration decisions](docs/PRODUCT.md), and [cost audit](docs/COST_AUDIT.md).
+
+The collaborative platform work includes the [Phase 0 architecture and migration plan](docs/ARCHITECTURE.md), [Google Cloud setup guide](docs/GOOGLE_CLOUD.md), and [Phase 2 Neon database setup and recovery](docs/DATABASE.md). The prototype still uses Supabase for its existing shared meetups.
 
 ## Google street maps on a Vercel preview
 
@@ -89,7 +95,7 @@ Export the normal app, serve the directory, and run ChromeDriver in separate ter
 
 ```sh
 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform all --clear --output-dir .expo/redesign/check/guest
-python3 -m http.server 5179 --bind 127.0.0.1 --directory .expo/redesign/check/guest
+python3 scripts/serve-web.py .expo/redesign/check/guest --port 5179
 chromedriver --port=9515 --allowed-ips=127.0.0.1
 ```
 
@@ -102,7 +108,7 @@ For synthetic shared-role UI checks, export a separate fixture build. `--clear` 
 ```sh
 EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:5180 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_fixture_only EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform web --clear --output-dir .expo/redesign/check/shared
 python3 scripts/planning-fixture.py
-python3 -m http.server 5178 --bind 127.0.0.1 --directory .expo/redesign/check/shared
+python3 scripts/serve-web.py .expo/redesign/check/shared --port 5178
 ```
 
 Keep the fixture API and static server running in separate terminals, then run `python3 scripts/check-planning-browser.py shared --app http://127.0.0.1:5178/`. It checks organizer and member views, own-trip editing, missing and at-limit estimates, voting and confirmation retry. Run `python3 scripts/check-shared-lifecycle.py --app http://127.0.0.1:5178/` for sign-in handoff, invite replacement, private and published recaps, and archive behavior. Both scripts use synthetic accounts and send no email. Real Supabase authentication, hosted database policies, and native-device behavior require separate validation. Build the normal app again with its intended environment and `--clear` after switching away from fixtures.

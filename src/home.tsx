@@ -3,17 +3,15 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
 import { MeetupListItem } from './meetup-list-item';
-import { Meetup, venues } from './planner';
+import { example, Meetup, venues } from './planner';
 import { colors, palette, radius, spacing } from './theme';
 import { Button, Chip, EmptyState, Label, layout } from './ui';
 
 export function Home({ wide, meetups, create, open, shared, signedIn, past, setPast, join }: {
   shared?: ReactNode; signedIn: boolean; wide: boolean; meetups: Meetup[]; create: () => void;
-  open: (index: number) => void; past: boolean; setPast: (past: boolean) => void; join?: () => void;
+  open: (id: string) => void; past: boolean; setPast: (past: boolean) => void; join?: () => void;
 }) {
-  const rows = meetups.map((item, index) => ({ item, index }))
-    .filter(({ item }) => ['Completed', 'Archived'].includes(item.status) === past)
-    .sort((a, b) => b.index - a.index);
+  const rows = meetups.filter(item => ['Completed', 'Archived'].includes(item.status) === past).reverse();
   const returning = meetups.length > 1;
   const actions = <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button>
     {join && <Button secondary icon="users" onPress={join}>Join with code</Button>}
@@ -44,11 +42,11 @@ export function Home({ wide, meetups, create, open, shared, signedIn, past, setP
           <View style={styles.groupIntro}><Label kind="item" heading>On this device</Label>
             <Label kind="detail">{signedIn ? 'Kept on this device for your account. Not shared with friends.' : 'Kept in this browser or app. Not shared with friends.'}</Label>
           </View>
-          {rows.map(({ item, index }) => <MeetupListItem key={index} name={item.name} status={item.status}
+          {rows.map(item => <MeetupListItem key={item.id} name={item.name} status={item.status}
             date={formatLocalSchedule(item.date) || 'Date to be decided'} detail={`${item.participants.length} ${item.participants.length === 1 ? 'friend' : 'friends'}`}
-            demo={index === 0}
+            demo={item.id === example.id}
             venue={item.venue ? [...venues, ...item.customVenues ?? []].find(venue => venue.id === item.venue)?.name : undefined}
-            onPress={() => open(index)} />)}
+            onPress={() => open(item.id)} />)}
           {!rows.length && <EmptyState title={past ? 'No past meetups yet' : 'No active meetups'}>
             {past ? 'Completed and archived plans will appear here, along with their memories.' : 'Start a new plan to bring your barkada together.'}
           </EmptyState>}

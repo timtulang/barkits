@@ -3,6 +3,7 @@ import { useId, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { EditorDialog } from './editor-dialog';
 import { FormSection } from './form-controls';
+import { newMeetupId } from './meetup-storage';
 import { readSchedule, scheduleProblem } from './meetup-schedule';
 import type { Meetup } from './planner';
 import { ScheduleInput } from './schedule-input';
@@ -48,7 +49,7 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
     setSubmitted(true);
     if (invalidField) { if (issue) setShowOptional(true); return; }
     pending.current = true;
-    const value: Meetup = { ...(meetup ?? { participants: [], votes: {}, ratings: {} }), status,
+    const value: Meetup = { ...(meetup ?? { id: newMeetupId(), participants: [], votes: {}, ratings: {} }), status,
       name: name.trim(), activity: activity.trim(), description: description.trim(), date: day ? day + ' ' + time : legacy };
     if (!shared || !share) {
       save(value);

@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { initialPlanningStage, peopleProgress } from './planning-progress.ts';
 import { example, recommend, ratingSummary, venues } from './planner.ts';
+import { readMeetups } from './meetup-storage.ts';
 
 test('planning opens at missing setup or the supported decision stage', () => {
   assert.equal(initialPlanningStage('Planning', 0, 0), 'who');
@@ -210,4 +211,33 @@ test('review rechecks local eligibility after people or limits change and shared
   assert.equal(sharedLimitIssues(member, exact), undefined);
   assert.match(sharedLimitIssues(member, { ...exact, fare_pesos: null })!, /needs a fare/);
   assert.match(sharedLimitIssues(member, { ...exact, minutes: 11 })!, /exceeds/);
+});
+test('adds stable IDs to preexisting meetups without changing planner data', () => {
+  const { id: demoId, ...demo } = example;
+  const personal = {
+    ...demo,
+    name: 'After work',
+    status: 'Archived',
+    venue: 'cub',
+    votes: { '1': 'cub' },
+    manualFares: { cub: { '1': 85 } },
+    recap: 'Great evening',
+    ratings: { '1': 5 },
+  };
+  const upgraded = readMeetups(JSON.stringify([demo, personal]));
+  assert.equal(upgraded.upgraded, true);
+  assert.deepEqual(upgraded.meetups, [
+    { ...demo, id: demoId },
+    { ...personal, id: upgraded.meetups[1].id },
+  ]);
+  assert.notEqual(upgraded.meetups[1].id, demoId);
+  assert.deepEqual(readMeetups(JSON.stringify(upgraded.meetups)), {
+    meetups: upgraded.meetups, upgraded: false,
+  });
+});
+
+test('rejects damaged storage rather than substituting demo meetups', () => {
+  assert.throws(() => readMeetups('{'));
+  assert.throws(() => readMeetups('null'));
+  assert.throws(() => readMeetups(JSON.stringify([example, example])), /duplicate/);
 });

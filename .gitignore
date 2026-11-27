@@ -2,9 +2,11 @@ node_modules/
 .expo/
 dist/
 expo-env.d.ts
+/android/
+/ios/
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 supabase/.temp/
 supabase/.branches/
 
