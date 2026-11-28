@@ -243,7 +243,7 @@ def shared(args):
     member = Browser(args.driver, args.artifacts, 'member')
     try:
         for b, uid in [(organizer, OWNER), (member, MEMBER)]:
-            seed_session(b, uid); b.open(args.app)
+            seed_session(b, uid, args.app); b.open(args.app)
             b.wait(lambda: 'Fixture shared meetup' in b.body())
             b.click('[aria-label="Open Fixture shared meetup"]')
             b.wait(lambda: 'Where should you meet?' in b.body())
@@ -284,7 +284,7 @@ def shared(args):
         result = fixture(args.fixture, '/fixture/state')
         assert result['status'] == 'decided'
         assert all(call['user'] == OWNER for call in result['calls'] if call['rpc'] == 'finalize_shared_venue')
-        print('PASS synthetic shared UI: missing estimates/limits, own-member editing, vote, organizer review, failed confirmation/retry and cross-session confirmed refresh; this does not verify hosted auth or database RLS')
+        print('PASS synthetic shared UI: missing estimates/limits, own-member editing, vote, organizer review, failed confirmation/retry and cross-session confirmed refresh; this does not verify hosted auth or database permissions')
     finally:
         organizer.close(); member.close()
 

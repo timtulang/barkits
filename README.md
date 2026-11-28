@@ -1,6 +1,6 @@
 # Barkits
 
-Barkits helps a Metro Manila barkada compare meetup spots and decide where to get together. Plan on this device or use Supabase to invite friends to a shared meetup. Demo routes are labeled.
+Barkits helps a Metro Manila barkada compare meetup spots and decide where to get together. Plan on this device or sign in with Google to invite friends to a shared meetup. Demo routes are labeled.
 
 ## Run locally
 
@@ -36,26 +36,18 @@ Open **Saturday catch-up → Where → Compare**, choose a place, then open **Tr
 
 With a starting pin and a destination near different LRT-1 stations, **Check your trip** suggests boarding and exit stations, direction and the regular single-journey fare. You can also use **LRT-1 fares** to search any two stations. Enter the full one-way amount when connecting by jeepney, bus or another paid leg. **Transit directions** opens the selected trip in Google Maps without a Google Cloud key.
 
-## Existing Supabase prototype
+## Enable Google sign-in and shared meetups
 
-Google sign-in and Neon are the target account and database services. The setup below applies to the existing shared-meetup prototype until that migration is complete. See [Neon setup and runtime verification](docs/DATABASE.md) and [Google sign-in setup](docs/GOOGLE_CLOUD.md).
+The web build and the Barkits API share one HTTPS origin. The API verifies Google identity and connects to Neon over HTTPS. Guests can plan on their device without configuring the API.
 
-Barkits supports guest planning immediately. When email sign-in is enabled, choose **Sign in**, enter your email, then enter the code from your inbox. Choosing **Join with code** opens the invite form after sign-in. On-device meetups are saved separately for guests and each account. Signing out restores the guest list.
+1. Set up a fresh Neon database or use the intended Barkits development database. Follow the [database guide](docs/DATABASE.md#apply-and-verify) to apply the migrations and verify the pooled runtime login.
+2. In Google Auth Platform, register a **Web application** OAuth client for the Barkits deployment. Register its exact HTTPS callback URL, `https://your-barkits-host/api/auth/google/callback`, and add test users while the app is in Testing. [Google OAuth setup](docs/GOOGLE_CLOUD.md#configure-development-first)
+3. In Vercel, select Node.js 24, use `npm ci` and `npm run build:web`, and set the output directory to `dist`. Use the same fixed deployment origin for `BARKITS_ORIGIN` and the public build variable `EXPO_PUBLIC_BARKITS_API_URL`. Set `DATABASE_URL` to the pooled runtime connection string. Store `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and a unique secret of at least 32 characters as `BARKITS_AUTH_SECRET` in the server environment.
+4. In the preview, sign in as two Google test accounts. Verify invite and shared planning access, app sign-out, and session expiry. Native development builds need the same `EXPO_PUBLIC_BARKITS_API_URL` and the `barkits` scheme. After authenticating in the system browser, select **Open Barkits**.
 
-### On Vercel
-
-For the Expo web project, use Node.js 24, `npm ci` to install, `npm run build:web` to build, and `dist` as the output directory.
-
-1. In your Supabase project, enable the Email provider, allow new users to sign up, and enable email confirmation.
-2. In Authentication → Email Templates, set the body of both **Confirm signup** and **Magic Link** to the supplied [sign-in code template](supabase/templates/sign-in-code.html). Both emails need `{{ .Token }}` so first-time and returning participants can enter their code in Barkits.
-3. In Vercel → Project Settings → Environment Variables, set `EXPO_PUBLIC_SUPABASE_URL` to your Supabase project URL and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to its `sb_publishable_…` key. Select **Preview** for the prototype branch and **Production** if required. Expo embeds these public values at build time. Keep secret and service-role keys server-side.
-4. Redeploy the branch with the new settings. Test sign-in with a Supabase project team member’s email. Supabase’s default mail service limits recipients and sending rates. For other testers, configure your own SMTP sender and check its free allowance. [Supabase email delivery](https://supabase.com/docs/guides/auth/auth-smtp)
-
-Email sign-in uses Supabase Auth directly.
+A Google account creates a new Barkits account on first sign-in. On-device guest plans stay in the same browser or app installation. Accounts and shared meetups from the old Supabase prototype are outside this fresh start.
 
 ### Shared meetups and invite codes
-
-Apply the SQL migrations in `supabase/migrations` in timestamp order to the same Supabase project as Auth. With a linked development project, `supabase db push --dry-run` previews the pending migrations and `supabase db push` applies them. For an existing project, apply only its pending migrations, including the shared decisions, shared memories and fare sources migrations. Use the publishable key already configured for the app.
 
 1. Sign in and choose **Plan a meetup → With friends**. Add a meetup name and the display name your friends will see. Schedule and notes are optional.
 2. In **Who**, choose **Create invite code** and copy the code to send to one friend. It expires after 24 hours. Creating another code replaces any unused one.
@@ -67,17 +59,13 @@ Apply the SQL migrations in `supabase/migrations` in timestamp order to the same
 
 8. After the gathering, the organizer selects **Mark completed → Confirm completion**. In **Write a recap**, choose **Only me** or **Meetup members** before saving. Ratings are optional. Organizers can archive the meetup. Find completed and archived plans under **Past meetups**. Authors can still make a recap private or remove a recap or rating after archiving.
 
-For database verification against a migrated local Supabase database, run `psql "$SUPABASE_DATABASE_URL" -f scripts/check-shared-meetups.sql`. The script uses temporary fixtures inside a rolled-back transaction.
+For database verification on a disposable migrated PostgreSQL database, run `node db/cli.mjs shell < scripts/check-shared-meetups.sql`. Its test accounts, sessions and shared plans are rolled back.
 
-Guest planning, the form improvements, and offline venue search work without Supabase or a Google Maps key.
-
-### With a local Supabase stack
-
-From the repo root, start Docker and run `supabase start` with the Supabase CLI. Copy the API URL and publishable key from `supabase status` into the corresponding variables in `.env.local`, then restart Expo. Open the local mail inbox URL printed by the CLI to retrieve codes. The checked-in Supabase configuration sets both local email templates.
+Guest planning, the form improvements, and offline venue search work without Google OAuth or a Google Maps key.
 
 See [design system](docs/DESIGN_SYSTEM.md), [product and integration decisions](docs/PRODUCT.md), and [cost audit](docs/COST_AUDIT.md).
 
-The collaborative platform work includes the [Phase 0 architecture and migration plan](docs/ARCHITECTURE.md), [Google Cloud setup guide](docs/GOOGLE_CLOUD.md), and [Phase 2 Neon database setup and recovery](docs/DATABASE.md). The prototype still uses Supabase for its existing shared meetups.
+See the [architecture roadmap](docs/ARCHITECTURE.md), [Google Cloud setup guide](docs/GOOGLE_CLOUD.md), and [Neon database setup and recovery](docs/DATABASE.md).
 
 ## Google street maps on a Vercel preview
 
@@ -105,12 +93,11 @@ Then run `python3 scripts/check-planning-browser.py guest --app http://127.0.0.1
 
 Run `python3 scripts/check-redesign-browser.py --app http://127.0.0.1:5179/` to check web landmarks, dialog names, keyboard focus and Escape behavior, place selection during a tile outage, and the friend editor at a 320 CSS px reflow viewport.
 
-For synthetic shared-role UI checks, export a separate fixture build. `--clear` is required when switching these build-time public environment values, because Metro can retain inlined values:
+For synthetic shared-role UI checks, export a fixture build and serve it with the local fixture API on the same origin:
 
 ```sh
-EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:5180 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_fixture_only EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform web --clear --output-dir .expo/redesign/check/shared
-python3 scripts/planning-fixture.py
-python3 scripts/serve-web.py .expo/redesign/check/shared --port 5178
+EXPO_PUBLIC_BARKITS_API_URL=http://127.0.0.1:5180 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform web --clear --output-dir .expo/redesign/check/shared
+python3 scripts/planning-fixture.py .expo/redesign/check/shared
 ```
 
-Keep the fixture API and static server running in separate terminals, then run `python3 scripts/check-planning-browser.py shared --app http://127.0.0.1:5178/`. It checks organizer and member views, own-trip editing, missing and at-limit estimates, voting and confirmation retry. Run `python3 scripts/check-shared-lifecycle.py --app http://127.0.0.1:5178/` for sign-in handoff, invite replacement, private and published recaps, and archive behavior. Both scripts use synthetic accounts and send no email. Real Supabase authentication, hosted database policies, and native-device behavior require separate validation. Build the normal app again with its intended environment and `--clear` after switching away from fixtures.
+Run `python3 scripts/check-planning-browser.py shared --app http://127.0.0.1:5180/` to verify organizer and member views, trip estimates, voting, and confirmation retry. Run `python3 scripts/check-shared-lifecycle.py --app http://127.0.0.1:5180/` for sign-in handoff, invites, recap visibility, and archiving. The fixture simulates accounts and API responses. Use a configured preview and signed devices for live Google, Neon, and native sign-in checks.

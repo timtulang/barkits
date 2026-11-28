@@ -111,9 +111,5 @@ def fixture(url, path, value=None):
             return None
         return json.loads(payload)
 
-def seed_session(browser, user_id):
-    encoded = lambda value: base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip('=')
-    token = encoded({'alg': 'HS256', 'typ': 'JWT'}) + '.' + encoded({'sub': user_id, 'aud': 'authenticated', 'exp': int(time.time()) + 3600}) + '.fixture'
-    session = {'access_token': token, 'refresh_token': 'fixture-refresh', 'token_type': 'bearer', 'expires_at': int(time.time()) + 3600,
-               'expires_in': 3600, 'user': {'id': user_id, 'email': 'fixture@example.invalid', 'aud': 'authenticated', 'role': 'authenticated', 'app_metadata': {}, 'user_metadata': {}}}
-    browser.cdp('Page.addScriptToEvaluateOnNewDocument', {'source': 'localStorage.setItem("sb-127-auth-token",' + json.dumps(json.dumps(session)) + ');'})
+def seed_session(browser, user_id, app):
+    browser.cdp('Network.setCookie', {'name': 'barkits_session', 'value': user_id, 'httpOnly': True, 'url': app})

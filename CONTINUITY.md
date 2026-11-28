@@ -1,25 +1,18 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-27 [USER] Use Neon as the sole database and Google as the sole sign-in provider for Barkits.
-- 2026-11-27 [TOOL] Live Neon has the Phase 2 identity table. The configured runtime login passed the pooled HTTPS permissions check and the elevated operator failed it. Codex Cloud could not open PostgreSQL TCP port 5432. The saved runtime URL still uses the direct hostname. Google OAuth configuration and the disposition of existing Supabase data are UNCONFIRMED.
-- 2026-11-27 [CODE] Added `node db/cli.mjs check --https` for the same runtime role checks over port 443. The prototype’s Supabase flows are still serving existing users during the transition.
-- 2026-11-27 [USER] Merge collaborative platform phases 0, 1, and 2 into `barkits-prototype` and review the phase documentation for functional parity.
-- 2026-11-27 [CODE] The phases are stacked through `42100d3`. The merge preserves the redesigned local and Supabase shared flows and adds the phase roadmaps, account-scoped local meetup URLs, native link configuration, and the portable Neon foundation.
-- 2026-11-27 [TOOL] TypeScript, 20 domain tests, web/Android/iOS bundles, Chromium guest and synthetic shared flows, and PostgreSQL 17/PgBouncer migration, runtime role and backup recovery checks passed. Live Neon, signed native builds, and device link verification remain open.
-- 2026-11-27 [USER] Approved Phase 6, the final phase in the current UI/UX brief.
-- 2026-11-27 [CODE] Phase 6 delivered browser accessibility fixes, a display-sized Kits asset and a final comparison against the starting screens. No further redesign phase is pending. Actual native devices, real screen readers, hosted sign-in and database configuration, and live map tiles remain open for release acceptance. See `docs/REDESIGN_PLAN.md`.
-- 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at the end of each task.
-- 2026-11-27 [CODE] Planning now has a fixed Back/Next footer, a map-first place step with initials and fullscreen control, named voter avatars, and a shorter review. Trip estimates remain available per place. Native device and map tile rendering checks remain open.
-- 2026-11-27 [USER] Prior `barkits-prototype` scope authorized story-inspired progress for four-stage meetup creation and fixes to mobile inputs.
-- 2026-11-27 [CODE] Local and shared plans use four tappable stops, one task heading per stage, and brief reduced-motion-aware transitions. Compact web editors follow the keyboard viewport and keep the focused input in view.
-- 2026-11-26 [USER] Prior request authorized sequential 4.5B/C/D with a commit at each boundary; original roadmap remains paused. Task clarity leads hierarchy, efficiency, consistency and decoration.
-- 2026-11-26 [TOOL] Checkpoints: pre-reconstruction `214e732`, A `96a7366`, B `74c04b6`, C `4fce554`; D checkpoint `0958b7a` contains preservation fixes and repeatable browser validation.
-- 2026-11-26 [CODE] B integrates place/person travel comparisons; C connects pending review, votes, corrections and explicit confirmation; D restores group-map/time-gap visibility and guards leaving unsaved forms. Business rules, service/storage contracts, providers and brand preserved; no new dependencies.
-- 2026-11-26 [TOOL] Types, 18 tests, Python syntax, final design scan, web/Android/iOS exports, guest browser journeys and synthetic organizer/member UI sessions pass. Four widths: 320/390/768/1440 px.
-- 2026-11-26 [USER] Next: commit D and STOP. Phases 5/6 and original 4B remain paused until open Phase 4.5 acceptance is closed or explicitly changed by the user.
-- 2026-11-26 [TOOL] Open: actual Android/iOS and hosted authenticated/RLS acceptance. Synthetic UI fixtures do not validate real auth/policies; local rollback SQL was not run because OS user has no PostgreSQL role. No roles/schema provisioned; no lint script or docs/DATABASE.md.
-- 2026-11-26 [TOOL] Node 24.15.0 restored in temporary cache. Graphify indexing remains paused/incomplete. README documents repeatable browser tests and environment-separated fixture exports.
+- 2026-11-28 [USER] Continue staging cutover in this local checkout; do not use the incorrect Codex Cloud setup. Merge codex/barkits-neon-google into barkits-prototype only after database and Vercel checks pass; push is authorized then.
+- 2026-11-28 [USER] Start fresh on Neon with Google sign-in. Guest plans stay on their devices; skip Supabase account/shared meetup migration. Target project Barkits, branch disposable, database neondb; barkits and barkits_meta are schemas.
+- 2026-11-28 [USER] Staging origin is https://barkits-staging.vercel.app; both origin variables must match. Exact Google callback is /api/auth/google/callback on that origin.
+- 2026-11-28 [TOOL] GitHub authentication restored via local SSH agent. Both branches fetched: prototype f58ce31, source 5e555bb. Local no-ff merge prepared with ledger changes preserved; push/deployment verification next.
+- 2026-11-28 [TOOL] User said ready after the request to confirm Neon IDs; treated as confirmation. Direct neondb_owner connection guard verified neondb, project falling-cloud-86903061, branch br-sweet-recipe-bixuu2dm before writes.
+- 2026-11-28 [TOOL] Private pre-migration schema backup created outside Git; /tmp/barkits-cutover-location points to its restricted directory. Applied source commit migrations through 0006_shared_api; second run skipped all six. Core/shared SQL checks passed and rolled back. Users/meetups remain zero.
+- 2026-11-28 [TOOL] Shared test initially could not SET ROLE barkits_runtime; rerun added temporary owner membership inside the fixture transaction. Final rollback verified operator SET membership false; no lasting privilege grant.
+- 2026-11-28 [TOOL] Vercel project barkits verified in timtulang/barkits; staging alias points to prototype f58ce31. Build npm run build:web, install npm ci, output dist, Node 26.x. Deployment protection requires Vercel login.
+- 2026-11-28 [TOOL] Supersedes empty Preview settings: configured all six required variables for Preview scoped to barkits-prototype. Both origins match staging exactly; DB/Google/auth values saved as sensitive. Production settings preserved. Staging domain is verified and explicitly assigned to prototype.
+- 2026-11-28 [TOOL] Local pooled barkits_api URL matches direct endpoint/database; TCP and HTTPS permissions checks passed. Auth secret generated privately. User saved Google origin/callback and supplied client credentials. Types, 23 tests and staging web build passed. Next: push merged commit, verify deployed SHA/Google callback, hand browser to user for real shared-meetup acceptance.
+- 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at task end; current cutover gates take precedence.
+- 2026-11-27 [CODE] UI redesign phases 1–6 and collaborative foundation phases 0–2 complete. Existing theme, Nunito, Kits, map-first planning and guest storage retained; see phase documentation and historical receipts.
 
 ## Integrations and initialization
 - 2026-11-26 [TOOL] Ponytail/Impeccable skills read; context succeeded using `docs/PRODUCT.md`. Existing `docs/DESIGN_SYSTEM.md` remains visual authority. Supersedes initial no-hook observation: later UI edits received automatic design-hook reports. Latest AGENTS makes optional tools targeted, not mandatory initialization.
@@ -46,14 +39,16 @@
 - 2026-11-27 [CODE] D012 ACTIVE: stage motion affects only the heading. The checked pin and Kits animate once after confirmed saves and respect reduced motion. Save feedback stays near the task and preserves drafts on failure.
 - 2026-11-27 [CODE] D013 ACTIVE: name editor and map dialogs, expose web workspace landmarks, and let Escape offer two levels only when search results are visible. Ship Kits at 3× the largest rendered size and keep the source artwork.
 
+- 2026-11-28 [USER] D014 ACTIVE: fresh Neon staging with Google only; do not migrate Supabase accounts/shared meetups or move guest plans. Verify direct owner target and migrations plus branch-scoped Vercel Preview settings before the authorized merge/push.
+
 ## Done (recent)
+- 2026-11-28 [TOOL] Live staging migrations through 0006_shared_api and idempotent rerun passed. Core and shared SQL fixtures rolled back; zero users/meetups and no retained test privilege grant. SSH and Vercel API access restored; Preview configuration blocks merge.
 - 2026-11-27 [CODE] Phase 6 refined web navigation and focus behavior, removed the decorative footer and reduced the initial Kits download by 72%. Assessed the final six surfaces against the Phase 1 ratings.
 - 2026-11-27 [CODE] Phase 5 polished the route, roster, trip entry, decisions and recaps. Local and shared milestone animations wait for persistence, and saved recaps reopen without replaying the celebration.
 - 2026-11-27 [CODE] Phase 4 added invite continuation after sign-in, map and shortlist navigation, explicit completion and archive actions, and audience-aware recaps. Shared phase checks use local synthetic data.
 - 2026-11-27 [CODE] Phase 3 restored four ranking modes with consistent evidence, moved saved plans up on returning Home, and added venue-first review and direct directions. The guest flow and validation are recorded in the redesign plan.
 - 2026-11-27 [CODE] Phase 2 implemented richer color roles, shared type and motion values, and the reusable local/shared route. Guest and synthetic shared UI evidence is recorded in the redesign plan.
 - 2026-11-27 [CODE] Documented Phase 1 journey findings, starting screen scores, creative direction and implementation roadmap. The local cross-place ranking UI is absent at `2d0348e`; the ranking rules and tests remain.
-- 2026-11-26 [CODE] Earlier milestones retained: Phase 1 `e2c1d8e`, Phase 2 `38e826d`/`37dd526`, 3A `c5c9a9d`, merged 3B/3C and 4A `214e732`; historical evidence remains in handoff.
 
 ## Working set
 - 2026-11-27 [CODE] `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`, `app/index.tsx`
@@ -62,10 +57,6 @@
 - 2026-11-27 [CODE] `scripts/check-planning-browser.py`, `scripts/check-shared-lifecycle.py`, `global.css`
 
 ## Receipts
-- 2026-11-26 [USER] Existing commit authorization persists: checkpoint A only; no push/deployment or work on 4.5B/5/6.
-- 2026-11-26 [TOOL] Committed Phase 4.5A as `96a7366`; baseline `214e732` remains recoverable. No push or deployment. Stopped before 4.5B.
-- 2026-11-26 [CODE] 4.5B implemented: contextual place/person comparisons with evidence/limits, visible incomplete options, per-context trip drafts and shared own-trip editing; original ranking and confirmation rules preserved.
-- 2026-11-26 [TOOL] B types, 17 tests, web export and local browser comparisons/draft/zero-fare/ranking/4-width checks pass; authenticated shared/native acceptance open. Next: commit B, implement C, then D.
 - 2026-11-26 [TOOL] B committed `74c04b6`; C implemented with pending destination review, vote ownership/totals, correction links, dirty-form/persistence guards and current eligibility recheck.
 - 2026-11-26 [TOOL] C types, 18 tests, web export and local review/cancel/dirty-form/changed-limit/correction/confirm/reopen browser scenarios passed. Next: commit C then perform authorized D validation; native/live shared acceptance open.
 - 2026-11-26 [TOOL] D final guest suite passed: create/incomplete setup, paired schedule recovery, discovery → comparison, zero/unknown fares, per-person draft switching, ride fare selection/clearing, LRT controls and directions.
@@ -82,3 +73,7 @@
 - 2026-11-27 [TOOL] Phase 4 passed TypeScript, 18 planner tests, all Expo exports, guest Chromium, synthetic sign-in and invite, shared role and review checks, and private, published and archived recap checks. Captures cover phone and desktop.
 - 2026-11-27 [TOOL] Phase 5 passed TypeScript, 18 planner tests, Python syntax, Expo exports and Chromium guest journeys with standard and reduced motion. Local shared fixtures passed planning and recap checks. Captures are in `/workspace/work/barkits-phase5/`.
 - 2026-11-27 [TOOL] Phase 6 passed browser guest and shared suites, accessibility and narrow reflow checks, TypeScript, 18 tests, all Expo exports, and the shared SQL rollback suite on isolated PostgreSQL 17.12. Screens and logs are in `/workspace/work/barkits-phase6/`.
+- 2026-11-28 [TOOL] Cutover preflight: clean local branch; fetch rejected by GitHub SSH; required environment/auth absent even outside sandbox; staging protected by Vercel login. Only ledger updated; no migration, merge, push or deployment performed.
+- 2026-11-28 [TOOL] .env.local loaded without printing credentials; live direct owner read-only inspection succeeded. Applied ledger contains 0001_core only. Asked user to verify server project/branch IDs and provide local Vercel authentication plus unlock SSH. Database changes and merge remain gated.
+- 2026-11-28 [TOOL] Fetched source 5e555bb and prototype f58ce31. Target-guarded live migration, skip rerun, core/shared rollback tests passed. Vercel API confirms staging alias on prototype; Preview/shared env lists empty, only Production DATABASE_URL present. Generated local auth secret; awaiting pooled URL and Google client credentials. No merge/push.
+- 2026-11-28 [TOOL] Pooled target and TCP/HTTPS role checks passed; six branch-scoped Preview variables configured/verified. npm ci, npx tsc --noEmit, 23 tests and web export passed. Temporary protected-preview automation credential stored outside Git; revoke after hosted verification. No new application code authored for cutover.
