@@ -3,6 +3,7 @@ import { neon } from '@neondatabase/serverless';
 import { HttpError, json } from './http.mjs';
 import { identity } from './identity.mjs';
 import { shared } from './shared.mjs';
+import { account } from './account.mjs';
 import { rateLimiter } from './rate-limit.mjs';
 
 const uuid = /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i;
@@ -39,6 +40,7 @@ export function createApi(config) {
       if (method === 'GET' && pathname === '/api/session') return await auth.session(request);
       if (method === 'POST' && pathname === '/api/session/logout') return await auth.logout(request);
       if (method === 'POST' && pathname === '/api/account/profile') return await auth.saveProfile(request, limits);
+      if (pathname.startsWith('/api/account/')) return await account(config.sql, auth.getSession(request), request, pathname, limits);
       if (pathname === '/api/shared' || pathname.startsWith('/api/shared/')) {
         const parts = pathname.split('/').slice(3);
         if (method === 'GET' && parts.length && !uuid.test(parts[0])) throw new HttpError(404, 'Couldn’t find this shared meetup.');
@@ -49,7 +51,7 @@ export function createApi(config) {
       if (error instanceof HttpError) return json({ error: error.message }, error.status, error.headers);
       if (error?.code === '28000') return json({ error: 'Sign in again to continue.' }, 401);
       if (error?.code === 'P0001') return json({ error: error.message }, 409);
-      if (/^(22|23)/.test(error?.code ?? '')) return json({ error: 'Check the information you entered and refresh the group.' }, 400);
+      if (/^(22|23)/.test(error?.code ?? '')) return json({ error: pathname.startsWith('/api/account/') ? 'Check your account information and try again.' : 'Check the information you entered and refresh the group.' }, 400);
       return json({ error: 'Barkits couldn’t complete this request. Try again.' }, 503);
     }
   };

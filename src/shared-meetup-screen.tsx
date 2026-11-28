@@ -1,3 +1,4 @@
+import { useAccountSettings } from './account-settings-context';
 import type { RenderWorkspace } from './app-shell';
 import { ConfirmedPlaceMap } from './confirmed-place-map';
 import { sharedLimitIssues } from './destination-eligibility';
@@ -31,6 +32,7 @@ import { Keyboard, View } from 'react-native';
 export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
   id: string; userId: string; back: () => void; scrollToTop: () => void; frame: RenderWorkspace;
 }) {
+  const preferences = useAccountSettings().data;
   const load = useCallback(() => getShared(id), [id]);
   const { data, loading, error, refresh } = useSharedData(load);
   const [editing, setEditing] = useState(false);
@@ -52,7 +54,7 @@ export function SharedMeetupScreen({ id, userId, back, scrollToTop, frame }: {
   const planning = summary?.status === 'planning';
   const chosen = summary?.chosen;
   const proposed = summary?.ballot.find(candidate => candidate.venue_id === proposedId);
-  const category = filter ?? activityCategory(summary?.activity ?? '');
+  const category = filter ?? (activityCategory(summary?.activity ?? '') === 'All' ? preferences?.category ?? 'All' : activityCategory(summary?.activity ?? ''));
   const origins = useMemo(() => locateFriends(members?.flatMap(member => member.trip ? [member.trip] : []) ?? []), [members]);
   const allLocated = Boolean(origins.length && origins.length === members?.length);
   const suggestions = useMemo(() => planning && allLocated ? discover(origins, category, catalog) : [], [planning, allLocated, category, origins]);

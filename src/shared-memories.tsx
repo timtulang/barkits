@@ -1,3 +1,4 @@
+import { useAccountSettings } from './account-settings-context';
 import { randomUUID } from 'expo-crypto';
 import { type ReactNode, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -16,7 +17,8 @@ function RecapEditor({ group, post, close, saved }: {
 }) {
   const [title, setTitle] = useState(post?.title ?? '');
   const [caption, setCaption] = useState(post?.caption ?? '');
-  const [audience, setAudience] = useState<Recap['visibility']>(post?.visibility ?? 'private');
+  const preferences = useAccountSettings().data;
+  const [audience, setAudience] = useState<Recap['visibility']>(post?.visibility ?? preferences?.recap_audience ?? 'private');
   const [busy, setBusy] = useState(false);
   const [validation, setValidation] = useState(false);
   const [error, setError] = useState('');

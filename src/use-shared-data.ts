@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 export function useSharedData<T>(load: () => Promise<T>) {
   const [version, setVersion] = useState(0);
@@ -8,6 +8,11 @@ export function useSharedData<T>(load: () => Promise<T>) {
   const [error, setError] = useState('');
   function refresh() { setLoading(true); setVersion(value => value + 1); }
   useEffect(() => {
+    if (Platform.OS === 'web') {
+      const focus = () => { if (document.visibilityState === 'visible') refresh(); };
+      window.addEventListener('focus', focus);
+      return () => window.removeEventListener('focus', focus);
+    }
     const subscription = AppState.addEventListener('change', state => { if (state === 'active') refresh(); });
     return () => subscription.remove();
   }, []);

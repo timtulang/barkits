@@ -23,7 +23,7 @@ function browserEntryIndex() {
 }
 
 export function Workspace({ meetupId }: { meetupId?: string }) {
-  const { user, accountError, joining, setJoining, meetups, savedMeetups, saveFailed, loadFailed, retrySave, retryLoad, saveMeetup,
+  const { user, accountError, sessionExpired, refreshAccount, joining, setJoining, meetups, savedMeetups, saveFailed, loadFailed, retrySave, retryLoad, saveMeetup,
     past, setPast, sharedId: openSharedId, setSharedId } = useMeetups();
   const scroll = useRef<ScrollView>(null);
   const navigation = useNavigation();
@@ -108,7 +108,8 @@ export function Workspace({ meetupId }: { meetupId?: string }) {
   const renderWorkspace: RenderWorkspace = (content, footer) => <>
     <ScrollView ref={scroll} role="main" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       key={sharedId ?? meetupId ?? 'home'} contentContainerStyle={[styles.container, styles.content]}>
-      {!!accountError && <Feedback tone="error">{accountError}</Feedback>}
+      {sessionExpired && <Feedback tone="warning" title="Sign in again to continue" action={<Button onPress={() => setAccountOpen(true)}>Recover session</Button>}>Your session expired. Saved shared plans stay with your account. Unsaved edits are still visible until you leave or reload.</Feedback>}
+      {!!accountError && <Feedback tone="error">{accountError}<Button secondary onPress={refreshAccount}>Retry account connection</Button></Feedback>}
       {loadFailed && <Feedback tone="error" title="Your meetups couldn’t load"
         action={<Button secondary onPress={retryLoad}>Try again</Button>}>Your saved data has not been replaced.</Feedback>}
       {saveFailed && selected?.status !== 'Completed' && selected?.status !== 'Archived' &&
@@ -145,10 +146,10 @@ export function Workspace({ meetupId }: { meetupId?: string }) {
     </>}>
       <Label>Save your schedule, trip, or recap edits before leaving. Saved changes stay on this device.</Label>
     </EditorDialog>}
-    {joining && user && <JoinDialog close={() => setJoining(false)} open={openShared} />}
-    {accountOpen && <AccountDialog user={user} forInvite={joining && !user}
+    {joining && user && <JoinDialog defaultName={user.display_name ?? undefined} close={() => setJoining(false)} open={openShared} />}
+    {accountOpen && <AccountDialog user={user} expired={sessionExpired} resumeSharedId={sharedId} forInvite={joining && !user}
       close={() => { setAccountOpen(false); setJoining(false); }} />}
-    {(editor === 'new' || editor === 'details') && <MeetupEditor key={editor} meetup={editor === 'details' && selected ? selected : undefined}
+    {(editor === 'new' || editor === 'details') && <MeetupEditor defaultMemberName={user?.display_name ?? undefined} key={editor} meetup={editor === 'details' && selected ? selected : undefined}
       share={editor === 'new' && user ? async (id, meetup, name) => openShared(await createShared(id, meetup, name)) : undefined}
       close={() => setEditor(null)} save={saveEditor} />}
     {editor === 'participant' && selected && <ParticipantEditor meetup={selected} participant={editedFriend}

@@ -1,3 +1,4 @@
+import { useAccountSettings } from './account-settings-context';
 import { ChoiceField, FormSection } from './form-controls';
 import { EditorDialog } from './editor-dialog';
 import { parsePoint } from './geo';
@@ -14,13 +15,15 @@ type Props = { participant?: Participant; close: () => void } & (
 );
 export function ParticipantEditor(props: Props) {
   const { participant, close } = props;
+  const settings = useAccountSettings();
+  const defaults = 'member' in props && !participant ? settings.data : undefined;
   const member = 'member' in props ? props.member : undefined;
   const [name, setName] = useState(member?.name ?? participant?.name ?? '');
   const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? '');
   const [coordinates, setCoordinates] = useState(participant?.point?.join(', ') ?? '');
-  const [mode, setMode] = useState<Participant['mode']>(participant?.mode ?? modes[0]);
-  const [budget, setBudget] = useState(participant?.budget?.toString() ?? '');
-  const [duration, setDuration] = useState(participant?.maxMinutes?.toString() ?? '');
+  const [mode, setMode] = useState<Participant['mode']>(participant?.mode ?? defaults?.mode ?? modes[0]);
+  const [budget, setBudget] = useState(participant?.budget?.toString() ?? defaults?.budget?.toString() ?? '');
+  const [duration, setDuration] = useState(participant?.maxMinutes?.toString() ?? defaults?.max_minutes?.toString() ?? '');
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -83,6 +86,7 @@ export function ParticipantEditor(props: Props) {
     <Button busy={saving} busyLabel="Saving…" onPress={submit}>{saveLabel}</Button>
   </View>;
   return <EditorDialog title={title} close={close} busy={saving} actions={footer}>
+    {member && !participant && !!settings.error && <Feedback tone="warning">Saved planning defaults could not be loaded. Enter your preferences below.</Feedback>}
     {member ? <View style={[layout.row, { alignItems: 'flex-start' }]}>
       <Icon name="users" size={18} color={colors.info} />
       <Label kind="detail">Members of this meetup can see your starting place, map pin, and travel preferences. A nearby landmark works too.</Label>

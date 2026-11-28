@@ -56,6 +56,24 @@ Migration `0009_account_profile` adds `save_own_profile(session_digest, profile_
 
 `POST /api/account/profile` accepts only `{ "display_name": "Your name" }`, with the existing cookie/origin or native bearer protections and shared account-write budget. Repeated saves are idempotent; concurrent edits use the last successful database write. Other sessions read the saved profile on reload or foreground/focus refresh, without polling. Run `db/test-profile.sql` only on an isolated local migrated database; it rolls back its fixtures.
 
+## Private account settings
+
+Migration `0010_account_settings` adds private account settings and session-bound read/save functions. Optional usernames are unique lowercase identifiers (3–24 characters); no public account lookup is exposed. Preset avatars avoid external images and uploads. Biography, planning defaults, recap draft audience and dashboard reminder preference are visible only to the account owner. No precise location is stored in account settings.
+
+`GET/POST /api/account/settings` use existing read/write quotas. Saves carry a revision: unchanged retries return the current record, while stale changed edits fail without overwriting another session. SQL constraints and the unique index enforce validation and username races. Existing profile-name, session, membership and guest storage contracts remain intact. Travel defaults prefill new personal shared inputs; destination filters and recap drafts use explicit preferences without mutating saved group decisions or publishing content.
+
+## Account security and deletion
+
+Migration `0011_account_security` adds a session-bound security review, revocation of other sessions/pending native handoffs, and transactional account deletion. New sessions record authentication time; pre-migration sessions have no recent-auth claim and require Google sign-in again before deletion. Deletion requires authentication within 15 minutes, an exact review fingerprint and explicit successor choices for every owned meetup with other members. Membership changes invalidate the review. Solo-owned meetups are deleted; shared ownership transfers to chosen current members and outstanding invites for transferred meetups are revoked. Other members' recaps, ratings and plans remain.
+
+Deleting the account removes its identity, sessions, settings and member-owned trip/vote/memory records through foreign keys; redeemed-invite account links and account quota identifiers are cleared. The origin trigger permits deletion cascades after an account/meetup is removed, including closed meetups, while keeping ordinary closed-trip edits blocked. No fixture deletion runs against live data. Backups remain private operator recovery artifacts and must not be used to reactivate a deleted identity without reconciliation.
+
+Web session recovery keeps the current account workspace visible on expiration, clears stale native credentials and offers Google sign-in. Safe local paths/shared-plan IDs and invitation intent survive the handoff; a late failure cannot invalidate a newly recovered session. Unsaved form text remains until navigation/reload; users are told to save/copy it before web sign-in redirects. Account deletion removes only the current account's device-local plan key on the acting device; guest plans remain, and other devices' local copies need removal on those devices.
+
+## Account dashboard
+
+Migration `0012_account_dashboard` adds a member-only active/history dashboard query. It returns at most 50 plans per page, total count and next offset, with deterministic schedule/creation/ID ordering. Outstanding starting-point, nomination, vote, estimate and organizer-review actions derive from stored records for the acting user. Completed meetups may suggest an optional recap. Pagination and account read quotas bound each request; screen refresh/foreground loads stop when unmounted and no polling is added. Dashboard reads never call Maps, Routes, Places or Calendar.
+
 ## Backup and recovery
 
 - Before changing an existing environment, capture a Neon restore point within its retention window or create a restricted backup outside the repository. Run `node db/cli.mjs backup > "$backup_file"` after setting a private umask. The dump contains the Barkits schemas and their data. Keep retained backups in private persistent storage; `/tmp` is only temporary staging.

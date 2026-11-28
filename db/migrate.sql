@@ -116,3 +116,39 @@ select not exists (
 \else
   \echo 0009_account_profile already applied.
 \endif
+
+select not exists (
+  select 1 from barkits_meta.schema_migrations where version = '0010_account_settings'
+) as apply_next
+\gset
+
+\if :apply_next
+  \ir migrations/0010_account_settings.sql
+  insert into barkits_meta.schema_migrations (version) values ('0010_account_settings');
+\else
+  \echo 0010_account_settings already applied.
+\endif
+
+select not exists (
+  select 1 from barkits_meta.schema_migrations where version = '0011_account_security'
+) as apply_next
+\gset
+
+\if :apply_next
+  \ir migrations/0011_account_security.sql
+  insert into barkits_meta.schema_migrations (version) values ('0011_account_security');
+\else
+  \echo 0011_account_security already applied.
+\endif
+
+select not exists (
+  select 1 from barkits_meta.schema_migrations where version = '0012_account_dashboard'
+) as apply_next
+\gset
+
+\if :apply_next
+  \ir migrations/0012_account_dashboard.sql
+  insert into barkits_meta.schema_migrations (version) values ('0012_account_dashboard');
+\else
+  \echo 0012_account_dashboard already applied.
+\endif

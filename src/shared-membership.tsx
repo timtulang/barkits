@@ -5,9 +5,9 @@ import { Button, Feedback, Field, Label } from './ui';
 
 export { SharedList } from './shared-meetup-list';
 
-export function JoinDialog({ open, close }: { open: (id: string) => void; close: () => void }) {
+export function JoinDialog({ open, close, defaultName }: { defaultName?: string; open: (id: string) => void; close: () => void }) {
   const [code, setCode] = useState('');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(Array.from(defaultName ?? '').slice(0, 80).join(''));
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');

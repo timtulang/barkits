@@ -1,5 +1,6 @@
 import 'react-native-url-polyfill/auto';
 import { Platform } from 'react-native';
+import { sessionExpired, sessionGeneration } from './session-events';
 import { sessionStorage } from './session-storage';
 
 const rawOrigin = process.env.EXPO_PUBLIC_BARKITS_API_URL?.trim();
@@ -32,6 +33,7 @@ export async function apiRequest<T>(path: string, payload?: unknown): Promise<T>
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = 'Bearer ' + token;
   if (payload !== undefined) headers['Content-Type'] = 'application/json';
+  const generation = sessionGeneration();
   let response: Response;
   try {
     response = await fetch(authSetup.origin + '/api' + path, {
@@ -45,6 +47,13 @@ export async function apiRequest<T>(path: string, payload?: unknown): Promise<T>
   }
   const data = await response.json().catch(() => null);
   if (!response.ok) {
+    if (response.status === 401 && generation === sessionGeneration()) {
+      if (!native) sessionExpired(generation);
+      else if (await sessionStorage.getItem(sessionKey) === token && generation === sessionGeneration()) {
+        sessionExpired(generation);
+        await sessionStorage.removeItem(sessionKey);
+      }
+    }
     const message = response.status === 429 ? 'Too many requests. Wait a minute, then try again.' : 'Barkits couldn’t complete the request.';
     throw new SharedRequestError(typeof data?.error === 'string' ? data.error : message, response.status);
   }

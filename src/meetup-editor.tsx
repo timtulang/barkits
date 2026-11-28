@@ -12,9 +12,9 @@ import { colors, spacing } from './theme';
 import { Button, Chip, Feedback, Field, Icon, Label, layout } from './ui';
 
 type Props = { meetup?: Meetup; save: (value: Meetup) => void; close: () => void;
-  share?: (requestId: string, meetup: Meetup, name: string) => Promise<void> };
+  defaultMemberName?: string; share?: (requestId: string, meetup: Meetup, name: string) => Promise<void> };
 
-export function MeetupEditor({ meetup, save, close, share }: Props) {
+export function MeetupEditor({ meetup, save, close, share, defaultMemberName }: Props) {
   const [name, setName] = useState(meetup?.name ?? '');
   const [description, setDescription] = useState(meetup?.description ?? '');
   const [activity, setActivity] = useState(meetup?.activity ?? '');
@@ -23,7 +23,7 @@ export function MeetupEditor({ meetup, save, close, share }: Props) {
   const [pickerVersion, setPickerVersion] = useState(0);
   const [shared, setShared] = useState(false);
   const [showOptional, setShowOptional] = useState(!!meetup);
-  const [memberName, setMemberName] = useState('');
+  const [memberName, setMemberName] = useState(Array.from(defaultMemberName ?? '').slice(0, 80).join(''));
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uncertain, setUncertain] = useState(false);

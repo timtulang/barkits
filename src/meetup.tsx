@@ -1,3 +1,4 @@
+import { useAccountSettings } from './account-settings-context';
 import type { RenderWorkspace } from './app-shell';
 import { FriendPicker } from './friend-picker';
 import { formatLocalSchedule } from './meetup-schedule';
@@ -32,11 +33,12 @@ export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scro
   saveStatus: string; saveReady: boolean; retrySave?: () => void; reportDirty: (dirty: boolean) => void;
   scrollToTop: () => void; meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
+  const preferences = useAccountSettings().data;
   const [filter, setFilter] = useState<{ activity?: string; category: Category }>();
   const [tripTarget, setTripTarget] = useState<string>();
   const [placeView, setPlaceView] = useState<PlaceBrowseView>('map');
   const [ranking, setRanking] = useState<Ranking>('Balanced');
-  const category = filter && filter.activity === meetup.activity ? filter.category : activityCategory(meetup.activity);
+  const category = filter && filter.activity === meetup.activity ? filter.category : (activityCategory(meetup.activity) === 'All' ? preferences?.category ?? 'All' : activityCategory(meetup.activity));
   const located = useMemo(() => locateFriends(meetup.participants), [meetup.participants]);
   const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
     discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);

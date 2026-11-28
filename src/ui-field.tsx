@@ -4,10 +4,11 @@ import { colors, spacing } from './theme';
 import { surfaces } from './ui-styles';
 import { Icon, Label } from './ui-text';
 
-export function Field({ label, value, onChange, placeholder, numeric, inputMode, autoComplete, error, maxLength,
+export function Field({ label, value, onChange, placeholder, numeric, inputMode, autoComplete, autoCapitalize, autoCorrect, error, maxLength,
   multiline, hint, required = false, disabled = false }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; numeric?: boolean;
   error?: string; required?: boolean; maxLength?: number; multiline?: boolean; inputMode?: 'numeric' | 'decimal' | 'email';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'; autoCorrect?: boolean;
   autoComplete?: 'email' | 'one-time-code'; hint?: string; disabled?: boolean;
 }) {
   const id = useId();
@@ -20,7 +21,7 @@ export function Field({ label, value, onChange, placeholder, numeric, inputMode,
       value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={colors.textMuted}
       editable={!disabled} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       maxLength={maxLength} multiline={multiline} inputMode={inputMode ?? (numeric ? 'numeric' : 'text')}
-      autoComplete={autoComplete} autoCapitalize={autoComplete ? 'none' : undefined} autoCorrect={autoComplete ? false : undefined}
+      autoComplete={autoComplete} autoCapitalize={autoCapitalize ?? (autoComplete ? 'none' : undefined)} autoCorrect={autoCorrect ?? (autoComplete ? false : undefined)}
       underlineColorAndroid="transparent" selectionColor={colors.focus}
       style={[surfaces.input, { paddingVertical: multiline ? spacing.md : spacing.sm, textAlignVertical: multiline ? 'top' : 'center' },
         multiline && { minHeight: 112 },
