@@ -2,34 +2,160 @@
 
 Barkits is the working brand pending name and trademark clearance. The product should feel like a welcoming Filipino social app. Clucky informed the use of an expressive character, a recognizable silhouette, and restrained moments of delight. Barkits uses original artwork and a distinct visual identity.
 
+## Meet in the middle
+
+The story starts with rounding up friends and ends when everyone has a place to go. Use vivid mango to show the current stop, coral to identify people and welcome them, and grape-purple for primary actions. Cream and paper give travel evidence room to breathe. Express the same story on local and shared plans with an original route of labeled stops leading to a checked meetup pin.
+
 ## Kits
 
-Kits is an original, waving coral location pin with a cream face, deep-ink outlines, and plum shoes. The source artwork is `assets/kits.png`. Use Kits to welcome people, soften an empty state, celebrate a completed meetup, or introduce a recap. Keep the mascot out of trip comparisons, voting, permission prompts, and confirmations. Place accompanying instructions in live text and treat decorative art as inaccessible to screen readers.
+Kits is an original, waving coral location pin with a cream face, deep-ink outlines, and plum shoes. The source artwork is `assets/kits.png`. Use the display-sized `assets/ui/kits.png` in the app. Use Kits to welcome people, soften an empty state, celebrate a completed meetup, or introduce a recap. Keep the mascot out of trip comparisons, voting, permission prompts, and confirmations. Place accompanying instructions in live text and treat decorative art as inaccessible to screen readers.
 
 ## Tokens
 
-`src/theme.ts` defines the shared palette, type weights, spacing, and radii. Update the tokens and artwork together when rebranding.
+`src/theme.ts` defines the shared palette, semantic colors, type weights, spacing, radii, control dimensions and sheet elevation. The original palette remains available for existing screens; new shared controls use semantic `colors` roles. Update the tokens and artwork together when rebranding.
 
 | Token | Value | Use |
 |---|---|---|
 | Cream | `#FFF9EF` | Page background |
 | Paper | `#FFFDFA` | Header, cards and fields |
-| Mango | `#FFDA62` | Welcome artwork and emphasis |
-| Coral | `#F78F78` | Brand mark and friendly accents |
-| Deep ink | `#291D32` | Headings, text and primary controls |
-| Plum | `#4C285C` | Selected controls |
-| Muted ink | `#62566C` | Supporting copy |
-| Lavender and mint | `#F1E5FA`, `#DDF2E5` | Light background accents |
+| Mango | `#FFCD45` | Current planning stop and text selection |
+| Welcome mango | `#FFD24F` | Welcome surface behind Kits |
+| Coral | `#FF795E` | Brand mark and people on the map |
+| Deep ink | `#281934` | Headings, text and foreground on warm colors |
+| Plum | `#43217E` | Focus, selected controls and completed stops |
+| Muted ink | `#6D536F` | Supporting copy |
+| Lavender and mint | `#F2E4FF`, `#DDF2E5` | Selection and success surfaces |
 
-Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 20-point radius, and buttons and fields use 12. `src/ui.tsx` contains the shared labels, buttons, chips, fields, panels, and Feather icon wrapper. Product state and ranking logic live outside that layer.
+Nunito uses weights 600, 800 and 900 for body, controls and headings respectively. The core spacing scale is 4, 8, 12, 16, 24 and 36. Cards use a 16-point radius, buttons and fields use 12, welcome surfaces use 24, and choice chips use the pill radius. Shared controls have a 48-point minimum target. Panels use a quiet border. Modal sheets use the shared soft elevation with an 8-point downward offset, 24-point blur, 0.16 opacity and Android elevation 8.
+
+`src/ui.tsx` is the stable public entrypoint. Implementation is split into `ui-text.tsx`, `ui-actions.tsx`, `ui-field.tsx`, `ui-feedback.tsx`, and `ui-styles.ts`. Choice fields and icon actions remain in `form-controls.tsx`. Product state and ranking logic remain outside this layer. This extends the existing React Native styling architecture without replacing NativeWind configuration.
+
+### Semantic color roles
+
+| Role | Foreground / surface | Purpose |
+|---|---|---|
+| Canvas / surface / input | `#FFF9EF` / `#FFFDFA` / `#FFFFFF` | Page, grouped task, editable control |
+| Text / supporting text | `#281934` / `#6D536F` | Main content and explanations |
+| Control outline / divider | `#85708D` / `#EAE1D7` | Control boundaries and quiet separators |
+| Primary | White on `#582AA0` | Main action, with hover `#6D36B8` and pressed `#43217E` |
+| Current / completed stop | Ink on mango / white on plum | Active stop uses an underline and a stronger outline. Completed stops use a check. |
+| Selection / information | `#43217E` on `#F2E4FF` | Selected option or informational feedback |
+| Error / danger | `#A12C38` on `#FCECEE` | Validation/failure; danger button reverses to white on red |
+| Success | `#245D3D` on `#DDF2E5` | Confirmed successful action |
+| Warning | `#745014` on `#FFF0B9` | Missing prerequisite or caution |
+| Disabled | `#665670` on `#EEE6EF` | Unavailable controls use explicit foreground and surface colors |
+| Focus | `#43217E` with cream separation | Keyboard focus ring on web, focused field border on native |
+
+Selected choices use a check mark. Errors pair an icon with live text. Status marks use a named icon and label.
+
+`global.css` mirrors the theme's focus, canvas, ink, muted and mango colors for browser focus, selection, caret and scrollbars. Keep these five variables synchronized with `theme.ts`; this is the existing web CSS boundary, not a second theme.
+
+### Shared component contracts
+
+- `Button`: existing `secondary`/`quiet` props remain supported. New `variant` selects primary, secondary, quiet or danger and takes precedence over those legacy flags. `busy` disables interaction and exposes busy state; optional `busyLabel` supplies action-specific progress text. Keep async guards in the calling workflow. Labels wrap beside icons.
+- `Chip`: selected controls show a check mark, native selection state and web `aria-pressed`; disabled controls cannot activate. Omitting `onPress` creates a static badge rather than an interactive control.
+- `Field`: `error` renders red text/icon, a web invalid state and an associated description; native exposes the error as an accessibility hint. Optional `hint` appears when there is no error. `disabled` makes the input noneditable and exposes its state. Inputs preserve their values on validation failure.
+- `ChoiceField`: web uses the native select; native uses the existing expandable labeled choice list. Both support disabled state. `IconAction` has a 48-point target, accessible label and web title, focus, hover and pressed feedback.
+- `Feedback`: info/success/warning/error tone, optional title and action; use actionable error copy. `LoadingState` requires a descriptive label. `EmptyState` requires a title and explanatory content, with an optional next action. Adopt these in each later screen phase rather than rewriting all screens during Phase 1.
+- `Panel` stays a simple task surface. `EditorDialog` retains keyboard avoidance, safe-area padding, compact/wide layouts and busy dismissal guards; it now uses shared surface/elevation and section typography.
+- `PlanningRoute` renders the four existing stages as named stops. Who shows a check when all starting points are mapped. When shows a check once a time is saved and remains optional otherwise. The final stop has the venue pin silhouette and shows a check on confirmation. Every stop retains the same navigation action and exposes its state to assistive technology.
+- `MeetupListItem` gives local and shared plans the same summary hierarchy: named status with icon, meetup name, date, available context and an opening arrow. Show the demo label and chosen venue when supplied. Use a paper surface, quiet border, card radius and shared hover/pressed colors; let names wrap. Keep the accessible opening label and summary hint.
+
+Example for later screen adoption:
+
+```tsx
+<Button busy={saving} busyLabel="Saving trip…" onPress={saveTrip}>Save trip</Button>
+<Feedback tone="error" action={<Button secondary onPress={retry}>Try again</Button>}>
+  Couldn’t load this meetup. Check your connection and try again.
+</Feedback>
+```
+
+Use explicit ARIA state props where needed on web: the installed React Native Web version does not translate all `accessibilityState` entries. Keep native state props too. Keyboard focus uses a three-pixel outline with light separation so it remains visible on dark surfaces.
+
+## Text hierarchy
+
+Use the role scale in `src/theme.ts` with the shared Label. Page titles are 40 points, major sections 28 and venue or item titles 22. Body and numeric values are 16. Field labels and supporting details are 14 and captions are 13. Line height is 1.2 for title weight and 1.45 for other text, rounded up. Native font scaling remains enabled. Nunito’s heaviest weight leads the page, bold identifies a name or value, and muted ink carries location, provenance and context. Keep a venue name close to its location. Align people and distance values across a row and state a shared approximation once. Travel rankings group total minutes, time gap and cost under their own labels. Allow long names to wrap and let figures reflow before they collide.
 
 ## Voice and access
 
 - Write short English labels for actions and navigation. Use natural Filipino-English in welcome copy, empty states, and recap prompts. “Kita-kits, barkada!” works as a greeting. “Finalize location” names the action clearly.
 - Use sentence case and show minutes and Philippine pesos beside their values. Use “Fare unavailable” when a fare is missing. Keep demo labels visible near route data.
-- Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus.
-- Keep essential information in text. Use brief, optional motion in celebratory moments and respect reduced motion. Kits makes one brief hop upon meetup completion when reduced motion is off. Controls respond immediately.
+- Keep interactive targets at least 44 points high, show selection through text or shape as well as color, and preserve visible keyboard focus. On web, name dialogs and keep the header and main workspace navigable as landmarks.
+- Keep essential information in text. Move only the stage heading by 3 points over 150 ms. The checked pin settles over 220 ms after confirmation. Kits rises over 130 ms and settles over 170 ms once for a newly completed meetup. With reduced motion, controls, checks and messages appear immediately.
+- Use `StatusLine` for confirmed saves, audience changes and recoverable failures near the relevant task. Keep the draft open if a save fails and put validation beside the affected field. Show success after persistence confirms it.
+
+## Responsive application layout
+
+Barkits uses a paper header with the coral brand mark, a home action and account access. The shell is centered at a maximum width of 1112 px with 16-point horizontal padding. The first visit has a mango welcome with Kits. Once users have on-device plans, Home puts those plans first. Plan a meetup and, when sign-in is configured, Join with code are available together. At 860 px and above, On this device and With friends use equal columns when both lists are available. Below that they stack. Keep their storage-scope explanations visible. The header hides its tagline and shortens New meetup to New on compact screens while retaining the full accessible action name.
+
+Active plans and Past meetups filter both lists, and the selection remains when returning home from a meetup. Completed and archived plans appear under Past meetups. Use labeled loading states for account, local and shared plans, contextual empty states, and actionable load/save/refresh errors with Try again. A failed shared refresh keeps previously loaded plans visible and identifies them as such.
+
+Planning uses a single Who / When / Where / Review workspace. A compact stage indicator always identifies the current stage and exposes earlier choices. Put the roster and invitations in Who, the optional schedule in When, existing place/trip/voting tools in Where, and the plan summary in Review. Ready plans open at Where; incomplete starting points open at Who; confirmed plans open at Review. Full-screen maps open only on request. Memories retain the existing primary work area and rating column at 940 px and above. Use a pencil for editing a named item, a circular arrow for refresh, and an × for closing a sheet. Give each icon-only action a descriptive accessible name, a 44-point target and a hover title on web. Keep decisions, prices and permission requests in words. Editors use a bottom-aligned sheet on phones and a centered panel on wider screens. Recap publishing and withdrawal name the audience explicitly. Keep private origins off the memories screen.
+
+## Forms
+
+Lead with the meetup or person’s name and the place search. Show the optional schedule, notes and travel limits directly in the form. Present raw coordinates as a labeled alternative to place search. Use a labeled selector for a single choice such as transportation mode. Keep the close icon in the sheet header and the main creation or save action in the footer. Show units in the label, keep examples in placeholders and put validation next to the field where possible. Schedules use a date picker and a time picker labeled for the Philippines. Before a shared trip is saved, say who can see the starting point.
+
+## Meetup creation and schedules
+
+Lead the sheet with the required meetup name. Explain who adds the starting points at the scope choice. Ask for the organizer’s display name only when creating a shared plan. Disclose activity, notes and the optional schedule under a named optional-details control during creation. Create meetup & add friends is the primary local action and Save draft is quieter. When is available later as an inline schedule stage; incomplete date/time values remain visible with an actionable error. During an edit, Save changes retains the meetup’s current stage.
+
+Treat the optional schedule as a pair. Show a labeled calendar date and Philippine time, side by side when space permits and stacked on narrow screens. A missing or unfinished part gets an adjacent message and a brief prompt near the save action. Clear schedule removes the pair. Show an older free-text schedule until it is replaced or cleared.
+
+Use the same Philippine date and time in list rows, meetup details and the confirmed map. While a shared creation is pending, keep the entered details visible and prevent further edits. If a response is lost, offer Retry creation with the original details.
+
+## Participant roster and invitations
+
+Use the same “Your barkada” roster for local and shared plans. Put the mapped count immediately below the heading and the available setup action above the list. Count the places the discovery resolver can actually map. A free-text address may need a map pin. A recognized locality counts toward readiness and carries the “Approximate area center” label. A shared member without an origin has a pending starting point. A mapped roster can still have no matching venues.
+
+Lead each row with the person’s name. Place ownership (“You”, “Organizer”) next to the identity, then show the origin, location caveat, transport, and any one-way limits. A zero-peso limit is meaningful. The on-device roster can offer a named edit action per person. Shared plans have one personal starting-point action. Kits appears in the empty roster.
+
+In the participant sheet, show shared visibility before location entry. Leave the optional fare and time fields visible with units; use two columns only when both fit. Keep the save action visible as the sheet scrolls. Explain the loss of entered estimates when a changed origin or mode would invalidate them.
+
+Only organizers see the invitation panel. Explain the one-person, 24-hour and replacement rules before issuing a code. Once issued, give the selectable code and Copy code more prominence than Replace code. Announce the clipboard result and provide a manual copy path when needed. The server determines redemption and expiry; the client stops displaying a code after its local sharing window.
+
+## Suggested place pins
+
+Open a ready plan in the planning workspace. Offer an explicit full-screen map from Where, keeping the inline place list available. Keep the meetup name and navigation in a paper header above the map, allowing controls to wrap on narrow screens without covering pins or zoom. Keep the place list in a collapsible tray below the map attribution and start with the list closed. Use plum pointers numbered in the same order as the venue list. Keep the number upright, give the pointer a contrasting light edge over map imagery, and provide a 44-point keyboard- and touch-accessible target. Tap a pin or list row to open the venue details in the same sheet. On a decided meetup, show one checked pin and pair the venue name with Get directions in the bottom bar. Keep coral dots for friends’ starting points on the group map.
+
+Map controls and origin markers have at least 44-point targets. Keep provider attribution in its own wrapping strip, visible alongside loading or failure feedback. Retry map restores the map and its pins without switching providers. DOM map colors come from the shared theme through CSS variables; keep provider attribution artwork intact.
+
+## Place search and pin entry
+
+Explain that search uses a Philippine catalog. Show a match count and each result’s area; label locality results as approximate area centers. Arrow keys and Enter choose a result; Escape dismisses results. Ambiguous input stays unselected until a result is chosen. No matches should lead to another landmark, a map pin or coordinates, without silently picking a place.
+
+Show selected coordinates below the place field. Keep manual coordinates optional, with latitude/longitude ranges beside invalid input. Location is requested only through Use my location; denial leaves search, map and manual entry available. Place sheets distinguish straight-line distances from route length or travel time, and confirmed-place directions explain that the starting point is chosen in Google Maps.
+
+## Voting and choosing a destination
+
+Where opens at the map. Map, Places, and Compare appear above the map on phones for on-device plans. Shared plans replace Compare with the shortlist and its count. On wide screens the map shares a row with the active view. Numbered map pins, venue rows, and ranking results open the same details. Use Balanced, Fairest, Fastest, or Cheapest to order eligible venues, and keep incomplete or over-limit places available for correction. Display group time, trip gap and fare, with the source of the figures beside the relevant results.
+
+## Account and memories
+
+Join with code continues to the invite form after email verification. Keep validation beside its field and service errors inside the active sheet. In Who, show the organizer the single-use code, expiration and copy controls. Show members their own starting-point and estimate actions. Keep destination confirmation, completion and archiving in the organizer’s view.
+
+Use the mango memories banner with Kits, venue and schedule. For on-device recaps, label the storage scope next to the editor. New shared recaps start with Only me selected. Changing the audience changes the explanation and save action. Show the saved audience beside each recap. Archived memories retain published recaps and rating summaries. Authors can make a recap private or remove their own recap or rating after a shared meetup is archived.
+
+Review leads with the proposed or confirmed venue. Keep blockers and trip edits next to the pending venue. After local confirmation saves, show the checked route and make Get directions the main action when a pin is available. Time, people and votes provide context beside the venue on wide screens and below it on phones.
+
+Tie the vote action to its owner. On this device, name the selected friend in the action and let the organizer switch voters in the eligible place sheet. In shared plans, use “my vote” for the signed-in member. Show the tally as text and distinguish moving an existing vote from withdrawing it.
+
+Give confirmation its own review step with the place name, the consequence for voting, and Cancel. In a shared plan, only the organizer gets this action. If limits block confirmation, name the member and show the missing value or the estimate alongside the limit. Keep personal estimates and directions available alongside the decision.
+
+## Trip comparisons
+
+Keep the route, one-way fare and travel time together. Use the mint panel for a possible train connection. Name the boarding and exit stations, direction, rail-only amount and distance to each station. Put the operator and effective date beside the fare lookup. Use a provider name and save time for a ride price entered by a rider. Keep Kits in the welcome and memory screens so travel decisions have room for names, numbers and controls.
 
 ## Asset licensing
 
 Nunito is distributed under the SIL Open Font License 1.1. Feather icons use the MIT license. Kits is original artwork generated for Barkits. Font and icon notices are stored in `assets/licenses/`.
+
+## Place and transportation comparisons
+
+Use the same group-time, longest-trip and one-way-fare layout for every compared place. Keep incomplete or over-limit places visible, identify missing estimates, and distinguish demo data from user estimates with provider timestamps where available. Expand to each person’s origin, transport, one-way time/fare and limits. Put trip editing and starting-point/transport changes next to that person. Shared members edit only their own trip. Do not imply live quotes or turn missing values into zero.
+
+## Review and confirmation
+
+Review destination opens the Review stage with the proposed place still unconfirmed. Present the people/time summary, travel evidence and outstanding votes before explicit confirmation. Keep correction links beside the summary. Pending form edits, failed persistence and current travel-limit blockers must be visible; do not confirm against stale figures. Shared finalization belongs only to the organizer. Cancel returns to places while preserving saved progress. Read-only confirmed plans retain map/directions and supported lifecycle actions.
+
+When leaving a local plan with unsaved schedule or trip forms, protect those edits with Keep planning or explicit discard. Preserve all saved records when discarding form drafts. Keep the group map available from comparisons, and present the longest–shortest trip gap beside other group figures when all times are known.

@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/map-markers.css"
+        ],
+        "createdAt": "2026-11-26T14:49:50.808Z",
+        "reason": "Agent: .confirmed-pin::after uses left and bottom borders to draw the confirmed map-pin checkmark; this is icon geometry, not a card accent."
+      }
+    ]
+  }
+}

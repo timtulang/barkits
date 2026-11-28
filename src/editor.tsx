@@ -1,34 +1,68 @@
-import { useState } from 'react';
-import { Modal, ScrollView, View } from 'react-native';
-import { Meetup, modes, origins, Participant } from './planner';
-import { Button, Chip, Field, Label, layout, Panel } from './ui';
-import { palette } from './theme';
+import { ChoiceField, FormSection } from './form-controls';
+import { EditorDialog } from './editor-dialog';
+import { parsePoint } from './geo';
+import { PlaceInput } from './place-input';
+import { useRef, useState } from 'react';
+import { View } from 'react-native';
+import { Meetup, modes, Participant } from './planner';
+import { Button, Feedback, Field, Icon, Label, layout } from './ui';
+import { colors, spacing } from './theme';
 
-export function Editor({ kind, meetup, participant, close, save }: {
-  kind: 'new' | 'participant'; meetup: Meetup; participant?: Participant; close: () => void; save: (meetup: Meetup) => void;
-}) {
-  const [name, setName] = useState(participant?.name ?? '');
-  const [date, setDate] = useState('');
-  const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? origins[0]);
+type Props = { participant?: Participant; close: () => void } & (
+  { meetup: Meetup; save: (meetup: Meetup) => void } |
+  { member: { id: string; name: string }; saveTrip: (friend: Participant) => Promise<void> }
+);
+export function ParticipantEditor(props: Props) {
+  const { participant, close } = props;
+  const member = 'member' in props ? props.member : undefined;
+  const [name, setName] = useState(member?.name ?? participant?.name ?? '');
+  const [origin, setOrigin] = useState<Participant['origin']>(participant?.origin ?? '');
+  const [coordinates, setCoordinates] = useState(participant?.point?.join(', ') ?? '');
   const [mode, setMode] = useState<Participant['mode']>(participant?.mode ?? modes[0]);
   const [budget, setBudget] = useState(participant?.budget?.toString() ?? '');
   const [duration, setDuration] = useState(participant?.maxMinutes?.toString() ?? '');
   const [error, setError] = useState('');
-  function submit() {
-    if (!name.trim()) return setError('Enter a name to continue.');
-    if (kind === 'new') {
-      if (date.trim() && !Number.isFinite(Date.parse(date.trim()))) return setError('Use a date and time such as 2026-12-05 15:00.');
-      return save({ name: name.trim(), date: date.trim(), participants: [], status: 'Planning', votes: {}, ratings: {} });
-    }
+  const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
+  const invalidFare = Boolean(budget.trim()) && (!/^\d+(?:\.\d{1,2})?$/.test(budget.trim()) || Number(budget) > 9999999.99);
+  const invalidTime = Boolean(duration.trim()) && (!/^\d+$/.test(duration.trim()) || Number(duration) < 1 || Number(duration) > 2147483647);
+  const point = parsePoint(coordinates);
+  const locationError = coordinates.trim() && !point ? 'Enter valid latitude and longitude separated by a comma.' :
+    !origin.trim() && !point ? 'Search for a starting place, use your location, or choose a pin.' : undefined;
+  const originLabel = origin.trim() || 'Pinned location';
+  const tripChanged = participant && (participant.mode !== mode || participant.origin !== originLabel ||
+    participant.point?.join() !== point?.join());
+  const invalidField = !name.trim() ? 'name' : locationError ? 'starting place' : invalidFare ? 'maximum fare' : invalidTime ? 'maximum travel time' : '';
+  async function submit() {
+    setSubmitted(true);
+    setError('');
+    if (pending.current || invalidField) return;
     const limits = [budget, duration].map(value => value.trim() ? Number(value) : undefined);
-    if (limits.some(value => value !== undefined && (!Number.isFinite(value) || value < 0)) || limits[1] === 0) {
-      return setError('Enter a nonnegative fare and a positive travel time, or leave the fields blank.');
-    }
     const friend = {
-      id: participant?.id ?? String(Date.now()), name: name.trim(), origin, mode, budget: limits[0], maxMinutes: limits[1],
+      id: member?.id ?? participant?.id ?? String(Date.now()), name: name.trim(), origin: originLabel, point, mode, budget: limits[0], maxMinutes: limits[1],
     };
+    if ('saveTrip' in props) {
+      pending.current = true;
+      setSaving(true);
+      try { await props.saveTrip(friend); }
+      catch (e) { setError(e instanceof Error ? e.message : 'Couldn’t save your starting point. Try again.'); }
+      finally { pending.current = false; setSaving(false); }
+      return;
+    }
+    const { meetup, save } = props;
+    const fareNotes = { ...meetup.fareNotes };
     const manualFares = { ...meetup.manualFares };
-    if (participant && (participant.mode !== mode || participant.origin !== origin)) {
+    const manualMinutes = { ...meetup.manualMinutes };
+    if (participant && tripChanged) {
+      for (const venueId of Object.keys(fareNotes)) {
+        fareNotes[venueId] = { ...fareNotes[venueId] };
+        delete fareNotes[venueId][participant.id];
+      }
+      for (const venueId of Object.keys(manualMinutes)) {
+        manualMinutes[venueId] = { ...manualMinutes[venueId] };
+        delete manualMinutes[venueId][participant.id];
+      }
       for (const venueId of Object.keys(manualFares)) {
         const fares = { ...manualFares[venueId] };
         delete fares[participant.id];
@@ -37,26 +71,39 @@ export function Editor({ kind, meetup, participant, close, save }: {
     }
     const participants = participant ? meetup.participants.map(item => item.id === participant.id ? friend : item) :
       [...meetup.participants, friend];
-    save({ ...meetup, participants, manualFares });
+    save({ ...meetup, participants, fareNotes, manualFares, manualMinutes });
   }
-  return <Modal transparent animationType="none" visible onRequestClose={close}>
-    <View style={{ flex: 1, backgroundColor: '#291D3277', justifyContent: 'center', padding: 18 }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-        <Panel style={{ width: '100%', maxWidth: 490, alignSelf: 'center' }}>
-          <Label size={27} weight="title">{kind === 'new' ? 'Plan a meetup' : participant ? 'Edit friend' : 'Add a friend'}</Label>
-          <Field label={kind === 'new' ? 'Meetup name' : 'Name'} value={name} onChange={setName} />
-          {kind === 'new' ? <Field label="Date and time (optional)" placeholder="YYYY-MM-DD HH:MM" value={date} onChange={setDate} /> : <>
-            <Label weight="bold">Starting city</Label>
-            <View style={layout.wrap}>{origins.map(item => <Chip key={item} onPress={() => setOrigin(item)} selected={item === origin}>{item}</Chip>)}</View>
-            <Label weight="bold">Transportation</Label>
-            <View style={layout.wrap}>{modes.map(item => <Chip key={item} onPress={() => setMode(item)} selected={item === mode}>{item}</Chip>)}</View>
-            <Field label="Maximum fare in ₱ (optional)" numeric value={budget} onChange={setBudget} />
-            <Field label="Maximum minutes (optional)" numeric value={duration} onChange={setDuration} />
-          </>}
-          {!!error && <Label color={palette.plum}>{error}</Label>}
-          <View style={layout.wrap}><Button onPress={submit}>Save</Button><Button secondary onPress={close}>Cancel</Button></View>
-        </Panel>
-      </ScrollView>
-    </View>
-  </Modal>;
+  const title = member ? 'Your starting point' : participant ? 'Edit friend' : 'Add a friend';
+  const saveLabel = member ? 'Save starting point' : participant ? 'Save changes' : 'Add friend';
+  const footer = <View style={{ gap: spacing.sm, flex: 1 }}>
+    {!!error && <Feedback tone="error">{error}</Feedback>}
+    {submitted && !!invalidField && <View accessibilityLiveRegion="polite">
+      <Label kind="detail" color={colors.error}>Check the {invalidField} above.</Label>
+    </View>}
+    <Button busy={saving} busyLabel="Saving…" onPress={submit}>{saveLabel}</Button>
+  </View>;
+  return <EditorDialog title={title} close={close} busy={saving} actions={footer}>
+    {member ? <View style={[layout.row, { alignItems: 'flex-start' }]}>
+      <Icon name="users" size={18} color={colors.info} />
+      <Label kind="detail">Members of this meetup can see your starting place, map pin, and travel preferences. A nearby landmark works too.</Label>
+    </View> : <Field label="Name" placeholder="Your friend’s name" value={name} onChange={setName}
+      error={submitted && !name.trim() ? 'Enter a name to continue.' : undefined} />}
+    <PlaceInput name={origin} setName={setOrigin} coordinates={coordinates} setCoordinates={setCoordinates} />
+    {submitted && !!locationError && <View accessibilityRole="alert"><Label kind="detail" color={colors.error}>{locationError}</Label></View>}
+    <ChoiceField label="Transportation" value={mode} options={modes.map(value => ({ value, label: value }))} change={setMode} />
+    {!!tripChanged && <Label kind="detail" color={colors.warning}>Saving this change clears previously entered times and fares for this person.</Label>}
+    <FormSection title="Travel limits">
+      <Label kind="detail">Optional, for one-way travel. Leave either field blank for no limit.</Label>
+      <View style={[layout.wrap, { alignItems: 'flex-start', gap: spacing.lg }]}>
+        <View style={{ flexGrow: 1, flexBasis: 140, minWidth: 0 }}>
+          <Field label="Maximum fare (₱)" placeholder="e.g. 100" inputMode="decimal" value={budget} onChange={setBudget}
+            error={submitted && invalidFare ? 'Use ₱0 to ₱9,999,999.99 with up to two decimal places.' : undefined} />
+        </View>
+        <View style={{ flexGrow: 1, flexBasis: 140, minWidth: 0 }}>
+          <Field label="Maximum time (min)" placeholder="e.g. 45" numeric value={duration} onChange={setDuration}
+            error={submitted && invalidTime ? 'Use 1 to 2,147,483,647 whole minutes.' : undefined} />
+        </View>
+      </View>
+    </FormSection>
+  </EditorDialog>;
 }

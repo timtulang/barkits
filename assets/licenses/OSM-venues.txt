@@ -1,0 +1,11 @@
+Philippine venue catalog © OpenStreetMap contributors.
+https://www.openstreetmap.org/copyright
+The derived databases assets/data/ph-venues.json and assets/data/ph-landmarks.json
+are available under the Open
+Database License 1.0: https://opendatacommons.org/licenses/odbl/1-0/
+Source: Humanitarian OpenStreetMap Team Philippines points-of-interest
+GeoPackage (archive dated 2026-11-16), available from
+https://data.humdata.org/dataset/hotosm_phl_points_of_interest
+Rebuild with scripts/build-venue-catalog.py using the extracted GeoPackage.
+Rows contain the OSM feature ID, name, locality, normalized category,
+bounding-box center coordinates, a nearby mapped bus-terminal flag, and available street or barangay.

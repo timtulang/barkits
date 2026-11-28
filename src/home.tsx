@@ -1,66 +1,74 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { formatLocalSchedule } from './meetup-schedule';
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Kits } from './kits';
-import { Meetup, venues } from './planner';
-import { palette, radius, spacing } from './theme';
-import { Button, Chip, Icon, Label, layout, Panel } from './ui';
+import { MeetupListItem } from './meetup-list-item';
+import { example, Meetup, venues } from './planner';
+import { colors, palette, radius, spacing } from './theme';
+import { Button, Chip, EmptyState, Label, layout } from './ui';
 
-const steps = [
-  { icon: 'users', color: 'lavender', title: 'Bring the barkada', text: 'Add your friends and where everyone is coming from.' },
-  { icon: 'map-pin', color: 'softMango', title: 'Find your spot', text: 'Compare travel times and costs for the whole group.' },
-  { icon: 'heart', color: 'mint', title: 'Make it happen', text: 'Vote on a place, meet up, and save the memories.' },
-] as const;
-
-export function Home({ wide, titleSize, meetups, create, open }: {
-  wide: boolean; titleSize: number; meetups: Meetup[]; create: () => void; open: (index: number) => void;
+export function Home({ wide, meetups, create, open, shared, signedIn, past, setPast, join }: {
+  shared?: ReactNode; signedIn: boolean; wide: boolean; meetups: Meetup[]; create: () => void;
+  open: (id: string) => void; past: boolean; setPast: (past: boolean) => void; join?: () => void;
 }) {
-  return <>
-    <View style={[styles.hero, wide && styles.heroWide]}>
-      <View style={[styles.heroCopy, wide && { flex: 1.12, padding: 40 }]}>
-        <View style={[layout.row, styles.kitsTag]}><Icon name="sun" size={15} /><Label size={13} weight="bold">Kita-kits, barkada!</Label></View>
-        <Label size={titleSize} weight="title" heading>Good plans.{'\n'}Better hangouts.</Label>
-        <Label size={17}>Find a meetup spot that works for everyone, wherever your barkada is coming from.</Label>
-        <Button icon="plus" onPress={create}>Plan a meetup</Button>
+  const rows = meetups.filter(item => ['Completed', 'Archived'].includes(item.status) === past).reverse();
+  const returning = meetups.length > 1;
+  const actions = <View style={layout.wrap}><Button icon="plus" onPress={create}>Plan a meetup</Button>
+    {join && <Button secondary icon="users" onPress={join}>Join with code</Button>}
+  </View>;
+  return <View style={styles.board}>
+    {!returning && <View style={[styles.welcome, wide && styles.welcomeWide]}>
+      <View style={styles.intro}>
+        <View style={layout.row}><Label kind={wide ? 'page' : 'section'} heading>Tara, kita-kits!</Label>
+          {!wide && <Kits style={styles.artSmall} />}</View>
+        <Label>Round up the barkada and find a spot everyone can get to.</Label>
+        {actions}
       </View>
-      <Kits style={wide ? styles.imageWide : styles.image} />
-    </View>
-
-    <View style={styles.section}>
-      <View style={layout.between}>
-        <View style={{ gap: 5 }}><Label size={29} weight="title" heading>Your meetups</Label><Label color={palette.muted}>Pick up where you left off.</Label></View>
-        {wide && <Button onPress={create} icon="plus" secondary>New meetup</Button>}
+      {wide && <Kits style={styles.artWide} />}
+    </View>}
+    <View style={styles.plans}>
+      <View style={[styles.listHeader, wide && styles.listHeaderWide]}>
+        <View style={[layout.wrap, { justifyContent: 'space-between' }]}>
+          <Label kind={returning && wide ? 'page' : 'section'} heading>Your meetups</Label>
+          {returning && actions}
+        </View>
+        <View style={layout.wrap}>
+          <Chip selected={!past} onPress={() => setPast(false)}>Active plans</Chip>
+          <Chip selected={past} onPress={() => setPast(true)}>Past meetups</Chip>
+        </View>
       </View>
-      {meetups.map((meetup, index) => <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Open ${meetup.name}`} onPress={() => open(index)}>
-        <Panel style={styles.meetup}>
-          <View style={[styles.iconTile, { backgroundColor: palette.lavender }]}><Icon name="calendar" size={23} color={palette.plum} /></View>
-          <View style={{ flex: 1, gap: 5 }}>
-            <Label size={19} weight="title">{meetup.name}</Label>
-            <Label size={13} color={palette.muted}>{meetup.date || 'Date to be decided'} · {meetup.participants.length} {meetup.participants.length === 1 ? 'friend' : 'friends'}{index === 0 ? ' · Demo' : ''}</Label>
-            {!!meetup.venue && <Label size={13} weight="bold">{venues.find(venue => venue.id === meetup.venue)?.name}</Label>}
+      <View style={[styles.groups, wide && !!shared && styles.columns]}>
+        <View style={[styles.group, wide && !!shared && { flex: 1 }]}>
+          <View style={styles.groupIntro}><Label kind="item" heading>On this device</Label>
+            <Label kind="detail">{signedIn ? 'Kept on this device for your account. Not shared with friends.' : 'Kept in this browser or app. Not shared with friends.'}</Label>
           </View>
-          <Chip selected>{meetup.status}</Chip><Icon name="chevron-right" color={palette.muted} />
-        </Panel>
-      </Pressable>)}
-    </View>
-
-    <View style={styles.section}>
-      <Label size={29} weight="title" heading>How it works</Label>
-      <View style={{ flexDirection: wide ? 'row' : 'column', gap: 14 }}>
-        {steps.map(step => <Panel key={step.title} style={{ flex: 1, gap: 9, padding: 19 }}>
-          <View style={[styles.iconTile, { backgroundColor: palette[step.color], width: 40, height: 40 }]}><Icon name={step.icon} size={19} /></View>
-          <Label size={18} weight="title">{step.title}</Label><Label size={14} color={palette.muted}>{step.text}</Label>
-        </Panel>)}
+          {rows.map(item => <MeetupListItem key={item.id} name={item.name} status={item.status}
+            date={formatLocalSchedule(item.date) || 'Date to be decided'} detail={`${item.participants.length} ${item.participants.length === 1 ? 'friend' : 'friends'}`}
+            demo={item.id === example.id}
+            venue={item.venue ? [...venues, ...item.customVenues ?? []].find(venue => venue.id === item.venue)?.name : undefined}
+            onPress={() => open(item.id)} />)}
+          {!rows.length && <EmptyState title={past ? 'No past meetups yet' : 'No active meetups'}>
+            {past ? 'Completed and archived plans will appear here, along with their memories.' : 'Start a new plan to bring your barkada together.'}
+          </EmptyState>}
+        </View>
+        {!!shared && <View style={[styles.group, wide && !!shared && { flex: 1 }]}>{shared}</View>}
       </View>
     </View>
-  </>;
+  </View>;
 }
+
 const styles = StyleSheet.create({
-  hero: { backgroundColor: palette.hero, borderRadius: radius.hero, overflow: 'hidden' },
-  heroWide: { flexDirection: 'row', alignItems: 'center', height: 368 },
-  heroCopy: { padding: spacing.xl, alignItems: 'flex-start', justifyContent: 'center', gap: 16 },
-  kitsTag: { backgroundColor: palette.softMango, paddingVertical: 7, paddingHorizontal: 11, borderRadius: radius.pill },
-  imageWide: { flex: 1, width: 0, height: 320 },
-  image: { width: '100%', height: 210 },
-  section: { gap: 15, marginTop: 5 },
-  meetup: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  iconTile: { width: 51, height: 51, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  board: { gap: spacing.section },
+  welcome: { backgroundColor: palette.hero, borderRadius: radius.hero, flexDirection: 'row', alignItems: 'center', padding: spacing.xl, gap: spacing.sm },
+  welcomeWide: { paddingHorizontal: spacing.section },
+  intro: { flex: 1, minWidth: 0, gap: spacing.md, maxWidth: 620 },
+  artWide: { flex: 1, height: 180, maxWidth: 300 },
+  artSmall: { width: 64, height: 64 },
+  plans: { gap: spacing.xl },
+  listHeader: { gap: spacing.lg },
+  listHeaderWide: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  groups: { gap: spacing.section },
+  columns: { flexDirection: 'row', alignItems: 'flex-start' },
+  group: { minWidth: 0, gap: spacing.md },
+  groupIntro: { gap: spacing.sm, paddingBottom: spacing.sm, borderBottomWidth: 1, borderColor: colors.divider },
 });

@@ -1,139 +1,178 @@
-import { useState } from 'react';
-import { Linking, View } from 'react-native';
-import { Kits } from './kits';
-import { Meetup, Participant, Ranking, rankings, ratingSummary, recommend, venues } from './planner';
-import { palette } from './theme';
-import { Button, Chip, Field, Icon, Label, layout, Panel } from './ui';
+import type { RenderWorkspace } from './app-shell';
+import { FriendPicker } from './friend-picker';
+import { formatLocalSchedule } from './meetup-schedule';
+import { ParticipantRoster } from './participant-roster';
+import { canConfirmLocal } from './destination-eligibility';
+import { DestinationReview, PlanningVotes } from './destination-review';
+import { localTripRows } from './trip-evidence';
+import { TripComparison } from './trip-comparison';
+import { ChoiceField, IconAction } from './form-controls';
+import { PlanningJourney, PlanningReview, PlanningStepActions } from './planning-journey';
+import { PlanningSchedule } from './planning-schedule';
+import { initialPlanningStage, type PlanningStage } from './planning-progress';
+import { WorkspaceColumns, StatusMark } from './workspace-layout';
+import { activityCategory, categories, Category, discover } from './discovery';
+import { catalog } from './venue-catalog';
+import { locateFriends } from './locate-friends';
+import { NearbyPlaces } from './nearby-places';
+import type { PlaceBrowseView } from './suggested-places';
+import { TripPlanning } from './trip-planning';
+import { ConfirmedPlaceMap } from './confirmed-place-map';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Keyboard, View } from 'react-native';
+import { LocalMemories } from './local-memories';
+import { LifecycleAction, MeetupArrival } from './meetup-arrival';
+import { useNewMilestone } from './motion-feedback';
+import { Meetup, Participant, type Ranking, venues, retainPlace } from './planner';
+import { spacing } from './theme';
+import { Button, Label, layout, Panel } from './ui';
 
-const rankingDescriptions: Record<Ranking, string> = {
-  Balanced: 'Balances group travel time, similar trip lengths, and fare.',
-  Fairest: 'Prioritizes similar trip lengths across the group.',
-  Fastest: 'Prioritizes the lowest combined travel time.',
-  Cheapest: 'Prioritizes the lowest combined fare when all fares are available.',
-};
-
-export function MeetupScreen({ meetup, save, editFriend, back }: {
-  meetup: Meetup; save: (meetup: Meetup) => void; editFriend: (friend?: Participant) => void; back: () => void;
+export function MeetupScreen({ meetup, save, editDetails, editFriend, back, scrollToTop, saveStatus, saveReady, retrySave, reportDirty, frame }: {
+  frame: RenderWorkspace;
+  saveStatus: string; saveReady: boolean; retrySave?: () => void; reportDirty: (dirty: boolean) => void;
+  scrollToTop: () => void; meetup: Meetup; save: (meetup: Meetup) => void; editDetails: () => void; editFriend: (friend?: Participant) => void; back: () => void;
 }) {
+  const [filter, setFilter] = useState<{ activity?: string; category: Category }>();
+  const [tripTarget, setTripTarget] = useState<string>();
+  const [placeView, setPlaceView] = useState<PlaceBrowseView>('map');
   const [ranking, setRanking] = useState<Ranking>('Balanced');
-  const [expanded, setExpanded] = useState('');
+  const category = filter && filter.activity === meetup.activity ? filter.category : activityCategory(meetup.activity);
+  const located = useMemo(() => locateFriends(meetup.participants), [meetup.participants]);
+  const suggestions = useMemo(() => meetup.status === 'Planning' && located.length === meetup.participants.length ?
+    discover(located, category, catalog) : [], [located, category, meetup.status, meetup.participants.length]);
+  const venue = [...venues, ...meetup.customVenues ?? []].find(item => item.id === meetup.venue);
+  const [proposedId, setProposedId] = useState<string>();
+  const proposed = [...venues, ...meetup.customVenues ?? []].find(item => item.id === proposedId);
+  function selectDestination(place: typeof venues[number]) {
+    const updated = retainPlace(meetup, place);
+    if (updated !== meetup) save(updated);
+    setProposedId(place.id);
+    setFullMap(false);
+  }
+  const [fullMap, setFullMap] = useState(false);
+  const [stage, setStage] = useState<PlanningStage>(() => initialPlanningStage(meetup.status, meetup.participants.length, located.length));
+  function changeStage(next: PlanningStage) {
+    Keyboard.dismiss();
+    if (next !== 'where') setTripEditorOpen(false);
+    setStage(next); setFullMap(false); requestAnimationFrame(scrollToTop);
+  }
+  useEffect(() => {
+    if (meetup.status === 'Decided') { setStage('review'); setFullMap(false); }
+    if (['Decided', 'Completed', 'Archived'].includes(meetup.status)) requestAnimationFrame(scrollToTop);
+  }, [meetup.status]);
+  const scheduleEditor = useRef<{ advance: () => void }>(null);
+  const [tripEditorOpen, setTripEditorOpen] = useState(false);
+  const [scheduleDirty, setScheduleDirty] = useState(false);
+  const [tripDirty, setTripDirty] = useState(false);
+  const [recapDirty, setRecapDirty] = useState(false);
+  useEffect(() => reportDirty(scheduleDirty || tripDirty || recapDirty), [scheduleDirty, tripDirty, recapDirty, reportDirty]);
+  useEffect(() => () => reportDirty(false), [reportDirty]);
   const [voter, setVoter] = useState('');
-  const [caption, setCaption] = useState(meetup.recap ?? '');
-  const [confirmVenue, setConfirmVenue] = useState('');
-  const [linkError, setLinkError] = useState('');
-  const venue = venues.find(item => item.id === meetup.venue);
   const currentVoter = meetup.participants.find(friend => friend.id === voter) ?? meetup.participants[0];
-  const canRate = meetup.status === 'Completed';
-  const ratings = ratingSummary(meetup.ratings);
-  const candidates = recommend(meetup.participants, ranking, meetup.manualFares);
-  function rate(value: number | null) {
-    if (!currentVoter) return;
-    const next = { ...meetup.ratings };
-    if (value === null) delete next[currentVoter.id];
-    else next[currentVoter.id] = value;
-    save({ ...meetup, ratings: next });
+  const canEdit = meetup.status === 'Planning' || meetup.status === 'Draft';
+  const finished = meetup.status === 'Completed' || meetup.status === 'Archived';
+  const celebrate = useNewMilestone(meetup.status === 'Completed' ? saveReady || undefined : false);
+  function openTrip(id: string, person?: string) {
+    setTripTarget(id);
+    setTripEditorOpen(true);
+    if (person) setVoter(person);
+    changeStage('where');
   }
-  async function openDirections() {
-    if (!venue) return;
-    try {
-      await Linking.openURL(`https://www.openstreetmap.org/?mlat=${venue.point[0]}&mlon=${venue.point[1]}#map=17/${venue.point.join('/')}`);
-      setLinkError('');
-    } catch {
-      setLinkError('Couldn’t open the map.');
-    }
-  }
-  return <>
-    <Button secondary onPress={back} icon="arrow-left">Back to meetups</Button>
-    <View style={{ gap: 6 }}><View style={layout.wrap}><Label size={40} weight="title">{meetup.name}</Label><Chip selected>{meetup.status}</Chip></View>
-      <Label color={palette.muted}>{meetup.date || 'Date to be decided'} · Local demo</Label></View>
-    <Panel>
-      <View style={layout.between}><Label size={23} weight="title">Your barkada</Label>{meetup.status === 'Planning' && <Button secondary icon="user-plus" onPress={() => editFriend()}>Add friend</Button>}</View>
-      {meetup.participants.length === 0 && <View style={layout.row}><Kits style={{ width: 85, height: 58, borderRadius: 10 }} /><Label color={palette.muted}>Add friends to compare meetup spots.</Label></View>}
-      {meetup.participants.map(friend => <View key={friend.id} style={layout.between}><View style={{ flex: 1 }}><Label><Label weight="bold">{friend.name}</Label> · {friend.origin} · {friend.mode}{friend.budget === undefined ? '' : ` · ₱${friend.budget} limit`}{friend.maxMinutes === undefined ? '' : ` · ${friend.maxMinutes} min limit`}</Label></View>{meetup.status === 'Planning' && <Chip onPress={() => editFriend(friend)}>Edit {friend.name}</Chip>}</View>)}
-    </Panel>
-    {meetup.status === 'Planning' && <>
-      <View style={layout.stack}>
-        <Label size={28} weight="title">Compare meetup spots</Label>
-        <Label color={palette.muted}>Demo routes and fares. Values are illustrative and include no live traffic.</Label>
-        <View style={layout.wrap}>{rankings.map(item => <Chip key={item} selected={ranking === item} onPress={() => setRanking(item)}>{item}</Chip>)}</View>
-        {!!currentVoter && <><Label weight="bold">Vote as</Label><View style={layout.wrap}>
-          {meetup.participants.map(friend => <Chip key={friend.id} selected={currentVoter.id === friend.id} onPress={() => setVoter(friend.id)}>{friend.name}</Chip>)}
-        </View></>}
+  const blocked = proposed && (scheduleDirty ? 'Save or clear your time edits.' :
+    tripDirty ? 'Save or clear your trip edits.' :
+    !saveReady ? 'Wait for the plan to save.' :
+    !canConfirmLocal(meetup, proposed) ? 'Check the group’s trip estimates and limits.' : undefined);
+  const confirm = stage === 'review' && proposed && meetup.status === 'Planning' ? () => {
+    if (!blocked) save({ ...meetup, venue: proposed.id, status: 'Decided' });
+  } : undefined;
+  const footer = (canEdit || meetup.status === 'Decided') && <PlanningStepActions stage={stage} change={changeStage}
+    selection={stage === 'where' && canEdit ? proposed?.name : undefined}
+    onNext={stage === 'when' && canEdit ? () => scheduleEditor.current?.advance() : confirm}
+    disabled={stage === 'who' && canEdit && !meetup.participants.length || stage === 'review' && !!blocked} />;
+  const confirmedPlace = meetup.status === 'Decided' && venue &&
+    <MeetupArrival name={venue.name} area={venue.area} point={venue.point} saved={saveReady} onMap={() => setFullMap(true)}>
+      <LifecycleAction busy={!saveReady} run={() => { save({ ...meetup, status: 'Completed' }); return true; }} />
+    </MeetupArrival>;
+  const proposedPlace = proposed && meetup.status === 'Planning' && <DestinationReview name={proposed.name} area={proposed.area} prominent blocked={blocked}>
+    <TripComparison rows={localTripRows(meetup, proposed)} editableIds={meetup.participants.map(person => person.id)}
+      edit={person => openTrip(proposed.id, person)} changeTransport={id => editFriend(meetup.participants.find(person => person.id === id))} />
+    <Button quiet icon="arrow-left" onPress={() => changeStage('where')}>Change place</Button>
+  </DestinationReview>;
+  return frame(<>
+    <View style={{ gap: 6 }}>
+      <View style={layout.between}>
+        <Button quiet onPress={back} icon="arrow-left">Back to meetups</Button>
+        {canEdit && <IconAction name="edit-2" label="Edit meetup details" onPress={editDetails} />}
       </View>
-      {currentVoter?.mode === 'Motorcycle taxi' && <Panel>
-        <Label weight="title" size={19}>Enter a fare for {currentVoter.name}</Label>
-        <Label color={palette.muted}>Add a fare you checked yourself. Barkits labels it as user-entered.</Label>
-        <View style={layout.stack}>{venues.map(item => <FareField
-          key={`${item.id}:${currentVoter.id}`} label={item.name}
-          saved={meetup.manualFares?.[item.id]?.[currentVoter.id]}
-          onSave={value => {
-            const fares = { ...meetup.manualFares?.[item.id] };
-            if (value === undefined) delete fares[currentVoter.id];
-            else fares[currentVoter.id] = value;
-            save({ ...meetup, manualFares: { ...meetup.manualFares, [item.id]: fares } });
-          }}
-        />)}</View>
-      </Panel>}
-      {!!meetup.participants.length && !candidates.length && <Panel><Label>No demo routes meet these limits or provide the data required for this ranking.</Label></Panel>}
-      {candidates.map(({ venue: item, journeys, time, spread, cost }, index) => {
-        const votes = Object.values(meetup.votes).filter(id => id === item.id).length;
-        const voted = !!currentVoter && meetup.votes[currentVoter.id] === item.id;
-        return <Panel key={item.id}>
-          <View style={layout.between}><View style={layout.row}><View style={{ backgroundColor: palette[item.color], padding: 10, borderRadius: 12 }}><Icon name={item.icon} /></View>
-            <View style={{ flexShrink: 1 }}><Label size={20} weight="title">{item.name}</Label><Label size={13} color={palette.muted}>{item.area}</Label></View></View>
-            {index === 0 && <Chip selected>Top match</Chip>}</View>
-          {index === 0 && <Label color={palette.muted}>{rankingDescriptions[ranking]}</Label>}
-          <Label>{time} min total · {spread} min difference · {cost === null ? 'Total fare unavailable' : `₱${cost} total${journeys.some(journey => journey.manual) ? ' · includes user-entered fares' : ''}`}</Label>
-          {expanded === item.id && journeys.map(({ participant, minutes, fare, manual }) => <Label key={participant.id}>{participant.name} · {participant.mode} · {minutes} min · {fare === null ? 'Fare unavailable' : `₱${fare} ${manual ? 'user-entered fare' : 'demo fare'}`}</Label>)}
-          <View style={layout.wrap}>
-            <Button secondary onPress={() => setExpanded(expanded === item.id ? '' : item.id)}>{expanded === item.id ? 'Hide trips' : 'View trips'}</Button>
-            <Button secondary onPress={() => currentVoter && save({ ...meetup, votes: { ...meetup.votes, [currentVoter.id]: item.id } })}>{voted ? 'Voted' : 'Vote'} · {votes}</Button>
-            <Button onPress={() => setConfirmVenue(item.id)}>Choose this spot</Button>
-          </View>
-          {confirmVenue === item.id && <><Label weight="bold">Finalize {item.name} for this meetup?</Label><View style={layout.wrap}>
-            <Button onPress={() => save({ ...meetup, venue: item.id, status: 'Decided' })}>Finalize location</Button>
-            <Button secondary onPress={() => setConfirmVenue('')}>Cancel</Button>
-          </View></>}
-        </Panel>;
-      })}
+      <View style={layout.wrap}><View style={{ flexGrow: 1, flexBasis: 144, minWidth: 0 }}><Label kind="item" heading>{meetup.name}</Label></View>
+        <StatusMark status={meetup.status} /></View>
+    </View>
+    {(canEdit || meetup.status === 'Decided') && <PlanningJourney current={stage} change={changeStage}
+      people={meetup.participants.length} mapped={located.length} scheduled={!!meetup.date}
+      destination={!!venue && saveReady} saved={saveStatus} saveTone={retrySave ? 'warning' : saveReady ? 'success' : 'info'}>
+    {stage === 'who' && <>
+      {!canEdit && <Label>The destination is confirmed. The roster is read-only.</Label>}
+      <ParticipantRoster
+      members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located}
+      edit={canEdit ? editFriend : undefined}
+      action={canEdit && <Button secondary={meetup.participants.length > 0} icon="user-plus" onPress={() => editFriend()}>Add friend</Button>} />
     </>}
-    {!!venue && <Panel><Label size={23} weight="title">Meet at {venue.name}</Label><Label>{venue.area}</Label>
-      <View style={layout.wrap}>
-        <Button secondary onPress={openDirections} icon="external-link">Open venue map</Button>
-        {meetup.status === 'Decided' && <Button onPress={() => save({ ...meetup, status: 'Completed' })} icon="check">Mark completed</Button>}
-      </View>{!!linkError && <Label>{linkError}</Label>}
+    <View style={{ display: stage === 'when' ? 'flex' : 'none' }}>
+      {canEdit ? <PlanningSchedule ref={scheduleEditor} key={meetup.date} date={meetup.date} reportDirty={setScheduleDirty} save={date => save({ ...meetup, date })}
+        continuePlanning={() => changeStage('where')} /> : <Panel><Label>{formatLocalSchedule(meetup.date) || 'Time undecided'}</Label></Panel>}
+    </View>
+    {stage === 'review' && <WorkspaceColumns main={confirmedPlace || proposedPlace || <Panel>
+      <Label kind="item" heading>Choose a place to review</Label>
+      <Button icon="map-pin" onPress={() => changeStage('where')}>Browse places</Button>
+    </Panel>} side={<>
+      <PlanningReview heading="Meetup details" people={meetup.participants.length} mapped={located.length}
+        schedule={formatLocalSchedule(meetup.date)} activity={meetup.activity} description={meetup.description} change={changeStage} canEdit={canEdit} />
+      <PlanningVotes people={meetup.participants} choices={[...venues, ...meetup.customVenues ?? []].map(place => ({
+        id: place.id, name: place.name, voters: Object.entries(meetup.votes).filter(([, vote]) => vote === place.id).map(([person]) => person),
+      }))} />
+    </>} />}
+    {meetup.status === 'Draft' && stage === 'where' && <Panel>
+      <Label kind="item" heading>Find a meeting place</Label>
+      <Button onPress={() => save({ ...meetup, status: 'Planning' })}>Start planning</Button>
     </Panel>}
-    {meetup.status === 'Archived' && <Panel>
-      <Label size={24} weight="title">Meetup memories</Label>
-      {!!meetup.recap && <Label>{meetup.recap}</Label>}
-      {ratings && <Label>{ratings.average.toFixed(1)} ★ · {ratings.count} participant {ratings.count === 1 ? 'rating' : 'ratings'}</Label>}
-      {!meetup.recap && !ratings && <Label color={palette.muted}>No recap or ratings were saved.</Label>}
-    </Panel>}
-    {canRate && <Panel>
-      <View style={layout.row}><Kits celebrate style={{ width: 85, height: 58, borderRadius: 10 }} /><Label size={24} weight="title">Save the memory</Label></View>
-      <Label color={palette.muted}>Recaps and ratings are optional. This demo saves them only on this device.</Label>
-      <Field label="Recap caption" value={caption} onChange={setCaption} placeholder="Anong kuwento ng lakad?" />
-      <View style={layout.wrap}><Button disabled={!caption.trim()} onPress={() => save({ ...meetup, recap: caption.trim() })}>Save recap</Button>
-        {!!meetup.recap && <Button secondary onPress={() => { setCaption(''); save({ ...meetup, recap: undefined }); }}>Remove recap</Button>}</View>
-      {currentVoter && <>
-        <Label weight="bold">Rate as</Label>
-        <View style={layout.wrap}>{meetup.participants.map(friend => <Chip key={friend.id} selected={currentVoter.id === friend.id} onPress={() => setVoter(friend.id)}>{friend.name}</Chip>)}</View>
-        <View style={layout.wrap}>{[1, 2, 3, 4, 5].map(value => <Chip key={value} icon="star" selected={meetup.ratings[currentVoter.id] === value} onPress={() => rate(value)}>{value}</Chip>)}
-          {meetup.ratings[currentVoter.id] !== undefined && <Chip onPress={() => rate(null)}>Remove rating</Chip>}</View>
-      </>}
-      {ratings && <Label weight="bold">{ratings.average.toFixed(1)} ★ · {ratings.count} participant {ratings.count === 1 ? 'rating' : 'ratings'}</Label>}
-      <Button secondary onPress={() => save({ ...meetup, status: 'Archived' })}>Archive meetup</Button>
-    </Panel>}
-  </>;
-}
-
-function FareField({ label, saved, onSave }: { label: string; saved?: number; onSave: (value?: number) => void }) {
-  const [text, setText] = useState(saved?.toString() ?? '');
-  const value = text.trim() ? Number(text) : undefined;
-  const invalid = value !== undefined && (!Number.isFinite(value) || value < 0);
-  return <View style={layout.stack}>
-    <Field label={`${label} fare (₱)`} value={text} onChange={setText} />
-    {invalid && <Label>Enter a nonnegative fare.</Label>}
-    <Button secondary disabled={invalid || value === saved} onPress={() => onSave(value)}>{value === undefined ? 'Clear fare' : 'Save fare'}</Button>
-  </View>;
+    {meetup.status === 'Planning' && <>
+      {stage === 'where' && !tripEditorOpen && <NearbyPlaces navigation={{ title: meetup.name, expanded: fullMap, setExpanded: setFullMap, back }}
+        meetup={meetup} friends={located} voter={currentVoter} suggestions={suggestions} selectVoter={setVoter}
+        editFriend={editFriend} editTrip={(spot, person) => { save(retainPlace(meetup, spot)); openTrip(spot.id, person); }}
+        save={save} selected={proposedId} select={selectDestination} view={placeView}
+        changeView={setPlaceView} ranking={ranking} changeRanking={setRanking}
+        filters={<View style={layout.stack}>
+          {(!meetup.participants.length || located.length < meetup.participants.length) && <View style={{ gap: spacing.xs }}>
+            <Label kind="detail">Add everyone’s starting point to get suggestions.</Label>
+            <Button quiet icon="users" onPress={() => changeStage('who')}>Go to friends</Button>
+          </View>}
+          {located.length > 0 && located.length === meetup.participants.length && !suggestions.length &&
+            <Label kind="detail">No nearby matches. Try a different type of place.</Label>}
+          <View style={layout.wrap}>
+            <View style={{ flexGrow: 1, flexBasis: 140, minWidth: 0 }}>
+              <ChoiceField label="Type of place" value={category} options={categories.map(value => ({ value, label: value }))}
+                change={category => setFilter({ activity: meetup.activity, category })} />
+            </View>
+            <View style={{ alignSelf: 'flex-end' }}><Button secondary icon="plus" onPress={() => openTrip('new-place')}>Add place</Button></View>
+          </View>
+          {tripDirty && <Button quiet onPress={() => setTripEditorOpen(true)}>Resume trip edits</Button>}
+        </View>} />}
+      <View style={{ display: stage === 'where' && tripEditorOpen ? 'flex' : 'none', gap: 12 }}>
+        <Button secondary icon="arrow-left" onPress={() => { setTripEditorOpen(false); requestAnimationFrame(scrollToTop); }}>
+          {placeView === 'compare' ? 'Back to comparison' : placeView === 'places' ? 'Back to places' : 'Map'}
+        </Button>
+        <FriendPicker label="Trip for" people={meetup.participants} selected={currentVoter?.id} change={setVoter} />
+        <TripPlanning destinationId={tripTarget} meetup={meetup} save={save} saveReady={saveReady} retrySave={retrySave} participant={currentVoter}
+          selectDestination={setTripTarget} selectParticipant={setVoter} reportDirty={setTripDirty} />
+      </View>
+    </>}
+    {stage === 'where' && meetup.status === 'Decided' && confirmedPlace}
+    </PlanningJourney>}
+    {finished && <LocalMemories meetup={meetup} venue={venue} voter={currentVoter} selectVoter={setVoter}
+      save={save} saved={saveReady} saveStatus={saveStatus} retrySave={retrySave} celebrate={celebrate}
+      map={() => setFullMap(true)} reportDirty={setRecapDirty}
+      roster={<ParticipantRoster members={meetup.participants.map(trip => ({ id: trip.id, name: trip.name, trip }))} located={located} />} />}
+    {fullMap && venue?.point && <ConfirmedPlaceMap name={venue.name} location={venue.area} point={venue.point} schedule={formatLocalSchedule(meetup.date)}
+      navigation={{ title: meetup.name, expanded: true, setExpanded: setFullMap, back }} />}
+  </>, footer);
 }

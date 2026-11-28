@@ -1,0 +1,60 @@
+.origin-pin, .venue-pin {
+  display: block;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--map-ink);
+  background: var(--map-origin);
+  border-radius: 50%;
+}
+.venue-pin {
+  background: var(--map-pin);
+  border-color: var(--map-edge);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 4px var(--map-shadow);
+}
+.suggestion-marker, .group-marker { display: grid; place-items: center; border-radius: 10px; }
+.barkits-map :focus-visible { outline: 3px solid var(--map-pin); outline-offset: 2px; }
+.suggestion-marker .venue-pin { width: 30px; height: 30px; display: grid; place-items: center; }
+.suggestion-marker b { transform: rotate(45deg); font: bold 15px/1 system-ui, sans-serif; color: var(--map-edge); }
+.friend-pin {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font: bold 11px/1 system-ui, sans-serif;
+  color: var(--map-ink);
+}
+.map-expand {
+  position: absolute;
+  z-index: 1000;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--map-pin);
+  border-radius: 12px;
+  background: var(--map-surface);
+  color: var(--map-ink);
+  cursor: pointer;
+}
+.map-expand:hover { background: var(--map-edge); }
+
+.confirmed-pin::after {
+  content: '';
+  width: 12px;
+  height: 6px;
+  border-left: 3px solid var(--map-edge);
+  border-bottom: 3px solid var(--map-edge);
+}
+.barkits-map { color: var(--map-ink); font: 14px/1.45 system-ui, sans-serif; }
+.barkits-map .leaflet-control-zoom a { width: 44px; height: 44px; line-height: 44px; color: var(--map-ink); background: var(--map-surface); }
+.map-attribution, .map-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex-shrink: 0; }
+.map-attribution { justify-content: space-between; padding: 0 8px; background: var(--map-surface); font-size: 12px; }
+.map-attribution a { display: inline-flex; align-items: center; min-height: 44px; color: var(--map-ink); text-underline-offset: 3px; }
+.map-feedback { background: var(--map-error-surface); color: var(--map-error); }
+.map-feedback span { flex: 1 1 180px; }
+.map-feedback button { min-height: 44px; padding: 8px 12px; border: 1px solid currentColor; border-radius: 12px; background: var(--map-surface); color: var(--map-error); font: inherit; cursor: pointer; }

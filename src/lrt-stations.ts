@@ -1,0 +1,30 @@
+import type { Point } from './geo';
+
+// south to north in lrmc fare-matrix order, station centres from wikidata
+export const stations: { name: string; point: Point }[] = [
+  { name: 'Dr. Santos', point: [14.48530, 120.98956] },
+  { name: 'Ninoy Aquino Avenue', point: [14.49864, 120.99436] },
+  { name: 'PITX', point: [14.50848, 120.99128] },
+  { name: 'MIA Road', point: [14.51843, 120.99299] },
+  { name: 'Redemptorist – Aseana', point: [14.53028, 120.99294] },
+  { name: 'Baclaran', point: [14.53431, 120.99836] },
+  { name: 'EDSA', point: [14.53882, 121.00068] },
+  { name: 'Libertad', point: [14.54778, 120.99863] },
+  { name: 'Gil Puyat', point: [14.55413, 120.99718] },
+  { name: 'Vito Cruz', point: [14.56348, 120.99468] },
+  { name: 'Quirino', point: [14.57022, 120.99168] },
+  { name: 'Pedro Gil', point: [14.57663, 120.98799] },
+  { name: 'UN Avenue', point: [14.58249, 120.98466] },
+  { name: 'Central', point: [14.59290, 120.98162] },
+  { name: 'Carriedo', point: [14.59900, 120.98136] },
+  { name: 'D. Jose', point: [14.60548, 120.98207] },
+  { name: 'Bambang', point: [14.61111, 120.98250] },
+  { name: 'Tayuman', point: [14.61679, 120.98276] },
+  { name: 'Blumentritt', point: [14.62279, 120.98294] },
+  { name: 'Abad Santos', point: [14.63064, 120.98140] },
+  { name: 'R. Papa', point: [14.63617, 120.98233] },
+  { name: '5th Avenue', point: [14.64442, 120.98358] },
+  { name: 'Monumento', point: [14.65409, 120.98391] },
+  { name: 'Balintawak', point: [14.65734, 121.00396] },
+  { name: 'Fernando Poe Jr.', point: [14.65749, 121.02121] },
+];
