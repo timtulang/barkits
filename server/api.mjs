@@ -18,6 +18,11 @@ export function createApi(config) {
     const { method } = request;
     try {
       if (request.url.length > 8192) throw new HttpError(414, 'This request URL is too long.');
+      if (route) {
+        url.pathname = pathname;
+        url.searchParams.delete('__barkits_route');
+        request = new Request(url, request);
+      }
       if (!['GET', 'POST'].includes(method)) throw new HttpError(405, 'This method is not supported.', { Allow: 'GET, POST' });
       const requestOrigin = request.headers.get('origin');
       if ((requestOrigin && requestOrigin !== config.origin) ||

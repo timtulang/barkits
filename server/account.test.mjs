@@ -54,3 +54,15 @@ test('dashboard validates pagination and binds the acting identity',async()=>{
   assert.deepEqual(f.calls[0],{query:'select barkits.account_dashboard($1,$2,$3) as value',params:[digest,true,50]});
   for(const query of ['offset=-1','offset=1','offset=100050','past=maybe','user_id=victim'])assert.equal((await f.request('/api/account/dashboard?'+query)).status,400);
 });
+
+test('dashboard accepts Vercel rewrites while preserving pagination validation',async()=>{
+  const f=fixture();
+  const entry='/api/entry?__barkits_route=account/dashboard';
+  assert.equal((await f.request(entry+'&past=false&offset=0')).status,200);
+  assert.deepEqual(f.calls[0],{query:'select barkits.account_dashboard($1,$2,$3) as value',params:[digest,false,0]});
+  assert.equal((await f.request(entry+'&past=true&offset=50')).status,200);
+  assert.deepEqual(f.calls[1].params,[digest,true,50]);
+  for(const query of ['offset=1','past=maybe','user_id=victim'])assert.equal((await f.request(entry+'&'+query)).status,400);
+  assert.equal((await f.request(entry+'&__barkits_route='+'x'.repeat(8192))).status,414);
+  assert.equal(f.calls.length,2);
+});
