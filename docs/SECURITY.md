@@ -35,7 +35,7 @@ Only HMAC digests of IP addresses are stored, using the server auth secret; raw 
 
 ## Verify before production
 
-1. Apply migrations through 0008 to the confirmed production database **before** deploying this server. Use a distinct production Neon branch/runtime login and production OAuth/session secrets; do not point production at the disposable staging branch.
+1. Apply migrations through 0008 to the confirmed production database **before** deploying this server. A distinct production Neon branch/runtime login is recommended. Current operator decision (2026-11-28): production and staging intentionally share Barkits/disposable/neondb and the restricted barkits_api login for now. Both sites see the same accounts and shared meetups. Session secrets remain separate. Any branch reset or migration affects both environments.
 2. Configure Production `DATABASE_URL`, `BARKITS_ORIGIN`, `EXPO_PUBLIC_BARKITS_API_URL`, Google client credentials and `BARKITS_AUTH_SECRET`. Both origins must match the actual production host. Register that host's exact `/api/auth/google/callback` in the corresponding Google Web client.
 3. Confirm the active project firewall contains the API deny/rate-limit rule. For a new Vercel project, recreate it from the tracked JSON. Vercel DDoS mitigation is already platform-managed. Review current plan allowances and usage; no plan upgrade or paid add-on is required by the code.
 4. Run `npm test`, `npx tsc --noEmit`, a web export and live Google/shared-meetup acceptance. Check maps and geolocation under the enforced CSP. Signed native builds remain a separate acceptance step.
@@ -43,6 +43,6 @@ Only HMAC digests of IP addresses are stored, using the server auth secret; raw 
 
 Against a disposable local migrated PostgreSQL database with an operator able to SET ROLE, run `psql -X -v ON_ERROR_STOP=1 -f db/test-abuse.sql` and `node scripts/check-rate-limit-concurrency.mjs` with explicit `PGHOST`/`PGDATABASE`. The SQL suite rolls back fixtures; the concurrency script cleans up its own local fixture. Do not run load or concurrency fixtures against production.
 
-Rate limiting reduces bursts, guessing and individual-account spam; it does not replace abuse monitoring or stop coordinated attackers with many accounts/IPs. Keep production separate until real Google sign-in and shared-plan creation have passed.
+Rate limiting reduces bursts, guessing and individual-account spam; it does not replace abuse monitoring or stop coordinated attackers with many accounts/IPs. The current shared-database exception is recorded above; real Google sign-in and shared-plan creation still require signed-in acceptance.
 
 References: [Vercel trusted IP headers](https://vercel.com/docs/headers/request-headers), [WAF rate limiting](https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting), [official firewall template](https://github.com/vercel/firewall-templates/blob/main/api-rate-limit/rule.json).
