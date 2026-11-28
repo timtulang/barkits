@@ -13,7 +13,7 @@ Migrations `0007_abuse_limits` and `0008_api_ip_budget` add atomic PostgreSQL co
 | Google callbacks, per IP | 30 / 10 minutes |
 | Native sign-in claims, per IP | 20 / 10 minutes |
 | Shared reads, per account | 120 / minute |
-| All shared writes, per account | 60 / minute |
+| Shared and profile writes, per account | 60 / minute |
 | Meetup creation, per account | 10 / hour |
 | Invite redemption attempts, per account | 10 / 10 minutes |
 | Invite issuance, per account | 20 / hour |

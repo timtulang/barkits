@@ -48,6 +48,12 @@ Add future numbered migrations to `db/migrations/` and register them in order in
 
 Migrations `0007_abuse_limits` and `0008_api_ip_budget` add private rate-limit counters and restricted IP/account quota functions, including a general API budget. Apply both before deploying the guarded API. Counters commit separately from shared mutations so failed attempts consume their budget. See [production guardrails](SECURITY.md) for limits, retention and local concurrency verification.
 
+## Application profile
+
+Migration `0009_account_profile` adds `save_own_profile(session_digest, profile_name)`. Apply it before deploying profile editing. The atomic function resolves a current session and updates only that user's display name; the runtime retains no table privileges. Display names contain 1–160 characters, exclude control characters, and are not unique identifiers. Google sign-in does not overwrite an existing application name. Existing meetup-specific names, user IDs, ownership, and membership are preserved.
+
+`POST /api/account/profile` accepts only `{ "display_name": "Your name" }`, with the existing cookie/origin or native bearer protections and shared account-write budget. Repeated saves are idempotent; concurrent edits use the last successful database write. Other sessions read the saved profile on reload or foreground/focus refresh, without polling. Run `db/test-profile.sql` only on an isolated local migrated database; it rolls back its fixtures.
+
 ## Backup and recovery
 
 - Before changing an existing environment, capture a Neon restore point within its retention window or create a restricted backup outside the repository. Run `node db/cli.mjs backup > "$backup_file"` after setting a private umask. The dump contains the Barkits schemas and their data.

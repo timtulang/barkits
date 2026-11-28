@@ -1,13 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EditorDialog } from './editor-dialog';
-import { authSetup, signOut, startSignIn, type Account } from './services/auth';
-import { Button, Feedback, Label } from './ui';
+import { authSetup, saveDisplayName, signOut, startSignIn, type Account } from './services/auth';
+import { Button, Feedback, Field, Label } from './ui';
 
 export function AccountDialog({ user, forInvite, close }: { user: Account | null; forInvite?: boolean; close: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [name, setName] = useState(user?.display_name ?? '');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const previousName = useRef(user?.display_name ?? '');
+  useEffect(() => {
+    const next = user?.display_name ?? '';
+    const previous = previousName.current;
+    setName(draft => draft === previous ? next : draft);
+    previousName.current = next;
+  }, [user?.display_name]);
+  async function saveProfile() {
+    if (busy || saving) return;
+    const trimmed = name.trim();
+    if (!trimmed || [...trimmed].length > 160 || /\p{Cc}/u.test(trimmed)) {
+      setNameError('Enter a display name of 1–160 characters without line breaks or control characters.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    setSaved(false);
+    setNameError('');
+    try {
+      const profile = await saveDisplayName(trimmed);
+      setName(profile.display_name);
+      setSaved(true);
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : 'Couldn’t save your profile. Try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
   async function submit() {
-    if (busy) return;
+    if (busy || saving) return;
     setBusy(true);
     setError('');
     try {
@@ -24,12 +56,20 @@ export function AccountDialog({ user, forInvite, close }: { user: Account | null
     }
   }
 
-  const action = authSetup.enabled && <Button busy={busy} busyLabel={user ? 'Signing out…' : 'Opening Google…'} onPress={submit}>
-    {user ? 'Sign out of this device' : 'Sign in with Google'}
-  </Button>;
-  return <EditorDialog title={user ? 'Your account' : 'Sign in'} close={close} busy={busy} actions={action}>
+  const action = authSetup.enabled && <>
+    {user && <Button busy={saving} busyLabel="Saving profile…" disabled={busy || name.trim() === user.display_name}
+      onPress={saveProfile}>Save profile</Button>}
+    <Button secondary={!!user} busy={busy} disabled={saving} busyLabel={user ? 'Signing out…' : 'Opening Google…'} onPress={submit}>
+      {user ? 'Sign out of this device' : 'Sign in with Google'}
+    </Button>
+  </>;
+  return <EditorDialog title={user ? 'Your account' : 'Sign in'} close={close} busy={busy || saving} actions={action}>
     {!authSetup.enabled ? <Feedback title="Sign-in unavailable">{authSetup.message}</Feedback> : user ? <>
       {user.display_name && <Label kind="value">{user.display_name}</Label>}
+      <Field label="Display name" required value={name} disabled={busy || saving} error={nameError}
+        hint="Your Barkits profile name. Names in existing meetups stay as you entered them."
+        onChange={value => { setName(value); setNameError(''); setSaved(false); setError(''); }} />
+      {saved && <Feedback tone="success">Profile saved.</Feedback>}
       <Label>Signed in with Google. Your on-device plans stay in this browser or app.</Label>
     </> : <Label>{forInvite ? 'Sign in with Google to enter your meetup invite.' : 'Sign in with Google to plan a meetup with friends.'}</Label>}
     {!!error && <Feedback tone="error">{error}</Feedback>}

@@ -38,6 +38,7 @@ export function createApi(config) {
       }
       if (method === 'GET' && pathname === '/api/session') return await auth.session(request);
       if (method === 'POST' && pathname === '/api/session/logout') return await auth.logout(request);
+      if (method === 'POST' && pathname === '/api/account/profile') return await auth.saveProfile(request, limits);
       if (pathname === '/api/shared' || pathname.startsWith('/api/shared/')) {
         const parts = pathname.split('/').slice(3);
         if (method === 'GET' && parts.length && !uuid.test(parts[0])) throw new HttpError(404, 'Couldn’t find this shared meetup.');

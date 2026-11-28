@@ -38,7 +38,13 @@ export function useAccount() {
       }
       if (active) void refresh();
     }
-    const stop = listenForAccountChange(() => { if (active) void refresh(); });
+    const stop = listenForAccountChange(next => {
+      if (!active) return;
+      ++attempt;
+      setUser(next);
+      setConnectionError('');
+      if (next) setSignInError('');
+    });
     if (Platform.OS === 'web') {
       const url = new URL(window.location.href);
       if (url.searchParams.get('signin') === 'failed') {

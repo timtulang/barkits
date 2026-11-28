@@ -1,6 +1,9 @@
 # Continuity ledger
 
 ## Snapshot
+- 2026-11-28 [USER] Current goal: R1 first slice, persistent application display-name editing, then stop. Commit/push the working branch is authorized; future main merges/production promotions require separate authorization. User chose to leave the live migration pending after operator authentication failed.
+- 2026-11-28 [CODE] R1 implemented on feature/r1-display-name from main 1142256: existing account sheet edits the profile through a session-bound, restricted SQL function. Meetup-specific names, stable IDs, ownership, memberships and local storage remain unchanged. Migration 0009_account_profile is local-only; do not deploy profile editing before it is applied.
+- 2026-11-28 [TOOL] R1 passed TypeScript, all 32 explicit tests, web export, isolated SQL/regression/concurrency checks and two independent Chromium sessions with reload persistence, validation and failed-save retry at 320/1440 px. Native runtime and hosted authenticated profile acceptance remain UNCONFIRMED.
 - 2026-11-28 [USER] Production promotion is authorized and accepted: Google sign-in and creation of a shared meetup succeeded at https://barkits.vercel.app. Corrected both production URLs in the existing Google Web client after a redirect_uri_mismatch; browser retest reached Google identifier screen.
 - 2026-11-28 [TOOL] Prototype was merged/pushed to main as a729412 and deployed READY (dpl_GLVRrzGnzNZnt8rY4TKF4udR1J3C). Follow-up receipt bf1a411 deployed READY (dpl_BjVux9Ryn7VrR1WEC58rsWXeprWt) with production alias/API verified. Main is Vercel's Production branch; staging domain tracks barkits-prototype.
 - 2026-11-28 [USER] D016 exception: production and staging intentionally share Barkits/disposable/neondb and the restricted barkits_api login for now, including accounts and shared meetups. Do not reset the branch as disposable test data. Guest plans stay on their devices; no Supabase account/shared-data migration.
@@ -11,7 +14,7 @@
 - 2026-11-28 [TOOL] Hosted production root/session return 200; anonymous shared access is 401, foreign origins 403, responses no-store, OAuth start 303 with exact callback/PKCE/Secure HttpOnly cookie. Browser app renders with no CSP violations. User-confirmed real callback/shared creation supersedes earlier UNCONFIRMED status.
 - 2026-11-28 [TOOL] Vercel firewall v2 enabled with valid 120 API requests/IP/minute deny rule. Native edge 429 enforcement remains UNCONFIRMED. Hosted application limiter was verified on staging with 120 successful session reads then 10 JSON 429 responses/Retry-After; no production load fixtures were run.
 - 2026-11-28 [USER] Use this local checkout and ignored .env.local; Codex Cloud setup is incorrect. Standing authorization covers committing/pushing finished work. Preserve Nunito, Kits, theme/map-first flows and guest storage; native signed-device acceptance remains separate.
-- 2026-11-28 [CODE] Now: production release accepted; record final receipt and verify the ledger-only deployment. Next: continue feature work on a feature/preview branch. Open questions: none blocking this release; split the shared production/staging database before destructive staging work.
+- 2026-11-28 [CODE] Now: finish R1 working-branch commit/push; leave shared live schema at 0008 per user direction. Next: restore operator access and apply 0009 after a fresh target check/recovery point, then hosted profile acceptance; the next implementation slice is targeted expired-session recovery. Open question: why Neon stopped accepting the saved operator password after the successful read-only target check; local URL/file matching and duplicate-entry checks passed.
 
 ## Integrations and initialization
 - 2026-11-26 [TOOL] Ponytail/Impeccable skills read; context succeeded using `docs/PRODUCT.md`. Existing `docs/DESIGN_SYSTEM.md` remains visual authority. Supersedes initial no-hook observation: later UI edits received automatic design-hook reports. Latest AGENTS makes optional tools targeted, not mandatory initialization.
@@ -44,27 +47,27 @@
 - 2026-11-28 [USER] D016 ACTIVE: promote prototype to main and reuse the verified staging database for production for now, overriding the separate-production-target recommendation. Preserve environment-specific origins/session secrets and Production-only secret scope. The user corrected Google registration for https://barkits.vercel.app/api/auth/google/callback; browser retest passed and user confirmed real production sign-in/shared meetup creation.
 
 ## Done (recent)
+- 2026-11-28 [CODE] R1 display-name slice: accessible profile editor, authoritative save response updates account state immediately, failed saves retain the draft, cookie/native API authorization, input validation and shared write quotas. Added migration 0009 and HTTP/SQL tests; local browser and database acceptance passed. Live migration remains pending by user choice.
 - 2026-11-28 [TOOL] Authorized production merge a729412 pushed and deployed READY; Production-only sensitive secrets and separate session secret configured, public artifact scan/API authorization/security-header checks passed. Google callback registration was subsequently corrected and real sign-in/shared creation accepted by the user.
 - 2026-11-28 [CODE] Added production guardrails, distributed quotas, request bounds/security headers, local abuse/concurrency tests and a production runbook; staging migrations through 0008 applied.
 - 2026-11-28 [TOOL] Live staging migrations through 0006_shared_api and idempotent rerun passed. Core and shared SQL fixtures rolled back; zero users/meetups and no retained test privilege grant. SSH and Vercel API access restored; Preview configuration blocks merge.
 - 2026-11-27 [CODE] Phase 6 refined web navigation and focus behavior, removed the decorative footer and reduced the initial Kits download by 72%. Assessed the final six surfaces against the Phase 1 ratings.
 - 2026-11-27 [CODE] Phase 5 polished the route, roster, trip entry, decisions and recaps. Local and shared milestone animations wait for persistence, and saved recaps reopen without replaying the celebration.
 - 2026-11-27 [CODE] Phase 4 added invite continuation after sign-in, map and shortlist navigation, explicit completion and archive actions, and audience-aware recaps. Shared phase checks use local synthetic data.
-- 2026-11-27 [CODE] Phase 3 restored four ranking modes with consistent evidence, moved saved plans up on returning Home, and added venue-first review and direct directions. The guest flow and validation are recorded in the redesign plan.
 
 ## Working set
+- 2026-11-28 [CODE] src/account-dialog.tsx
+- 2026-11-28 [CODE] src/services/auth.ts
+- 2026-11-28 [CODE] src/use-account.ts
 - 2026-11-28 [CODE] server/api.mjs
-- 2026-11-28 [CODE] server/http.mjs
-- 2026-11-28 [CODE] server/shared.mjs
-- 2026-11-28 [CODE] server/rate-limit.mjs
+- 2026-11-28 [CODE] server/identity.mjs
+- 2026-11-28 [CODE] server/profile.test.mjs
+- 2026-11-28 [CODE] db/migrations/0009_account_profile.sql
 - 2026-11-28 [CODE] db/migrate.sql
-- 2026-11-28 [CODE] db/migrations/0007_abuse_limits.sql
-- 2026-11-28 [CODE] db/migrations/0008_api_ip_budget.sql
-- 2026-11-28 [CODE] db/test-abuse.sql
-- 2026-11-28 [CODE] server/security.test.mjs
-- 2026-11-28 [CODE] security/vercel-api-rate-limit.json
-- 2026-11-28 [CODE] vercel.json
+- 2026-11-28 [CODE] db/test-profile.sql
+- 2026-11-28 [CODE] docs/DATABASE.md
 - 2026-11-28 [CODE] docs/SECURITY.md
+- 2026-11-28 [CODE] CONTINUITY.md
 
 ## Receipts
 - 2026-11-27 [TOOL] Typecheck, 18 planner tests, web/Android/iOS exports, guest acceptance at 320/390/768/1440 px and synthetic shared acceptance passed. Chromium also verified form entry with a simulated keyboard viewport, touch, keyboard navigation and reduced motion.
@@ -87,3 +90,5 @@
 - 2026-11-28 [TOOL] ae19689 deployed READY at staging: CSP/frame headers and anonymous trusted-IP/API limiter passed; Google start uses exact callback. Bounded hosted application probe returned 120 successful session reads then 10 JSON 429s with Retry-After. Automation bypass revoked. No production code deployment/merge. Edge rule configured active/valid, but native edge 429 remains unverified on a routed production API.
 - 2026-11-28 [TOOL] Production a729412 deployed READY (dpl_GLVRrzGnzNZnt8rY4TKF4udR1J3C); alias SHA verified. Root/session 200, shared anonymous 401, foreign origin 403, no-store, CSP/frame/MIME/referrer headers and OAuth start 303 with exact production callback/PKCE/Secure HttpOnly cookie passed. Public JS/CSS/root/source/env-path responses scanned: zero saved secret matches. Browser app renders without CSP violations, but Google returns redirect_uri_mismatch; user asked to correct the existing Web client and Firefox opened to Google Auth clients.
 - 2026-11-28 [USER] Saved production Google redirect URI and JavaScript origin; [TOOL] browser retest reached accounts.google.com/v3/signin/identifier and Firefox opened production sign-in. [USER] Confirmed both Google sign-in and shared meetup creation succeeded. Production acceptance complete; prior callback blocker resolved.
+- 2026-11-28 [TOOL] R1: `npx tsc --noEmit`, `npm test`, explicit `node --experimental-strip-types --test --test-isolation=none src/planner.test.mts server/*.test.mjs` (32 tests), web export and public artifact secret scan (30 files) passed. Local PostgreSQL fresh/repeated migrations, profile/core/shared/abuse SQL suites, and two concurrent profile writes passed. Two independent Chromium sessions verified persisted names on refresh/reopen, required-field validation, 320/1440 px layout and connection failure/retry under CSP. Synthetic local sessions exercise the real API/SQL; they do not establish hosted Google or native acceptance.
+- 2026-11-28 [TOOL] R1 live target initially verified read-only as Barkits/falling-cloud-86903061, br-sweet-recipe-bixuu2dm, neondb_owner/neondb, versions 0001–0008. Later operator authentication failed before backup/migration; no live schema/data changes or new recovery archive. Saved/loaded URL, endpoint, operator and database checks matched, with one env entry; exact authentication cause UNCONFIRMED. [USER] Leave live migration pending. Temporary local acceptance scripts/screenshots are in /tmp/barkits-r1-*; no credentials recorded.

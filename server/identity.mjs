@@ -115,5 +115,19 @@ export function identity({ origin, signingKey, clientId, clientSecret, sql, goog
     return json({ user: null }, 200, { 'Set-Cookie': cookie(sessionName, '', 0) });
   }
 
-  return { getSession, start, callback, claim, session, logout };
+  async function saveProfile(request, limits) {
+    const secret = getSession(request);
+    await limits.account(secret, 'write');
+    const body = await readJson(request);
+    const name = typeof body?.display_name === 'string' ? body.display_name.trim() : '';
+    if (!body || Array.isArray(body) || Object.keys(body).length !== 1 || !name ||
+        [...name].length > 160 || /\p{Cc}/u.test(name)) {
+      throw new HttpError(400, 'Enter a display name of 1–160 characters without line breaks or control characters.');
+    }
+    const [user] = await sql.query('select * from barkits.save_own_profile($1, $2)', [secret, name]);
+    if (!user) throw new Error('Profile save returned no account.');
+    return json({ user });
+  }
+
+  return { getSession, start, callback, claim, session, logout, saveProfile };
 }

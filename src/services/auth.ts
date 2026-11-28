@@ -7,15 +7,22 @@ export { authSetup };
 export type Account = { id: string; display_name: string | null };
 const verifierKey = 'barkits.google-verifier';
 const joinKey = 'barkits.join-after-login';
-const subscribers = new Set<() => void>();
+const subscribers = new Set<(account: Account | null) => void>();
 
-export function listenForAccountChange(subscriber: () => void) {
+export function listenForAccountChange(subscriber: (account: Account | null) => void) {
   subscribers.add(subscriber);
   return () => { subscribers.delete(subscriber); };
 }
 
 export async function readAccount() {
   return (await apiRequest<{ user: Account | null }>('/session')).user;
+}
+
+export async function saveDisplayName(displayName: string) {
+  const { user } = await apiRequest<{ user: Account }>('/account/profile', { display_name: displayName });
+  if (!user?.id || typeof user.display_name !== 'string') throw new Error('Barkits returned an invalid profile. Try again.');
+  for (const listener of subscribers) listener(user);
+  return { ...user, display_name: user.display_name };
 }
 
 export async function startSignIn(joining: boolean) {
@@ -55,5 +62,5 @@ export async function takeJoinIntent() {
 export async function signOut() {
   if (Platform.OS === 'web' || await sessionStorage.getItem(sessionKey)) await apiRequest('/session/logout', {});
   if (Platform.OS !== 'web') await sessionStorage.removeItem(sessionKey);
-  for (const listener of subscribers) listener();
+  for (const listener of subscribers) listener(null);
 }

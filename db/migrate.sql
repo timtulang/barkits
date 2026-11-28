@@ -104,3 +104,15 @@ select not exists (
 \else
   \echo 0008_api_ip_budget already applied.
 \endif
+
+select not exists (
+  select 1 from barkits_meta.schema_migrations where version = '0009_account_profile'
+) as apply_next
+\gset
+
+\if :apply_next
+  \ir migrations/0009_account_profile.sql
+  insert into barkits_meta.schema_migrations (version) values ('0009_account_profile');
+\else
+  \echo 0009_account_profile already applied.
+\endif
