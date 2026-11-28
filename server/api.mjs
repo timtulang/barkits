@@ -3,35 +3,49 @@ import { neon } from '@neondatabase/serverless';
 import { HttpError, json } from './http.mjs';
 import { identity } from './identity.mjs';
 import { shared } from './shared.mjs';
+import { rateLimiter } from './rate-limit.mjs';
 
 const uuid = /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i;
 
 export function createApi(config) {
   const auth = identity(config);
+  const limits = rateLimiter(config);
   return async request => {
     const url = new URL(request.url);
     const route = url.pathname === '/api/entry' ? url.searchParams.get('__barkits_route') : null;
     const pathname = route ? '/api/' + route : url.pathname;
     const { method } = request;
     try {
+      if (request.url.length > 8192) throw new HttpError(414, 'This request URL is too long.');
+      if (!['GET', 'POST'].includes(method)) throw new HttpError(405, 'This method is not supported.', { Allow: 'GET, POST' });
       const requestOrigin = request.headers.get('origin');
       if ((requestOrigin && requestOrigin !== config.origin) ||
           (method === 'POST' && !requestOrigin && !request.headers.has('authorization') && pathname !== '/api/auth/native/claim')) {
         throw new HttpError(403, 'Open this action from Barkits.');
       }
-      if (method === 'GET' && pathname === '/api/auth/google/start') return auth.start(url);
-      if (method === 'GET' && pathname === '/api/auth/google/callback') return await auth.callback(request, url);
-      if (method === 'POST' && pathname === '/api/auth/native/claim') return await auth.claim(request);
+      await limits.ip(request, 'api');
+      if (method === 'GET' && pathname === '/api/auth/google/start') {
+        await limits.ip(request, 'auth-start');
+        return auth.start(url);
+      }
+      if (method === 'GET' && pathname === '/api/auth/google/callback') {
+        await limits.ip(request, 'auth-callback');
+        return await auth.callback(request, url);
+      }
+      if (method === 'POST' && pathname === '/api/auth/native/claim') {
+        await limits.ip(request, 'native-claim');
+        return await auth.claim(request);
+      }
       if (method === 'GET' && pathname === '/api/session') return await auth.session(request);
       if (method === 'POST' && pathname === '/api/session/logout') return await auth.logout(request);
       if (pathname === '/api/shared' || pathname.startsWith('/api/shared/')) {
         const parts = pathname.split('/').slice(3);
         if (method === 'GET' && parts.length && !uuid.test(parts[0])) throw new HttpError(404, 'Couldn’t find this shared meetup.');
-        return await shared(config.sql, auth.getSession(request), request, parts);
+        return await shared(config.sql, auth.getSession(request), request, parts, limits);
       }
       throw new HttpError(404, 'This action isn’t available.');
     } catch (error) {
-      if (error instanceof HttpError) return json({ error: error.message }, error.status);
+      if (error instanceof HttpError) return json({ error: error.message }, error.status, error.headers);
       if (error?.code === '28000') return json({ error: 'Sign in again to continue.' }, 401);
       if (error?.code === 'P0001') return json({ error: error.message }, 409);
       if (/^(22|23)/.test(error?.code ?? '')) return json({ error: 'Check the information you entered and refresh the group.' }, 400);
@@ -57,7 +71,7 @@ export function apiConfig(env = process.env) {
     throw new Error('Configure the Google OAuth client and a Barkits auth secret.');
   }
   http.setGlobalProxyFromEnv?.();
-  return { origin: origin.origin, clientId, clientSecret, signingKey, sql: neon(db.href, {
+  return { origin: origin.origin, clientId, clientSecret, signingKey, vercel: env.VERCEL === '1', sql: neon(db.href, {
     fetchOptions: { redirect: 'error' },
   }) };
 }

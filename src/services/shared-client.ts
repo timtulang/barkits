@@ -45,7 +45,8 @@ export async function apiRequest<T>(path: string, payload?: unknown): Promise<T>
   }
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new SharedRequestError(typeof data?.error === 'string' ? data.error : 'Barkits couldn’t complete the request.', response.status);
+    const message = response.status === 429 ? 'Too many requests. Wait a minute, then try again.' : 'Barkits couldn’t complete the request.';
+    throw new SharedRequestError(typeof data?.error === 'string' ? data.error : message, response.status);
   }
   if (data === null && payload === undefined) throw new SharedRequestError('Barkits returned an invalid response.', 502);
   return data as T;

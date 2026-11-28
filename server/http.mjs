@@ -1,7 +1,8 @@
 export class HttpError extends Error {
-  constructor(status, message) {
+  constructor(status, message, headers) {
     super(message);
     this.status = status;
+    this.headers = headers;
   }
 }
 
@@ -22,19 +23,30 @@ export async function readJson(request) {
   if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') {
     throw new HttpError(415, 'Send a JSON request.');
   }
+  const length = request.headers.get('content-length');
+  if (length !== null && (!/^\d+$/.test(length) || Number(length) > 16384)) {
+    throw new HttpError(413, 'This request is too large.');
+  }
   const reader = request.body?.getReader();
   if (!reader) throw new HttpError(400, 'Send a request body.');
   const chunks = [];
   let size = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.length;
-    if (size > 16384) {
-      await reader.cancel();
-      throw new HttpError(413, 'This request is too large.');
+  let complete = false;
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new HttpError(408, 'This request took too long. Try again.')), 5000);
+  });
+  try {
+    while (true) {
+      const { done, value } = await Promise.race([reader.read(), timeout]);
+      if (done) { complete = true; break; }
+      size += value.length;
+      if (size > 16384) throw new HttpError(413, 'This request is too large.');
+      chunks.push(value);
     }
-    chunks.push(value);
+  } finally {
+    clearTimeout(timer);
+    if (!complete) void reader.cancel().catch(() => console.error('Request body cancellation failed.'));
   }
   try {
     return JSON.parse(Buffer.concat(chunks).toString('utf8'));

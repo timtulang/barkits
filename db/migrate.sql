@@ -80,3 +80,27 @@ select not exists (
 \else
   \echo 0006_shared_api already applied.
 \endif
+
+select not exists (
+  select 1 from barkits_meta.schema_migrations where version = '0007_abuse_limits'
+) as apply_next
+\gset
+
+\if :apply_next
+  \ir migrations/0007_abuse_limits.sql
+  insert into barkits_meta.schema_migrations (version) values ('0007_abuse_limits');
+\else
+  \echo 0007_abuse_limits already applied.
+\endif
+
+select not exists (
+  select 1 from barkits_meta.schema_migrations where version = '0008_api_ip_budget'
+) as apply_next
+\gset
+
+\if :apply_next
+  \ir migrations/0008_api_ip_budget.sql
+  insert into barkits_meta.schema_migrations (version) values ('0008_api_ip_budget');
+\else
+  \echo 0008_api_ip_budget already applied.
+\endif

@@ -23,11 +23,13 @@ async function forSession(sql, session, query, params = []) {
   return rows[0]?.value ?? null;
 }
 
-export async function shared(sql, session, request, parts) {
+export async function shared(sql, session, request, parts, limits) {
   if (request.method === 'GET' && parts.length === 0) {
+    await limits.account(session, 'read');
     return json(await forSession(sql, session, 'select barkits.list_shared_meetups() as value'));
   }
   if (request.method === 'GET' && parts.length === 1) {
+    await limits.account(session, 'read');
     const data = await forSession(sql, session, 'select barkits.get_shared_meetup($1) as value', parts);
     if (!data) throw new HttpError(404, 'Couldn’t find this shared meetup.');
     return json(data);
@@ -35,6 +37,7 @@ export async function shared(sql, session, request, parts) {
   const action = request.method === 'POST' && parts.length === 1 ? mutations.get(parts[0]) : undefined;
   if (!action) throw new HttpError(404, 'This action isn’t available.');
   if (!session) throw new HttpError(401, 'Sign in again to continue.');
+  await limits.account(session, ['create', 'join', 'invite'].includes(parts[0]) ? parts[0] : 'write');
   const params = await readJson(request);
   const [name, count] = action;
   if (!Array.isArray(params) || params.length !== count ||

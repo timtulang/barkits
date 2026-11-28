@@ -1,19 +1,18 @@
 # Continuity ledger
 
 ## Snapshot
-- 2026-11-28 [USER] Continue staging cutover in this local checkout; do not use the incorrect Codex Cloud setup. Merge codex/barkits-neon-google into barkits-prototype only after database and Vercel checks pass; push is authorized then.
-- 2026-11-28 [USER] Start fresh on Neon with Google sign-in. Guest plans stay on their devices; skip Supabase account/shared meetup migration. Target project Barkits, branch disposable, database neondb; barkits and barkits_meta are schemas.
-- 2026-11-28 [USER] Staging origin is https://barkits-staging.vercel.app; both origin variables must match. Exact Google callback is /api/auth/google/callback on that origin.
-- 2026-11-28 [TOOL] Merged source 5e555bb into prototype and pushed no-ff merge 24ea3b9. Vercel deployment dpl_4e29jVTk3e2ttkXAc1CRioevrbF7 is READY; staging alias verified on that exact commit.
-- 2026-11-28 [TOOL] User said ready after the request to confirm Neon IDs; treated as confirmation. Direct neondb_owner connection guard verified neondb, project falling-cloud-86903061, branch br-sweet-recipe-bixuu2dm before writes.
-- 2026-11-28 [TOOL] Private pre-migration schema backup created outside Git; /tmp/barkits-cutover-location points to its restricted directory. Applied source commit migrations through 0006_shared_api; second run skipped all six. Core/shared SQL checks passed and rolled back. Users/meetups remain zero.
-- 2026-11-28 [TOOL] Shared test initially could not SET ROLE barkits_runtime; rerun added temporary owner membership inside the fixture transaction. Final rollback verified operator SET membership false; no lasting privilege grant.
-- 2026-11-28 [TOOL] Vercel project barkits verified in timtulang/barkits; staging domain tracks prototype. Build npm run build:web, install npm ci, output dist, Node 26.x. Deployment protection requires Vercel login.
-- 2026-11-28 [TOOL] Supersedes empty Preview settings: configured all six required variables for Preview scoped to barkits-prototype. Both origins match staging exactly; DB/Google/auth values saved as sensitive. Production settings preserved. Staging domain is verified and explicitly assigned to prototype.
-- 2026-11-28 [TOOL] Pooled barkits_api TCP/HTTPS role checks, types, 23 tests, staging web build and artifact credential scan passed. Hosted session returns HTTP 200/user null; Google start returns HTTP 303 with expected client, exact callback, PKCE S256 and secure HttpOnly flow cookie. Fresh browser reached Google identifier screen without redirect mismatch.
-- 2026-11-28 [TOOL] Real sign-in failed because the client ID was copied into the client secret field. User corrected .env.local; Google token probe now returns expected invalid_grant for a deliberately invalid code, superseding invalid_client. Corrected branch-scoped Preview secret saved. Now: redeploy and retry real Google sign-in/shared creation. Native signed-device acceptance remains outside this staging check.
-- 2026-11-27 [USER] Standing authorization: commit and push finished Barkits changes to the branch being worked on at task end; current cutover gates take precedence.
-- 2026-11-27 [CODE] UI redesign phases 1–6 and collaborative foundation phases 0–2 complete. Existing theme, Nunito, Kits, map-first planning and guest storage retained; see phase documentation and historical receipts.
+- 2026-11-28 [USER] Add safety guardrails and rate limiting on barkits-prototype before a future production merge. Production merge/deployment is not authorized by this request.
+- 2026-11-28 [CODE] Added database-backed API/IP/auth/account quotas, 429 Retry-After feedback, streaming/deadline request bounds, CSP/security headers and a 30-second function cap. No new dependencies or services.
+- 2026-11-28 [TOOL] Staging target reverified as neondb_owner/neondb, project falling-cloud-86903061, branch br-sweet-recipe-bixuu2dm (Barkits/disposable). Restricted backup saved outside Git; /tmp/barkits-security-backup-location points to it. Applied 0007_abuse_limits and additive 0008_api_ip_budget; previous migrations remain unchanged.
+- 2026-11-28 [TOOL] Local PostgreSQL migrations/core/shared/abuse suites and 20-connection quota concurrency passed. Live runtime quota smoke rolled back and confirms no counter table privileges. TCP/HTTPS role checks passed. TypeScript, all 28 tests, web build and changed-file/artifact credential scans passed. Commit/push and hosted deployment verification pending.
+- 2026-11-28 [TOOL] Enforced CSP browser check loaded guest app and Leaflet map with zero policy violations. Signed native-device checks not performed.
+- 2026-11-28 [TOOL] Vercel active firewall v2 has a valid API rule: 120 requests/IP/minute, deny, one-minute action. Tracked in security/vercel-api-rate-limit.json. Bounded edge probes did not produce 429 (protected Preview returns login redirects; current public host API path returns NOT_FOUND). Edge enforcement UNCONFIRMED; application quotas also enforce the IP budget.
+- 2026-11-28 [CODE] Now: final checks, then commit/push only prototype and verify its deployment/hosted limiter. Next: production database migrations through 0008, separate Production configuration and real Google/shared acceptance before production promotion. See docs/SECURITY.md.
+- 2026-11-28 [USER] Use this local checkout and ignored .env.local; Codex Cloud setup is incorrect. Neon is the sole database, Google the sole sign-in. Start fresh; skip Supabase accounts/shared data. Guest plans stay on their devices.
+- 2026-11-28 [TOOL] Prior cutover: source 5e555bb merged as 24ea3b9; latest deployed prototype checkpoint 377d06c at https://barkits-staging.vercel.app. Domain explicitly tracks prototype. Vercel npm ci/build:web/dist, Node 26.x, deployment authentication enabled.
+- 2026-11-28 [TOOL] Six Preview variables are scoped to prototype, with exact staging origins and pooled barkits_api. Corrected Google client secret after the client ID was copied into both fields. Client pair probe, hosted anonymous session, exact callback/client/PKCE/cookies and Google identifier navigation passed. Real successful Google callback/shared creation remains UNCONFIRMED.
+- 2026-11-27 [USER] Standing authorization: commit and push finished branch work at task end. Do not merge into main or deploy production without authorization.
+- 2026-11-27 [CODE] UI redesign phases 1–6 and collaborative foundation phases 0–2 complete; preserve Nunito, Kits, existing theme/map-first flows and guest storage. Historical evidence remains in phase documentation.
 
 ## Integrations and initialization
 - 2026-11-26 [TOOL] Ponytail/Impeccable skills read; context succeeded using `docs/PRODUCT.md`. Existing `docs/DESIGN_SYSTEM.md` remains visual authority. Supersedes initial no-hook observation: later UI edits received automatic design-hook reports. Latest AGENTS makes optional tools targeted, not mandatory initialization.
@@ -42,24 +41,32 @@
 
 - 2026-11-28 [USER] D014 ACTIVE: fresh Neon staging with Google only; do not migrate Supabase accounts/shared meetups or move guest plans. Verify direct owner target and migrations plus branch-scoped Vercel Preview settings before the authorized merge/push.
 
+- 2026-11-28 [CODE] D015 ACTIVE: use atomic existing-Neon quotas plus Vercel edge rules; no per-instance fallback or new rate-limit provider. Reject limiter failures, count rejected mutations separately, and keep production promotion behind migration/configuration/live acceptance gates.
+
 ## Done (recent)
+- 2026-11-28 [CODE] Added production guardrails, distributed quotas, request bounds/security headers, local abuse/concurrency tests and a production runbook; staging migrations through 0008 applied.
 - 2026-11-28 [TOOL] Live staging migrations through 0006_shared_api and idempotent rerun passed. Core and shared SQL fixtures rolled back; zero users/meetups and no retained test privilege grant. SSH and Vercel API access restored; Preview configuration blocks merge.
 - 2026-11-27 [CODE] Phase 6 refined web navigation and focus behavior, removed the decorative footer and reduced the initial Kits download by 72%. Assessed the final six surfaces against the Phase 1 ratings.
 - 2026-11-27 [CODE] Phase 5 polished the route, roster, trip entry, decisions and recaps. Local and shared milestone animations wait for persistence, and saved recaps reopen without replaying the celebration.
 - 2026-11-27 [CODE] Phase 4 added invite continuation after sign-in, map and shortlist navigation, explicit completion and archive actions, and audience-aware recaps. Shared phase checks use local synthetic data.
 - 2026-11-27 [CODE] Phase 3 restored four ranking modes with consistent evidence, moved saved plans up on returning Home, and added venue-first review and direct directions. The guest flow and validation are recorded in the redesign plan.
 - 2026-11-27 [CODE] Phase 2 implemented richer color roles, shared type and motion values, and the reusable local/shared route. Guest and synthetic shared UI evidence is recorded in the redesign plan.
-- 2026-11-27 [CODE] Documented Phase 1 journey findings, starting screen scores, creative direction and implementation roadmap. The local cross-place ranking UI is absent at `2d0348e`; the ranking rules and tests remain.
 
 ## Working set
-- 2026-11-27 [CODE] `docs/REDESIGN_PLAN.md`, `docs/DESIGN_SYSTEM.md`, `app/index.tsx`
-- 2026-11-27 [CODE] `src/editor-dialog.tsx`, `src/fullscreen-place-map.tsx`, `src/place-search-field.tsx`
-- 2026-11-27 [CODE] `assets/ui/kits.png`, `scripts/check-redesign-browser.py`, `scripts/check-shared-meetups.sql`
-- 2026-11-27 [CODE] `scripts/check-planning-browser.py`, `scripts/check-shared-lifecycle.py`, `global.css`
+- 2026-11-28 [CODE] server/api.mjs
+- 2026-11-28 [CODE] server/http.mjs
+- 2026-11-28 [CODE] server/shared.mjs
+- 2026-11-28 [CODE] server/rate-limit.mjs
+- 2026-11-28 [CODE] db/migrate.sql
+- 2026-11-28 [CODE] db/migrations/0007_abuse_limits.sql
+- 2026-11-28 [CODE] db/migrations/0008_api_ip_budget.sql
+- 2026-11-28 [CODE] db/test-abuse.sql
+- 2026-11-28 [CODE] server/security.test.mjs
+- 2026-11-28 [CODE] security/vercel-api-rate-limit.json
+- 2026-11-28 [CODE] vercel.json
+- 2026-11-28 [CODE] docs/SECURITY.md
 
 ## Receipts
-- 2026-11-26 [TOOL] D guest suite also passed: failed save/retry, keep/discard leaving guard, pending review/cancel/confirm, hard-reload resume, map/back, completion and all four viewport widths.
-- 2026-11-26 [TOOL] D synthetic shared sessions passed: own-member editing, missing/at-limit estimates, vote/move/withdraw, organizer review, injected 503 before finalization/retry and confirmed venue visible after member refresh. Not hosted auth/RLS validation.
 - 2026-11-26 [TOOL] D final types, 18 tests, Python syntax, all platform exports and final planning-surface detector pass. Native CLIs absent from PATH; local SQL suite unavailable (no current-user DB role).
 - 2026-11-26 [TOOL] Ignored receipts: .expo/redesign/phase45b/, phase45c/, phase45d/. Metro required --clear to switch embedded fixture env; normal final export contains no fixture environment. No external model/provider changes.
 - 2026-11-26 [TOOL] D committed `0958b7a`; B `74c04b6`, C `4fce554`. Final normal export excludes fixture configuration. Stop at documented native/live-backend acceptance gates; no Phase 5/6 work or deployment.
@@ -78,3 +85,5 @@
 - 2026-11-28 [TOOL] Merge 24ea3b9 pushed and deployed READY at staging. Verified alias SHA, hosted anonymous session, exact Google callback/client/PKCE/cookie, and real browser navigation to accounts.google.com/v3/signin/identifier. Opened Firefox for user Google sign-in and test shared creation; awaiting outcome.
 - 2026-11-28 [TOOL] Callback failure diagnosis: users/identities/sessions/meetups all zero; runtime can execute start_google_session and invalid digest probe correctly rolls back. Google token endpoint rejects client pair with HTTP 401 invalid_client. Confirmed GOOGLE_OAUTH_CLIENT_SECRET equals GOOGLE_OAUTH_CLIENT_ID; user copied client ID into both fields. Asked user for the actual matching client secret. Temporary protected-preview test token revoked after hosted checks.
 - 2026-11-28 [USER] Corrected GOOGLE_OAUTH_CLIENT_SECRET privately. [TOOL] Client pair probe now returns HTTP 400 invalid_grant for the intentionally invalid authorization code; updated sensitive Preview secret. Application code unchanged. Pushing this ledger checkpoint triggers a deployment with the corrected settings.
+- 2026-11-28 [TOOL] Corrected-secret deployment dpl_FGpmBhbrrQ8Cis67XPUjT6DYHTSu READY at 377d06c; staging alias, anonymous session and exact Google redirect/client passed. Temporary automation credential revoked; Firefox reopened for user acceptance retry. Application code unchanged.
+- 2026-11-28 [TOOL] Guardrails checkpoint: local SQL suites/concurrent requests passed; target-guarded staging migrations 0007/0008 applied with private backup; live runtime quota transaction rolled back and role checks passed. CSP guest/map browser check had no violations. Active WAF v2 valid but edge 429 not observed; application global IP budget covers the API.

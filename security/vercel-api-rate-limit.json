@@ -1,0 +1,31 @@
+{
+  "name": "Barkits API flood limit",
+  "description": "Limit API traffic per client IP before functions, including direct entry requests.",
+  "active": true,
+  "conditionGroup": [
+    {
+      "conditions": [
+        {
+          "type": "path",
+          "op": "pre",
+          "value": "/api"
+        }
+      ]
+    }
+  ],
+  "action": {
+    "mitigate": {
+      "action": "rate_limit",
+      "rateLimit": {
+        "algo": "fixed_window",
+        "window": 60,
+        "limit": 120,
+        "keys": [
+          "ip"
+        ],
+        "action": "deny"
+      },
+      "actionDuration": "1m"
+    }
+  }
+}

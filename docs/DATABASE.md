@@ -46,6 +46,8 @@ On a disposable development database, run `node db/cli.mjs shell < db/test-core.
 
 Add future numbered migrations to `db/migrations/` and register them in order in `db/migrate.sql`. Add a new migration for changes after a version is applied.
 
+Migrations `0007_abuse_limits` and `0008_api_ip_budget` add private rate-limit counters and restricted IP/account quota functions, including a general API budget. Apply both before deploying the guarded API. Counters commit separately from shared mutations so failed attempts consume their budget. See [production guardrails](SECURITY.md) for limits, retention and local concurrency verification.
+
 ## Backup and recovery
 
 - Before changing an existing environment, capture a Neon restore point within its retention window or create a restricted backup outside the repository. Run `node db/cli.mjs backup > "$backup_file"` after setting a private umask. The dump contains the Barkits schemas and their data.

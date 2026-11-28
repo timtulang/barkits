@@ -7,7 +7,9 @@ const origin = 'https://barkits.example';
 const genuineToken = 'a'.repeat(43);
 const sessionDigest = createHash('sha256').update(genuineToken).digest('hex');
 const member = { id: '11111111-1111-4111-8111-111111111111', display_name: 'Kits' };
-const request = (path, init) => new Request(origin + path, init);
+const request = (path, init) => new Request(origin + path, {
+  ...init, headers: { 'x-vercel-forwarded-for': '192.0.2.10', ...init?.headers },
+});
 
 function fixture() {
   let oauth;
@@ -34,6 +36,7 @@ function fixture() {
   };
   const sql = {
     query(text, params) {
+      if (text.includes('consume_')) return Promise.resolve([{ retry_after: 0 }]);
       const query = { text, params };
       queries.push(query);
       if (text.includes('session_user')) return Promise.resolve(params[0] === sessionDigest ? [member] : []);
@@ -46,7 +49,7 @@ function fixture() {
       return [[], [{ value: ['authorized-result'] }]];
     },
   };
-  const handle = createApi({ origin, signingKey: 'secret-only-used-in-test', clientId: 'configured-client-id', sql, googleClient });
+  const handle = createApi({ origin, signingKey: 'secret-only-used-in-test', clientId: 'configured-client-id', sql, googleClient, vercel: true });
   async function start(query = '') {
     const response = await handle(request('/api/auth/google/start' + query));
     assert.equal(response.status, 303);
