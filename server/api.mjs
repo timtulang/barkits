@@ -18,7 +18,7 @@ export function createApi(config) {
     const { method } = request;
     try {
       if (request.url.length > 8192) throw new HttpError(414, 'This request URL is too long.');
-      if (route) {
+      if (url.searchParams.has('__barkits_route')) {
         url.pathname = pathname;
         url.searchParams.delete('__barkits_route');
         request = new Request(url, request);
